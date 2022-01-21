@@ -1,0 +1,65 @@
+# Use the latest 2.1 version of CircleCI pipeline process engine.
+# See: https://circleci.com/docs/2.0/configuration-reference
+version: 2.1
+
+# Define a job to be invoked later in a workflow.
+# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
+jobs:
+  prepare_env:
+    docker:
+      - image: almalinux
+    steps:
+      - run:
+          command: dnf update -y
+      - run:
+          command: dnf install -y epel-release
+      - run:
+          command: dnf install -y ansible python3 python3-pip
+      - run:
+          command: python3 -V
+      - run:
+          command: ansible-playbook --version
+      - run:
+          command: dnf repoquery -l python3-pip
+      - checkout
+      - run:
+          command: "pwd && ls"
+      - run:
+          name: "Install ansible-deploy"
+          command: "pip3.6 install ."
+      - run:
+          command: "cat $(which ansible-deploy)"
+      - run:
+          name: "Simple exec"
+          command: "ansible-deploy"
+
+
+  install_and_exec:
+    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
+    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
+    docker:
+      - image: almalinux
+    # Add steps to the job
+    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
+    steps:
+      - checkout
+      - run:
+          name: "Install ansible-deploy"
+          command: "pip3.6 install ."
+      - run:
+          command: "cat $(which ansible-deploy)"
+      - run:
+          name: "Simple exec"
+          command: "ansible-deploy"
+
+# Invoke jobs via workflows
+# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+workflows:
+  version: 2
+  tests-without-ansible-playbook:
+    jobs:
+      - prepare_env
+        #      - install_and_exec:
+        #          requires:
+        #            - prepare_env
+
