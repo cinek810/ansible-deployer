@@ -1,3 +1,4 @@
+"""Setuptools configuration for ansible-deploy"""
 import pathlib
 import os
 from setuptools import setup
@@ -10,7 +11,8 @@ HERE = pathlib.Path(__file__).parent
 
 
 def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+    """Helper function for README"""
+    return open(os.path.join(os.path.dirname(__file__), fname), encoding='UTF-8').read()
 
 README = read(str(HERE)+"/README.md")
 
@@ -35,4 +37,3 @@ setup(
         ]
     },
 )
-
