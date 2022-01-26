@@ -14,6 +14,7 @@ def validate_options(options, subcommand):
     if subcommand == "run":
         if "task" not in options:
             return False
+    return True
 
 def load_configuration():
     """Function responsible for reading configuration files and running a schema validator against
