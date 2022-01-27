@@ -30,7 +30,7 @@ jobs:
       - run:
           command: "pip3.6 install pylint"
       - run:
-          command: "pylint ./ansible_deploy"
+          command: "pylint $(find ./ -name '*.py')"
       - run:
           command: "cat $(which ansible-deploy)"
       - run:
