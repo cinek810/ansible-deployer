@@ -17,6 +17,12 @@ def get_sub_command(command):
     """Function to check the first arguments (argv[1..]) looking for a subcommand"""
     if command == "run":
         subcommand = "run"
+    elif command == "lock":
+        subcommand = "lock"
+    elif command == "unlock":
+        subcommand = "unlock"
+    elif command == "list":
+        subcommand = "list"
     else:
         logger.error("Unknown subcommand :%s", (command))
         sys.exit("55")
@@ -97,11 +103,29 @@ def create_workdir(timestamp: str, base_dir: str):
 def validate_options(options, subcommand):
     """Function checking if the options set are allowed in this subcommand"""
     logger.debug("validate_options running for subcommand: %s", (subcommand))
+    required = []
+    notsupported = []
     if subcommand == "run":
-        if not options["task"]:
-            logger.error("run requires --task")
-            sys.exit(55)
-    return True
+        required = ["task", "infra", "stage"]
+    elif subcommand in ("lock", "unlock"):
+        required = ["infra", "stage"]
+        notsupported = ["task", "commit"]
+    elif subcommand == "list":
+        notsupported = ["commit"]
+
+    failed = False
+    for req in required:
+        if options[req] is None:
+            logger.error("%s is required for %s", req, subcommand)
+            failed = True
+
+    for notsup in notsupported:
+        if options[notsup] is not None:
+            logger.error("%s is not supported by %s", notsup, subcommand)
+            failed = True
+
+    if failed:
+        sys.exit(55)
 
 def load_configuration():
     """Function responsible for reading configuration files and running a schema validator against
