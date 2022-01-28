@@ -35,7 +35,10 @@ jobs:
           command: "cat $(which ansible-deploy)"
       - run:
           name: "Simple exec"
-          command: "ansible-deploy"
+          command: ansible-deploy || if [ $? -eq 2 ]; then exit 0; fi
+      - run:
+          name: "Fail if run without tasks with exit 55"
+          command: ansible-deploy run || if [ $? -eq 55 ]; then exit 0; fi
 
 
   install_and_exec:
