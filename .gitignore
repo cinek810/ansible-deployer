@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Ignore files from ansible-deploy execution:
+ansible-deploy_execution*log
