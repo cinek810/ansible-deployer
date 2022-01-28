@@ -5,7 +5,8 @@ import os
 import argparse
 import logging
 import datetime
-from logging import handlers as log_han
+#TODO: Add an option to explicitely enable syslog logging
+#from logging import handlers as log_han
 
 
 LOGNAME = "ansible-deploy_execution_{}.log"
@@ -33,10 +34,11 @@ def set_logging(log_dir: str, name: str, timestamp: str):
     formatter = logging.Formatter("%(asctime)s [%(levelname)s]: %(message)s")
     console_formatter = logging.Formatter("\n%(asctime)s [%(levelname)s]: %(message)s\n")
 
-    rsys_handler = log_han.SysLogHandler(address="/dev/log")
-    rsys_handler.setFormatter(formatter)
-    rsys_handler.setLevel(logging.ERROR)
-    logger.addHandler(rsys_handler)
+#   TODO: Add an option to explicitly enable syslog logging
+#    rsys_handler = log_han.SysLogHandler(address="/dev/log")
+#    rsys_handler.setFormatter(formatter)
+#    rsys_handler.setLevel(logging.ERROR)
+#    logger.addHandler(rsys_handler)
 
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(console_formatter)
