@@ -68,7 +68,7 @@ def parse_options(argv):
     arguments = parser.parse_args(argv)
 
     options = {}
-    options["infrastructure"] = arguments.infrastructure[0]
+    options["infra"] = arguments.infrastructure[0]
     options["stage"] = arguments.stage[0]
     options["commit"] = arguments.commit[0]
     options["task"] = arguments.task[0]
