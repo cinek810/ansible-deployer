@@ -1,6 +1,6 @@
 #!/bin/bash -l
 
-check_output() {
+check_output_fail() {
 	CMD=$1
 	EXPTEXT=$2
 
@@ -14,31 +14,46 @@ check_output() {
 	fi
 }
 
+check_run_ok() {
+	CMD=$1
+	$CMD
+	if [ $? -ne 0 ]
+	then
+		echo "FAILED: ${CMD}"
+		exit 1
+	else
+		echo "OK"
+	fi
+}
+
 #Check wrong combinations
-check_output 'ansible-deploy' '\[ERROR\]: To fee arguments'
-check_output 'ansible-deploy run' '\[ERROR\]: task is required for run'
-check_output 'ansible-deploy run' '\[ERROR\]: infra is required for run'
-check_output 'ansible-deploy run' '\[ERROR\]: stage is required for run'
-check_output 'ansible-deploy run  -t testTask' '\[ERROR\]: stage is required for run'
-check_output 'ansible-deploy run  -t testTask' '\[ERROR\]: infra is required for run'
-check_output 'ansible-deploy run  -t testTask -i testInfra' 'stage is required for run'
+check_output_fail 'ansible-deploy' '\[ERROR\]: To fee arguments'
+check_output_fail 'ansible-deploy run' '\[ERROR\]: task is required for run'
+check_output_fail 'ansible-deploy run' '\[ERROR\]: infra is required for run'
+check_output_fail 'ansible-deploy run' '\[ERROR\]: stage is required for run'
+check_output_fail 'ansible-deploy run  -t testTask' '\[ERROR\]: stage is required for run'
+check_output_fail 'ansible-deploy run  -t testTask' '\[ERROR\]: infra is required for run'
+check_output_fail 'ansible-deploy run  -t testTask -i testInfra' 'stage is required for run'
 
-check_output 'ansible-deploy lock -t testTask -i testInfra' '\[ERROR\]: task is not supported by lock'
-check_output 'ansible-deploy lock -t testTask -i testInfra -s prod' '\[ERROR\]: task is not supported by lock'
-check_output 'ansible-deploy lock -t testTask -s prod' '\[ERROR\]: infra is required for lock'
-check_output 'ansible-deploy lock -t testTask -s prod -c X' '\[ERROR\]: commit is not supported by lock'
+check_output_fail 'ansible-deploy lock -t testTask -i testInfra' '\[ERROR\]: task is not supported by lock'
+check_output_fail 'ansible-deploy lock -t testTask -i testInfra -s prod' '\[ERROR\]: task is not supported by lock'
+check_output_fail 'ansible-deploy lock -t testTask -s prod' '\[ERROR\]: infra is required for lock'
+check_output_fail 'ansible-deploy lock -t testTask -s prod -c X' '\[ERROR\]: commit is not supported by lock'
 
-check_output 'ansible-deploy unlock -t testTask -i testInfra' '\[ERROR\]: task is not supported by unlock'
-check_output 'ansible-deploy unlock -t testTask -i testInfra -s prod' '\[ERROR\]: task is not supported by unlock'
-check_output 'ansible-deploy unlock -t testTask -s test' '\[ERROR\]: infra is required for unlock'
-check_output 'ansible-deploy unlock -t testTask -s prod -c X' '\[ERROR\]: commit is not supported by unlock'
+check_output_fail 'ansible-deploy unlock -t testTask -i testInfra' '\[ERROR\]: task is not supported by unlock'
+check_output_fail 'ansible-deploy unlock -t testTask -i testInfra -s prod' '\[ERROR\]: task is not supported by unlock'
+check_output_fail 'ansible-deploy unlock -t testTask -s test' '\[ERROR\]: infra is required for unlock'
+check_output_fail 'ansible-deploy unlock -t testTask -s prod -c X' '\[ERROR\]: commit is not supported by unlock'
 
-check_output 'ansible-deploy list --commit testTask'  '\[ERROR\]: commit is not supported by list'
+check_output_fail 'ansible-deploy list --commit testTask'  '\[ERROR\]: commit is not supported by list'
 
 #Check if correct combinations are accepted
-ansible-deploy run -t run_bin_true -s prod -i test1
-ansible-deploy run -t run_bin_true -s prod -i test1 --commit test_version
-ansible-deploy lock -s prod -i test1
-ansible-deploy unlock -s prod -i test1
-ansible-deploy list
-ansible-deploy list --task="run_bin_true"
+check_run_ok "ansible-deploy run -t run_bin_true -s prod -i testInfra"
+check_run_ok "ansible-deploy run -t run_bin_true -s prod -i testInfra --commit test_version"
+check_run_ok "ansible-deploy lock -s prod -i testInfra"
+check_run_ok "ansible-deploy unlock -s prod -i testInfra"
+check_run_ok "ansible-deploy list"
+check_run_ok "ansible-deploy list --task=\"run_bin_true\""
+
+#Check if wrong config is rejected
+check_output_fail 'ansible-deploy run -t testTask -i nonExistingInfra -s prod' '\[ERROR\]: nonExistingInfra not found in configuration file'

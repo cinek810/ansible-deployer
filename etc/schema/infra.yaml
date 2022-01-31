@@ -1,0 +1,22 @@
+infrastructures:
+    type: list
+    required: True
+    schema:
+      type: dict
+      schema:
+        name:
+          type: string
+          required: True
+        stages:
+          type: list
+          required: True
+          schema:
+            type: dict
+            schema:
+              name:
+                type: string
+                required: True
+              inventory:
+                type: string
+                required: True
+
