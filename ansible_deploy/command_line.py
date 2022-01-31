@@ -139,14 +139,14 @@ def load_configuration_file(config_file):
     #TODO: Add verification of owner/group/persmissions
     logger.debug("Loading :%s", config_file)
 
-    with open(CONF_DIR+config_file, "r", encoding="utf8") as config_stream:
+    with open(os.path.join(CONF_DIR,config_file), "r", encoding="utf8") as config_stream:
         try:
             config = yaml.safe_load(config_stream)
         except yaml.YAMLError as e:
             logger.error(e)
             sys.exit(51)
 
-    with open(CONF_DIR+"schema/"+config_file, "r", encoding="utf8") as schema_stream:
+    with open(os.path.join(CONF_DIR, "schema", config_file), "r", encoding="utf8") as schema_stream:
         try:
             schema = yaml.safe_load(schema_stream)
         except yaml.YAMLError as e:
@@ -166,18 +166,24 @@ def load_configuration():
     logger.debug("load_configuration called")
 
     infra = load_configuration_file("infra.yaml")
+    tasks = load_configuration_file("tasks.yaml")
 
     config = {}
     config["infra"] = infra["infrastructures"]
+    config["tasks"] = tasks
+
     return config
 
-def validate_option_by_dict_with_name(option, conf_dict):
-    if option:
+def validate_option_by_dict_with_name(optval, conf_dict):
+    """
+    Validate if given dictionary contains element with name equal to optval
+    """
+    if optval:
         for elem in conf_dict:
-            if elem["name"] == option:
+            if elem["name"] == optval:
                 break
         else:
-            logger.error("%s not found in configuration file.", option)
+            logger.error("%s not found in configuration file.", optval)
             sys.exit(54)
 
 def validate_option_values_with_config(config, options):

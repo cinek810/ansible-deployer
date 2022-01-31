@@ -48,12 +48,12 @@ check_output_fail 'ansible-deploy unlock -t testTask -s prod -c X' '\[ERROR\]: c
 check_output_fail 'ansible-deploy list --commit testTask'  '\[ERROR\]: commit is not supported by list'
 
 #Check if correct combinations are accepted
-check_run_ok "ansible-deploy run -t run_bin_true -s prod -i testInfra"
-check_run_ok "ansible-deploy run -t run_bin_true -s prod -i testInfra --commit test_version"
+check_run_ok "ansible-deploy run -t task_exec_bin_true -s prod -i testInfra"
+check_run_ok "ansible-deploy run -t task_exec_bin_true -s prod -i testInfra --commit test_version"
 check_run_ok "ansible-deploy lock -s prod -i testInfra"
 check_run_ok "ansible-deploy unlock -s prod -i testInfra"
 check_run_ok "ansible-deploy list"
-check_run_ok "ansible-deploy list --task=\"run_bin_true\""
+check_run_ok "ansible-deploy list --task=task_exec_bin_true"
 
 #Check if wrong config is rejected
-check_output_fail 'ansible-deploy run -t testTask -i nonExistingInfra -s prod' '\[ERROR\]: nonExistingInfra not found in configuration file'
+check_output_fail 'ansible-deploy run -t task_exec_bin_true -i nonExistingInfra -s prod' '\[ERROR\]: nonExistingInfra not found in configuration file'
