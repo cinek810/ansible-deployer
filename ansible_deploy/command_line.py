@@ -14,7 +14,7 @@ from cerberus import Validator
 
 LOGNAME = "ansible-deploy_execution_{}.log"
 SEQUENCE_PREFIX = "SEQ"
-WORKDIR = "/tmp"
+PARENT_WORKDIR = "/tmp"
 CONF_DIR = "/etc/ansible-deploy/"
 
 
@@ -139,7 +139,7 @@ def load_configuration_file(config_file):
     #TODO: Add verification of owner/group/persmissions
     logger.debug("Loading :%s", config_file)
 
-    with open(os.path.join(CONF_DIR,config_file), "r", encoding="utf8") as config_stream:
+    with open(os.path.join(CONF_DIR, config_file), "r", encoding="utf8") as config_stream:
         try:
             config = yaml.safe_load(config_stream)
         except yaml.YAMLError as e:
@@ -186,13 +186,6 @@ def validate_option_by_dict_with_name(optval, conf_dict):
             logger.error("%s not found in configuration file.", optval)
             sys.exit(54)
 
-def validate_option_values_with_config(config, options):
-    """
-    Function responsible for checking if option values match configuration
-    """
-    validate_option_by_dict_with_name(options["infra"], config["infra"])
-    validate_option_by_dict_with_name(options["task"], config["tasks"]["tasks"])
-
 def validate_user_infra_stage():
     """Function checking if user has rights to execute command on selected infrastructure
     Required for: run, lock and unlock operations"""
@@ -200,6 +193,48 @@ def validate_user_infra_stage():
 def validate_user_task():
     """Function checking if user has rights to execute the task
     Rquired for: run"""
+
+def validate_option_values_with_config(config, options):
+    """
+    Function responsible for checking if option values match configuration
+    """
+    validate_option_by_dict_with_name(options["infra"], config["infra"])
+    validate_option_by_dict_with_name(options["task"], config["tasks"]["tasks"])
+    #TODO: validate if user is allowed to use --commit
+    #TODO: validate if user is allowed to execute the task on infra/stag pair
+    #(validate_user_infra_stage(), validate_usr_task())
+
+
+def lock_inventory(infra, stage):
+    """
+    Function responsible for locking inventory file.
+    The goal is to prevent two parallel ansible-deploy's running on the same inventory
+    This needs to be done by the use of additional directory under PARNT_WORKDIR,, for instance:
+    PARENT_WORKDIR/locks.
+    We shouldn't check if file exists, but rather attempt to open it for writing, until we're
+    done every other process should be rejected this access.
+    The file should match inventory file name.
+    """
+
+def unlock_inventory(infra, stage):
+    """
+    Function responsible for unlocking inventory file, See also lock_inventory
+    """
+def setup_ansible(config, commit):
+    """
+    Function responsible for execution of setup_hooks
+    It passes the "commit" to the hook if one given, if not the hook should
+    checkout the default repo.
+    """
+def run_task(config, options):
+    """
+    Function implementing actual execution of ansible-playbook
+    """
+
+def list_tasks(config, options):
+    """
+    Function listing tasks available to the user limited to given infra/stage/task
+    """
 
 def main():
     """ansible-deploy endpoint function"""
@@ -218,5 +253,17 @@ def main():
     config = load_configuration()
     validate_option_values_with_config(config, options)
 
-    #create_workdir(start_ts, WORKDIR)
+    if subcommand == "run":
+        create_workdir(start_ts, PARENT_WORKDIR)
+        setup_ansible(config["tasks"]["setup_hooks"], options["commit"])
+        lock_inventory(options["infra"], options["stage"])
+        run_task(config, options)
+        unlock_inventory(options["infra"], options["stage"])
+    elif subcommand == "lock":
+        lock_inventory(options["infra"], options["stage"])
+    elif subcommand == "unlock":
+        unlock_inventory(options["infra"], options["stage"])
+    elif subcommand == "list":
+        list_tasks(config, options)
+
     sys.exit(0)
