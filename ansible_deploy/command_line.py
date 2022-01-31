@@ -5,7 +5,7 @@ import os
 import argparse
 import logging
 import datetime
-#TODO: Add an option to explicitely enable syslog logging
+#TODO: Add an option to explicitly enable syslog logging
 #from logging import handlers as log_han
 
 
