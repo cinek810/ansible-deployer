@@ -1,0 +1,15 @@
+setup_hooks:
+  - name: setup_ansible
+    module: script
+    opts:
+      file: /etc/ansible-deploy/hooks/setup_work_dir.sh
+
+play_items:
+  - name: run_bin_true
+    file: runBinTrue.yaml
+
+tasks:
+  - name: task_exec_bin_true
+    play_items:
+      - run_bin_true
+

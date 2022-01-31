@@ -1,0 +1,43 @@
+setup_hooks:
+  type: list
+  schema:
+    type: dict
+    schema:
+      name:
+        type: string
+        required: True
+      module:
+        type: string
+        required: True
+      opts:
+        type: dict
+        required: False
+
+play_items:
+  type: list
+  required: True
+  schema:
+    type: dict
+    schema:
+      name:
+        type: string
+        required: True
+      file:
+        type: string
+        required: True
+
+tasks:
+  type: list
+  required: True
+  schema:
+    type: dict
+    schema:
+      name:
+        type: string
+        required: True
+      play_items:
+        type: list
+        required: True
+        schema:
+          type: string
+          required: True
