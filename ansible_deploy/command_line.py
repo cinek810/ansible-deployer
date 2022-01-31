@@ -110,17 +110,17 @@ def load_configuration():
     it"""
 
 
-def validate_user_infra_stage(user: str, infra: str):
+def validate_user_infra_stage():
     """Function checking if user has rights to execute command on selected infrastructure
     Required for: run, lock and unlock operations"""
 
 
-def validate_user_task(user: str, task: str):
+def validate_user_task():
     """Function checking if user has rights to execute the task
     Rquired for: run"""
 
 
-def display_available(user: str, *args):
+def display_available():
     """Fucntion for displaying resources available to an entity"""
 
 
