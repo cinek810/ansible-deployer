@@ -109,13 +109,48 @@ def load_configuration():
     """Function responsible for reading configuration files and running a schema validator against
     it"""
 
-def validate_user_infra_stage():
+
+def validate_user_infra_stage(user: str, infra: str):
     """Function checking if user has rights to execute command on selected infrastructure
     Required for: run, lock and unlock operations"""
 
-def validate_user_task():
+
+def validate_user_task(user: str, task: str):
     """Function checking if user has rights to execute the task
     Rquired for: run"""
+
+
+def display_available(user: str, *args):
+    """Fucntion for displaying resources available to an entity"""
+
+
+def lock_workdir():
+    """Function locking working directory"""
+
+
+def unlock_workdir():
+    """Function unlocking working directory"""
+
+
+def lock_inventory():
+    """Function locking the inevntory for run execution"""
+
+
+def unlock_inventory():
+    """Function locking the inevntory for run execution"""
+
+
+def call_prehooks():
+    """Function for running prerequisite operations"""
+
+
+def run_ansible_task():
+    """Function for running core operation run - ansible-playbook"""
+
+
+def call_posthooks():
+    """Function for running postrequisite operations"""
+
 
 def main():
     """ansible-deploy endpoint function"""
