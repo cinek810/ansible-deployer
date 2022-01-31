@@ -34,6 +34,9 @@ jobs:
       - run:
           command: "cat $(which ansible-deploy)"
       - run:
+          name: "Copy configuration files"
+          command: cp -r ./etc /etc/ansible-deploy
+      - run:
           name: "Run shell script for argument parsing"
           command: ./tests/01-test_argument_parsing.sh
 

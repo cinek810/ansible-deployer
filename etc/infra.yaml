@@ -1,0 +1,7 @@
+infrastructures:
+  - name: testInfra
+    stages:
+      - name: testing
+        inventory: ./test_infra1_inv.yaml
+      - name: prod
+        inventory: ./prod_infra1.inv.yaml

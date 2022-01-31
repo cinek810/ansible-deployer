@@ -8,10 +8,14 @@ import datetime
 #TODO: Add an option to explicitly enable syslog logging
 #from logging import handlers as log_han
 
+import yaml
+from cerberus import Validator
+
 
 LOGNAME = "ansible-deploy_execution_{}.log"
 SEQUENCE_PREFIX = "SEQ"
 WORKDIR = "/tmp"
+CONF_DIR = "/etc/ansible-deploy/"
 
 
 def get_sub_command(command):
@@ -127,11 +131,61 @@ def validate_options(options, subcommand):
             failed = True
 
     if failed:
+        logger.error("Failed to validate options")
         sys.exit(55)
+
+def load_configuration_file(config_file):
+    """Function responsible for single file loading and validation"""
+    #TODO: Add verification of owner/group/persmissions
+    logger.debug("Loading :%s", config_file)
+
+    with open(CONF_DIR+config_file, "r", encoding="utf8") as config_stream:
+        try:
+            config = yaml.safe_load(config_stream)
+        except yaml.YAMLError as e:
+            logger.error(e)
+            sys.exit(51)
+
+    with open(CONF_DIR+"schema/"+config_file, "r", encoding="utf8") as schema_stream:
+        try:
+            schema = yaml.safe_load(schema_stream)
+        except yaml.YAMLError as e:
+            logger.error(e)
+            sys.exit(52)
+    validator = Validator(schema)
+    if not validator.validate(config, schema):
+        logger.error(validator.errors)
+        sys.exit(53)
+    logger.debug("Loaded:\n%s", str(config))
+    return config
 
 def load_configuration():
     """Function responsible for reading configuration files and running a schema validator against
-    it"""
+    it
+    """
+    logger.debug("load_configuration called")
+
+    infra = load_configuration_file("infra.yaml")
+
+    config = {}
+    config["infra"] = infra["infrastructures"]
+    return config
+
+def validate_option_by_dict_with_name(option, conf_dict):
+    if option:
+        for elem in conf_dict:
+            if elem["name"] == option:
+                break
+        else:
+            logger.error("%s not found in configuration file.", option)
+            sys.exit(54)
+
+def validate_option_values_with_config(config, options):
+    """
+    Function responsible for checking if option values match configuration
+    """
+    validate_option_by_dict_with_name(options["infra"], config["infra"])
+    validate_option_by_dict_with_name(options["task"], config["tasks"]["tasks"])
 
 def validate_user_infra_stage():
     """Function checking if user has rights to execute command on selected infrastructure
@@ -155,5 +209,8 @@ def main():
     subcommand = get_sub_command(sys.argv[1])
     options = parse_options(sys.argv[2:])
     validate_options(options, subcommand)
+    config = load_configuration()
+    validate_option_values_with_config(config, options)
+
     #create_workdir(start_ts, WORKDIR)
     sys.exit(0)
