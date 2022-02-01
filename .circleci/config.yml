@@ -38,7 +38,9 @@ jobs:
           command: cp -r ./etc /etc/ansible-deploy
       - run:
           name: "Run shell script for argument parsing"
-          command: ./tests/01-test_argument_parsing.sh
+          command: |
+            ./tests/01-test_argument_parsing.sh
+            ./tests/02-checkrun.sh
 
   install_and_exec:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
