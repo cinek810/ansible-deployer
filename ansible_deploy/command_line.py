@@ -342,25 +342,25 @@ def main():
     config = load_configuration()
     validate_option_values_with_config(config, options)
 
-    lockdir = os.path.join(PARENT_WORKDIR, "locks")
-    inv_file = get_inventory_file(config, options)
-    lockpath = os.path.join(lockdir, inv_file)
-
     if options["dry"]:
         logger.info("Skipping execution because of --dry-run option")
         sys.exit(0)
 
-    if subcommand == "run":
-        create_workdir(start_ts, PARENT_WORKDIR)
-        setup_ansible(config["tasks"]["setup_hooks"], options["commit"])
-        lock_inventory(lockdir, lockpath)
-        run_task(options, inv_file)
-        unlock_inventory(lockpath)
-    elif subcommand == "lock":
-        lock_inventory(lockdir, lockpath)
-    elif subcommand == "unlock":
-        unlock_inventory(lockpath)
-    elif subcommand == "list":
+    if subcommand == "list":
         list_tasks(config, options)
+    else:
+        lockdir = os.path.join(PARENT_WORKDIR, "locks")
+        inv_file = get_inventory_file(config, options)
+        lockpath = os.path.join(lockdir, inv_file)
+        if subcommand == "run":
+            create_workdir(start_ts, PARENT_WORKDIR)
+            setup_ansible(config["tasks"]["setup_hooks"], options["commit"])
+            lock_inventory(lockdir, lockpath)
+            run_task(options, inv_file)
+            unlock_inventory(lockpath)
+        elif subcommand == "lock":
+            lock_inventory(lockdir, lockpath)
+        elif subcommand == "unlock":
+            unlock_inventory(lockpath)
 
     sys.exit(0)
