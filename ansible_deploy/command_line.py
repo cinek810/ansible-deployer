@@ -171,6 +171,7 @@ def load_configuration():
     it
     """
     logger.debug("load_configuration called")
+    #TODO: validate files/directories permissions - should be own end editable only by special user
 
     infra = load_configuration_file("infra.yaml")
     tasks = load_configuration_file("tasks.yaml")
