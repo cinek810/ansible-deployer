@@ -243,16 +243,39 @@ def setup_ansible(config, commit):
     """
 
 
-def run_task(config, options):
+def run_task(options: dict, inventory: str):
     """
     Function implementing actual execution of ansible-playbook
     """
+    command = ["ansible-playbook", "-l", options["infra"], "-i", inventory, options["task"]]
+    run = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    try:
+        stdo, stde = run.communicate()
+        for line in stdo.split(b"\n\n"):
+            logger.info(line.decode("utf-8"))
+    except Exception as exc:
+        logger.error(exc)
 
 
 def list_tasks(config, options):
     """
     Function listing tasks available to the user limited to given infra/stage/task
     """
+    task_list = []
+    for item in config["tasks"]["tasks"]:
+        task_list.append(item)
+
+    print(task_list)
+
+
+def get_inventory_file(config: dict, options: dict):
+    for item in config["infra"]:
+        if item["name"] == options["infra"]:
+            for elem in item["stages"]:
+                if elem["name"] == options["stage"]:
+                    inv_file = elem["inventory"]
+
+    return inv_file
 
 
 def main():
@@ -271,20 +294,16 @@ def main():
     validate_options(options, subcommand)
     config = load_configuration()
     validate_option_values_with_config(config, options)
+    
     lockdir = os.path.join(PARENT_WORKDIR, "locks")
-
-    for item in config["infra"]:
-        if item["name"] == options["infra"]:
-            for elem in item["stages"]:
-                if elem["name"] == options["stage"]:
-                    inv_name = elem["inventory"]
-    lockpath = os.path.join(lockdir, inv_name)
+    inv_file = get_inventory_file(config, options)
+    lockpath = os.path.join(lockdir, inv_file)
 
     if subcommand == "run":
         create_workdir(start_ts, PARENT_WORKDIR)
         setup_ansible(config["tasks"]["setup_hooks"], options["commit"])
         lock_inventory(lockdir, lockpath)
-        run_task(config, options)
+        run_task(options, inv_name)
         unlock_inventory(lockpath)
     elif subcommand == "lock":
         lock_inventory(options["infra"], options["stage"])
