@@ -9,30 +9,16 @@ jobs:
     docker:
       - image: almalinux
     steps:
-      - run:
-          command: dnf update -y
+#      - run:
+#          command: dnf update -y
       - run:
           command: dnf install -y epel-release
       - run:
           command: dnf install -y ansible python3 python3-pip
-      - run:
-          command: python3 -V
-      - run:
-          command: ansible-playbook --version
-      - run:
-          command: dnf repoquery -l python3-pip
       - checkout
-      - run:
-          command: "pwd && ls"
       - run:
           name: "Install ansible-deploy"
           command: "pip3.6 install ."
-      - run:
-          command: "pip3.6 install pylint"
-      - run:
-          command: "pylint --rcfile=./tests/pylintrc $(find ./ -name '*.py')"
-      - run:
-          command: "cat $(which ansible-deploy)"
       - run:
           name: "Copy configuration files"
           command: cp -r ./etc /etc/ansible-deploy
