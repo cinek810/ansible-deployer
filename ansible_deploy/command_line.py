@@ -78,6 +78,7 @@ def parse_options(argv):
                         'commit ID.')
     parser.add_argument("--task", "-t", nargs=1, default=[None], metavar='"TASK NAME"',
                         help='Provide task name in "".')
+    parser.add_argument("--dry", default=False, action='store_true')
 
     arguments = parser.parse_args(argv)
 
@@ -86,6 +87,7 @@ def parse_options(argv):
     options["stage"] = arguments.stage[0]
     options["commit"] = arguments.commit[0]
     options["task"] = arguments.task[0]
+    options["dry"] = arguments.dry
 
     return options
 
@@ -287,6 +289,10 @@ def main():
     validate_options(options, subcommand)
     config = load_configuration()
     validate_option_values_with_config(config, options)
+
+    if options["dry"]:
+        logger.info("Skipping execution because of --dry-run option")
+        sys.exit(0)
 
     if subcommand == "run":
         create_workdir(start_ts, PARENT_WORKDIR)
