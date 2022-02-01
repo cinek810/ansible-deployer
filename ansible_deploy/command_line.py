@@ -88,7 +88,11 @@ def parse_options(argv):
     return options
 
 def create_workdir(timestamp: str, base_dir: str):
-    """Function to create working directory on filesystem"""
+    """
+    Function to create working directory on file system, we expect it to change
+    the cwd to newly created workdir at the end.
+    """
+    logger.debug("Entering create_workdir")
     short_ts = timestamp.split("_")[0]
     date_dir = os.path.join(base_dir, short_ts)
 
@@ -103,7 +107,10 @@ def create_workdir(timestamp: str, base_dir: str):
         new_sequence = int(sequence_list[-1].split(SEQUENCE_PREFIX)[1]) + 1
         seq_path = os.path.join(date_dir, f"{SEQUENCE_PREFIX}{new_sequence:04d}")
 
+    #TODO: Add error handling
     os.makedirs(seq_path)
+    os.chdir(seq_path)
+    logger.info("Successfully created workdir: %s", seq_path)
     return seq_path
 
 def validate_options(options, subcommand):
