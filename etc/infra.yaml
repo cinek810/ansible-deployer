@@ -4,4 +4,4 @@ infrastructures:
       - name: testing
         inventory: ./test_infra1_inv.yaml
       - name: prod
-        inventory: ./prod_infra1.inv.yaml
+        inventory: ./prod_infra1_inv.yaml

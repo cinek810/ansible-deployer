@@ -27,7 +27,7 @@ check_run_ok() {
 }
 
 #Check wrong combinations
-check_output_fail 'ansible-deploy' '\[ERROR\]: To fee arguments'
+check_output_fail 'ansible-deploy' '\[ERROR\]: Too few arguments'
 check_output_fail 'ansible-deploy run' '\[ERROR\]: task is required for run'
 check_output_fail 'ansible-deploy run' '\[ERROR\]: infra is required for run'
 check_output_fail 'ansible-deploy run' '\[ERROR\]: stage is required for run'

@@ -5,6 +5,7 @@ import os
 import argparse
 import logging
 import datetime
+import subprocess
 #TODO: Add an option to explicitly enable syslog logging
 #from logging import handlers as log_han
 
@@ -15,7 +16,7 @@ from cerberus import Validator
 LOGNAME = "ansible-deploy_execution_{}.log"
 SEQUENCE_PREFIX = "SEQ"
 PARENT_WORKDIR = "/tmp"
-CONF_DIR = "/etc/ansible-deploy/"
+CONF_DIR = "/etc/ansible-deploy"
 
 
 def get_sub_command(command):
@@ -205,7 +206,7 @@ def validate_option_values_with_config(config, options):
     #(validate_user_infra_stage(), validate_usr_task())
 
 
-def lock_inventory(infra, stage):
+def lock_inventory(lockdir: str, lockpath: str):
     """
     Function responsible for locking inventory file.
     The goal is to prevent two parallel ansible-deploy's running on the same inventory
@@ -215,26 +216,44 @@ def lock_inventory(infra, stage):
     done every other process should be rejected this access.
     The file should match inventory file name.
     """
+    os.makedirs(lockdir, exist_ok=True)
 
-def unlock_inventory(infra, stage):
+    try:
+        open(lockpath, "x").write(str(os.getpid()))
+        logger.info("Infra locked.")
+    except FileExistsError:
+        logger.error("Another process is using this infrastructure, please try again later.")
+    except Exception as exc:
+        logger.error(exc)
+
+
+def unlock_inventory(lockpath: str):
     """
     Function responsible for unlocking inventory file, See also lock_inventory
     """
+    os.remove(lockpath)
+    logger.info("Lock has been removed.")
+
+
 def setup_ansible(config, commit):
     """
     Function responsible for execution of setup_hooks
     It passes the "commit" to the hook if one given, if not the hook should
     checkout the default repo.
     """
+
+
 def run_task(config, options):
     """
     Function implementing actual execution of ansible-playbook
     """
 
+
 def list_tasks(config, options):
     """
     Function listing tasks available to the user limited to given infra/stage/task
     """
+
 
 def main():
     """ansible-deploy endpoint function"""
@@ -244,7 +263,7 @@ def main():
     log_dir = os.getcwd()
     logger = set_logging(log_dir, LOGNAME, start_ts)
     if len(sys.argv) < 2:
-        logger.error("To fee arguments")
+        logger.error("Too few arguments")
         sys.exit(2)
 
     subcommand = get_sub_command(sys.argv[1])
@@ -252,17 +271,25 @@ def main():
     validate_options(options, subcommand)
     config = load_configuration()
     validate_option_values_with_config(config, options)
+    lockdir = os.path.join(PARENT_WORKDIR, "locks")
+
+    for item in config["infra"]:
+        if item["name"] == options["infra"]:
+            for elem in item["stages"]:
+                if elem["name"] == options["stage"]:
+                    inv_name = elem["inventory"]
+    lockpath = os.path.join(lockdir, inv_name)
 
     if subcommand == "run":
         create_workdir(start_ts, PARENT_WORKDIR)
         setup_ansible(config["tasks"]["setup_hooks"], options["commit"])
-        lock_inventory(options["infra"], options["stage"])
+        lock_inventory(lockdir, lockpath)
         run_task(config, options)
-        unlock_inventory(options["infra"], options["stage"])
+        unlock_inventory(lockpath)
     elif subcommand == "lock":
         lock_inventory(options["infra"], options["stage"])
     elif subcommand == "unlock":
-        unlock_inventory(options["infra"], options["stage"])
+        unlock_inventory(lockpath)
     elif subcommand == "list":
         list_tasks(config, options)
 
