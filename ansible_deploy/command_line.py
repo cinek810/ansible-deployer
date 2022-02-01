@@ -5,6 +5,7 @@ import os
 import argparse
 import logging
 import datetime
+import subprocess
 #TODO: Add an option to explicitly enable syslog logging
 #from logging import handlers as log_han
 
@@ -53,7 +54,7 @@ def set_logging(log_dir: str, name: str, timestamp: str):
 
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(console_formatter)
-    console_handler.setLevel(logging.INFO)
+    console_handler.setLevel(logging.DEBUG)
     logger.addHandler(console_handler)
 
     file_handler = logging.FileHandler(log_path)
@@ -229,12 +230,37 @@ def unlock_inventory(infra, stage):
     """
     Function responsible for unlocking inventory file, See also lock_inventory
     """
-def setup_ansible(config, commit):
+def setup_ansible(setup_hooks, commit):
     """
     Function responsible for execution of setup_hooks
     It passes the "commit" to the hook if one given, if not the hook should
     checkout the default repo.
     """
+    if not commit:
+        commit = ""
+    for hook in setup_hooks:
+        if hook["module"] == "script":
+            try:
+                with subprocess.Popen([hook["opts"]["file"], commit], stdout=subprocess.PIPE,
+                                      stderr=subprocess.PIPE, stdin=subprocess.PIPE) as proc:
+                    hook_out = proc.communicate()
+            except Exception as e:
+                logger.error("Failed executing %s: %s", hook["opts"]["file"], e)
+                sys.exit(41)
+            else:
+                if hook_out != ("", ""):
+                    logger.info("setup_hook(%s),\nstdout:\n%s\nstdrr:\n%s", hook["name"],
+                                hook_out[0].decode(), hook_out[1].decode())
+                    logger.info(hook_out)
+                if proc.returncode:
+                    logger.error("Setup hook %s failed, cannot continue", hook["name"])
+                    sys.exit(40)
+                else:
+                    logger.info("Setup completed in %s", os.getcwd())
+
+        else:
+            logger.error("Not supported")
+
 def run_task(config, options):
     """
     Function implementing actual execution of ansible-playbook
