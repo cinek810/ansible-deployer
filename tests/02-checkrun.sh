@@ -45,3 +45,6 @@ check_output_fail 'ansible-deployer run -t task_exec_bin_true -s locked -i testI
 #Check --debug option
 check_run_ok "ansible-deployer list --debug" "\[DEBUG\]: load_configuration called"
 
+#Check if we can run root task
+check_output_fail 'ansible-deployer run -t root_only_task -s prod -i testInfra' '\[ERROR\]: Task not allowed'
+

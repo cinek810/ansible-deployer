@@ -7,6 +7,8 @@ import logging
 import datetime
 import subprocess
 import pwd
+import grp
+import errno
 #TODO: Add an option to explicitly enable syslog logging
 #from logging import handlers as log_han
 
@@ -195,6 +197,7 @@ def validate_option_by_dict_with_name(optval, conf_dict):
     """
     Validate if given dictionary contains element with name equal to optval
     """
+    elem = None
     if optval:
         for elem in conf_dict:
             if elem["name"] == optval:
@@ -203,9 +206,17 @@ def validate_option_by_dict_with_name(optval, conf_dict):
             logger.error("%s not found in configuration file.", optval)
             sys.exit(54)
 
+    return elem
+
 def validate_user_infra_stage():
     """Function checking if user has rights to execute command on selected infrastructure
-    Required for: run, lock and unlock operations"""
+    Required for: run, lock and unlock operations
+    Exit on failure, return inventory on success
+    """
+    inventory = ""
+
+    return inventory
+
 
 def validate_user_task():
     """Function checking if user has rights to execute the task
@@ -216,29 +227,27 @@ def validate_option_values_against_config(config: dict, options: dict, required_
     """
     Function responsible for checking if option values match configuration
     """
+    selected_items = {}
     for option in options.keys():
         if option in required_opts:
-            validate_option_values_with_config(config, options, option)
+            if option == "infra":
+                selected_items["infra"] = validate_option_by_dict_with_name(options["infra"],
+                                                                            config["infra"])
+            elif option == "task":
+                selected_items["task"] = validate_option_by_dict_with_name(options["task"],
+                                                                           config["tasks"]["tasks"])
+            elif option == "stage":
+                for item in config["infra"]:
+                    if item["name"] == options["infra"]:
+                        index = config["infra"].index(item)
+                selected_items["stage"] = validate_option_by_dict_with_name(options["stage"],\
+                                                                config["infra"][index]["stages"])
+            #TODO: validate if user is allowed to use --commit
+            #TODO: validate if user is allowed to execute the task on infra/stag pair
+            #(validate_user_infra_stage(), validate_usr_task())
+            logger.debug("Completed validate_option_values_with_config")
 
-
-def validate_option_values_with_config(config: dict, options: dict, option: str):
-    """
-    Function responsible for checking if option values match configuration
-    """
-
-    if option == "infra":
-        validate_option_by_dict_with_name(options["infra"], config["infra"])
-    elif option == "task":
-        validate_option_by_dict_with_name(options["task"], config["tasks"]["tasks"])
-    elif option == "stage":
-        for item in config["infra"]:
-            if item["name"] == options["infra"]:
-                index = config["infra"].index(item)
-        validate_option_by_dict_with_name(options["stage"], config["infra"][index]["stages"])
-    #TODO: validate if user is allowed to use --commit
-    #TODO: validate if user is allowed to execute the task on infra/stag pair
-    #(validate_user_infra_stage(), validate_usr_task())
-
+    return selected_items
 
 def lock_inventory(lockdir: str, lockpath: str):
     """
@@ -391,6 +400,29 @@ def run_task(config: dict, options: dict, inventory: str):
                 sys.exit(72)
 
 
+def verify_task_permissions(selected_items, user_groups):
+    """
+    Function verifies if the running user is allowed to run the task
+    """
+    s_task = selected_items["task"]
+    s_infra = selected_items["infra"]
+    o_stage = selected_items["stage"]
+    logger.debug("Running verify_task_permissions, for s_task:%s, s_infra:%s", s_task, s_infra)
+
+    for allow_group in s_task["allowed_for"]:
+        logger.debug("\tChecking group: %s", allow_group)
+        if allow_group["group"] in user_groups:
+            for infra in allow_group["infra"]:
+                logger.debug("\t\tChecking infra: %s", infra)
+                if infra["name"] == selected_items["infra"]["name"]:
+                    for stage in infra["stages"]:
+                        logger.debug("\t\t\tChecking stage:%s", stage)
+                        if stage == o_stage:
+                            logger.debug("Task allowed, based on %s", allow_group)
+                            return True
+    logger.debug("Task forbidden")
+    return False
+
 def list_tasks(config, options):
     """
     Function listing tasks available to the user limited to given infra/stage/task
@@ -438,6 +470,16 @@ def load_global_configuration(cfg_path: str):
             print(e, file=sys.stderr)
             sys.exit(51)
 
+def build_user_groups():
+    """
+    Retrieve user groups from OS
+    """
+    user_groups = []
+    logger.debug("Building user groups")
+    for group in grp.getgrall():
+        user_groups.append(group[0])
+    logger.debug("Completed building user groups. User groups are: %s", user_groups)
+    return user_groups
 
 def main():
     """ansible-deploy endpoint function"""
@@ -461,7 +503,9 @@ def main():
 
     required_opts = validate_options(options, subcommand)
     config = load_configuration()
-    validate_option_values_against_config(config, options, required_opts)
+    selected_items = validate_option_values_against_config(config, options, required_opts)
+
+    user_groups = build_user_groups()
 
     if options["dry"]:
         logger.info("Skipping execution because of --dry-run option")
@@ -474,6 +518,9 @@ def main():
         inv_file = get_inventory_file(config, options)
         lockpath = os.path.join(lockdir, inv_file.replace(os.sep, "_"))
         if subcommand == "run":
+            if not verify_task_permissions(selected_items, user_groups):
+                logger.error("Task not allowed")
+                sys.exit(errno.EPERM)
             setup_ansible(config["tasks"]["setup_hooks"], options["commit"], workdir)
             lock_inventory(lockdir, lockpath)
             run_task(config, options, inv_file)
