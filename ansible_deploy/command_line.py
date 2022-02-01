@@ -338,7 +338,7 @@ def main():
     validate_options(options, subcommand)
     config = load_configuration()
     validate_option_values_with_config(config, options)
-    
+
     lockdir = os.path.join(PARENT_WORKDIR, "locks")
     inv_file = get_inventory_file(config, options)
     lockpath = os.path.join(lockdir, inv_file)
