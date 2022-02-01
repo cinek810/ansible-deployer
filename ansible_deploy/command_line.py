@@ -217,7 +217,7 @@ def validate_option_values_with_config(config, options):
     #(validate_user_infra_stage(), validate_usr_task())
 
 
-def lock_inventory(infra, stage):
+def lock_inventory(lockdir: str, lockpath: str):
     """
     Function responsible for locking inventory file.
     The goal is to prevent two parallel ansible-deploy's running on the same inventory
@@ -227,11 +227,27 @@ def lock_inventory(infra, stage):
     done every other process should be rejected this access.
     The file should match inventory file name.
     """
+    os.makedirs(lockdir, exist_ok=True)
 
-def unlock_inventory(infra, stage):
+    try:
+        with open(lockpath, "x", encoding="utf8") as fh:
+            fh.write(str(os.getpid()))
+            fh.write(str(os.getuid()))
+        logger.info("Infra locked.")
+    except FileExistsError:
+        logger.error("Another process is using this infrastructure, please try again later.")
+    except Exception as exc:
+        logger.error(exc)
+
+
+def unlock_inventory(lockpath: str):
     """
     Function responsible for unlocking inventory file, See also lock_inventory
     """
+    os.remove(lockpath)
+    logger.info("Lock has been removed.")
+
+
 def setup_ansible(setup_hooks, commit):
     """
     Function responsible for execution of setup_hooks
@@ -263,15 +279,51 @@ def setup_ansible(setup_hooks, commit):
         else:
             logger.error("Not supported")
 
-def run_task(config, options):
+
+def run_task(options: dict, inventory: str):
     """
     Function implementing actual execution of ansible-playbook
     """
+    command = ["ansible-playbook", "-l", options["infra"], "-i", inventory, options["task"]]
+    try:
+        with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as proc:
+            std_oe = proc.communicate()
+            for std in std_oe:
+                for line in std.split(b"\n\n"):
+                    logger.info(line.decode("utf-8"))
+    except Exception as exc:
+        logger.error(exc)
+
 
 def list_tasks(config, options):
     """
     Function listing tasks available to the user limited to given infra/stage/task
     """
+    task_list = []
+    for item in config["tasks"]["tasks"]:
+        task_list.append(item)
+
+    print(task_list)
+
+
+def get_inventory_file(config: dict, options: dict):
+    """
+    Function returning relativ path to inventory file.
+    :param config:
+    :param options:
+    :return:
+    """
+
+    inv_file = None
+
+    for item in config["infra"]:
+        if item["name"] == options["infra"]:
+            for elem in item["stages"]:
+                if elem["name"] == options["stage"]:
+                    inv_file = elem["inventory"]
+
+    return inv_file
+
 
 def main():
     """ansible-deploy endpoint function"""
@@ -290,6 +342,10 @@ def main():
     config = load_configuration()
     validate_option_values_with_config(config, options)
 
+    lockdir = os.path.join(PARENT_WORKDIR, "locks")
+    inv_file = get_inventory_file(config, options)
+    lockpath = os.path.join(lockdir, inv_file)
+
     if options["dry"]:
         logger.info("Skipping execution because of --dry-run option")
         sys.exit(0)
@@ -297,13 +353,13 @@ def main():
     if subcommand == "run":
         create_workdir(start_ts, PARENT_WORKDIR)
         setup_ansible(config["tasks"]["setup_hooks"], options["commit"])
-        lock_inventory(options["infra"], options["stage"])
-        run_task(config, options)
-        unlock_inventory(options["infra"], options["stage"])
+        lock_inventory(lockdir, lockpath)
+        run_task(options, inv_file)
+        unlock_inventory(lockpath)
     elif subcommand == "lock":
-        lock_inventory(options["infra"], options["stage"])
+        lock_inventory(lockdir, lockpath)
     elif subcommand == "unlock":
-        unlock_inventory(options["infra"], options["stage"])
+        unlock_inventory(lockpath)
     elif subcommand == "list":
         list_tasks(config, options)
 
