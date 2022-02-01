@@ -5,6 +5,7 @@ import os
 import argparse
 import logging
 import datetime
+import subprocess
 #TODO: Add an option to explicitly enable syslog logging
 #from logging import handlers as log_han
 
@@ -31,6 +32,7 @@ def get_sub_command(command):
     else:
         logger.error("Unknown subcommand :%s", (command))
         sys.exit("55")
+    logger.debug("Returning subcommand: %s", subcommand)
     return subcommand
 
 def set_logging(log_dir: str, name: str, timestamp: str):
@@ -52,7 +54,7 @@ def set_logging(log_dir: str, name: str, timestamp: str):
 
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(console_formatter)
-    console_handler.setLevel(logging.INFO)
+    console_handler.setLevel(logging.DEBUG)
     logger.addHandler(console_handler)
 
     file_handler = logging.FileHandler(log_path)
@@ -76,6 +78,7 @@ def parse_options(argv):
                         'commit ID.')
     parser.add_argument("--task", "-t", nargs=1, default=[None], metavar='"TASK NAME"',
                         help='Provide task name in "".')
+    parser.add_argument("--dry", default=False, action='store_true')
 
     arguments = parser.parse_args(argv)
 
@@ -84,11 +87,16 @@ def parse_options(argv):
     options["stage"] = arguments.stage[0]
     options["commit"] = arguments.commit[0]
     options["task"] = arguments.task[0]
+    options["dry"] = arguments.dry
 
     return options
 
 def create_workdir(timestamp: str, base_dir: str):
-    """Function to create working directory on filesystem"""
+    """
+    Function to create working directory on file system, we expect it to change
+    the cwd to newly created workdir at the end.
+    """
+    logger.debug("Entering create_workdir")
     short_ts = timestamp.split("_")[0]
     date_dir = os.path.join(base_dir, short_ts)
 
@@ -103,7 +111,10 @@ def create_workdir(timestamp: str, base_dir: str):
         new_sequence = int(sequence_list[-1].split(SEQUENCE_PREFIX)[1]) + 1
         seq_path = os.path.join(date_dir, f"{SEQUENCE_PREFIX}{new_sequence:04d}")
 
+    #TODO: Add error handling
     os.makedirs(seq_path)
+    os.chdir(seq_path)
+    logger.info("Successfully created workdir: %s", seq_path)
     return seq_path
 
 def validate_options(options, subcommand):
@@ -164,6 +175,7 @@ def load_configuration():
     it
     """
     logger.debug("load_configuration called")
+    #TODO: validate files/directories permissions - should be own end editable only by special user
 
     infra = load_configuration_file("infra.yaml")
     tasks = load_configuration_file("tasks.yaml")
@@ -205,7 +217,7 @@ def validate_option_values_with_config(config, options):
     #(validate_user_infra_stage(), validate_usr_task())
 
 
-def lock_inventory(infra, stage):
+def lock_inventory(lockdir: str, lockpath: str):
     """
     Function responsible for locking inventory file.
     The goal is to prevent two parallel ansible-deploy's running on the same inventory
@@ -215,26 +227,100 @@ def lock_inventory(infra, stage):
     done every other process should be rejected this access.
     The file should match inventory file name.
     """
+    os.makedirs(lockdir, exist_ok=True)
 
-def unlock_inventory(infra, stage):
+    try:
+        with open(lockpath, "x", encoding="utf8") as fh:
+            fh.write(str(os.getpid()))
+            fh.write(str(os.getuid()))
+        logger.info("Infra locked.")
+    except FileExistsError:
+        logger.error("Another process is using this infrastructure, please try again later.")
+    except Exception as exc:
+        logger.error(exc)
+
+
+def unlock_inventory(lockpath: str):
     """
     Function responsible for unlocking inventory file, See also lock_inventory
     """
-def setup_ansible(config, commit):
+    os.remove(lockpath)
+    logger.info("Lock has been removed.")
+
+
+def setup_ansible(setup_hooks, commit):
     """
     Function responsible for execution of setup_hooks
     It passes the "commit" to the hook if one given, if not the hook should
     checkout the default repo.
     """
-def run_task(config, options):
+    if not commit:
+        commit = ""
+    for hook in setup_hooks:
+        if hook["module"] == "script":
+            try:
+                with subprocess.Popen([hook["opts"]["file"], commit], stdout=subprocess.PIPE,
+                                      stderr=subprocess.PIPE, stdin=subprocess.PIPE) as proc:
+                    hook_out = proc.communicate()
+            except Exception as e:
+                logger.error("Failed executing %s: %s", hook["opts"]["file"], e)
+                sys.exit(41)
+            else:
+                if hook_out != ("", ""):
+                    logger.info("setup_hook(%s),\nstdout:\n%s\nstdrr:\n%s", hook["name"],
+                                hook_out[0].decode(), hook_out[1].decode())
+                    logger.info(hook_out)
+                if proc.returncode:
+                    logger.error("Setup hook %s failed, cannot continue", hook["name"])
+                    sys.exit(40)
+                else:
+                    logger.info("Setup completed in %s", os.getcwd())
+
+        else:
+            logger.error("Not supported")
+
+
+def run_task(options: dict, inventory: str):
     """
     Function implementing actual execution of ansible-playbook
     """
+    command = ["ansible-playbook", "-l", options["infra"], "-i", inventory, options["task"]]
+    try:
+        with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as proc:
+            std_oe = proc.communicate()
+            for std in std_oe:
+                for line in std.split(b"\n\n"):
+                    logger.info(line.decode("utf-8"))
+    except Exception as exc:
+        logger.error(exc)
+
 
 def list_tasks(config, options):
     """
     Function listing tasks available to the user limited to given infra/stage/task
     """
+    task_list = []
+    for item in config["tasks"]["tasks"]:
+        task_list.append(item)
+
+    print(task_list)
+
+
+def get_inventory_file(config: dict, options: dict):
+    """
+    Function getting a path to inventory file.
+    :param config:
+    :param options:
+    :return:
+    """
+    for item in config["infra"]:
+        if item["name"] == options["infra"]:
+            for elem in item["stages"]:
+                if elem["name"] == options["stage"]:
+                    inv_file = elem["inventory"]
+
+    return inv_file
+
 
 def main():
     """ansible-deploy endpoint function"""
@@ -244,7 +330,7 @@ def main():
     log_dir = os.getcwd()
     logger = set_logging(log_dir, LOGNAME, start_ts)
     if len(sys.argv) < 2:
-        logger.error("To fee arguments")
+        logger.error("Too few arguments")
         sys.exit(2)
 
     subcommand = get_sub_command(sys.argv[1])
@@ -252,17 +338,25 @@ def main():
     validate_options(options, subcommand)
     config = load_configuration()
     validate_option_values_with_config(config, options)
+    
+    lockdir = os.path.join(PARENT_WORKDIR, "locks")
+    inv_file = get_inventory_file(config, options)
+    lockpath = os.path.join(lockdir, inv_file)
+
+    if options["dry"]:
+        logger.info("Skipping execution because of --dry-run option")
+        sys.exit(0)
 
     if subcommand == "run":
         create_workdir(start_ts, PARENT_WORKDIR)
         setup_ansible(config["tasks"]["setup_hooks"], options["commit"])
-        lock_inventory(options["infra"], options["stage"])
-        run_task(config, options)
-        unlock_inventory(options["infra"], options["stage"])
+        lock_inventory(lockdir, lockpath)
+        run_task(options, inv_file)
+        unlock_inventory(lockpath)
     elif subcommand == "lock":
         lock_inventory(options["infra"], options["stage"])
     elif subcommand == "unlock":
-        unlock_inventory(options["infra"], options["stage"])
+        unlock_inventory(lockpath)
     elif subcommand == "list":
         list_tasks(config, options)
 

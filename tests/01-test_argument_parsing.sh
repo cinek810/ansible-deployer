@@ -27,7 +27,7 @@ check_run_ok() {
 }
 
 #Check wrong combinations
-check_output_fail 'ansible-deploy' '\[ERROR\]: To fee arguments'
+check_output_fail 'ansible-deploy' '\[ERROR\]: Too few arguments'
 check_output_fail 'ansible-deploy run' '\[ERROR\]: task is required for run'
 check_output_fail 'ansible-deploy run' '\[ERROR\]: infra is required for run'
 check_output_fail 'ansible-deploy run' '\[ERROR\]: stage is required for run'
@@ -48,12 +48,12 @@ check_output_fail 'ansible-deploy unlock -t testTask -s prod -c X' '\[ERROR\]: c
 check_output_fail 'ansible-deploy list --commit testTask'  '\[ERROR\]: commit is not supported by list'
 
 #Check if correct combinations are accepted
-check_run_ok "ansible-deploy run -t task_exec_bin_true -s prod -i testInfra"
-check_run_ok "ansible-deploy run -t task_exec_bin_true -s prod -i testInfra --commit test_version"
-check_run_ok "ansible-deploy lock -s prod -i testInfra"
-check_run_ok "ansible-deploy unlock -s prod -i testInfra"
+check_run_ok "ansible-deploy run --dry -t task_exec_bin_true -s prod -i testInfra"
+check_run_ok "ansible-deploy run --dry -t task_exec_bin_true -s prod -i testInfra --commit test_version"
+check_run_ok "ansible-deploy lock --dry -s prod -i testInfra"
+check_run_ok "ansible-deploy unlock --dry -s prod -i testInfra"
 check_run_ok "ansible-deploy list"
 check_run_ok "ansible-deploy list --task=task_exec_bin_true"
 
 #Check if wrong config is rejected
-check_output_fail 'ansible-deploy run -t task_exec_bin_true -i nonExistingInfra -s prod' '\[ERROR\]: nonExistingInfra not found in configuration file'
+check_output_fail 'ansible-deploy run --dry -t task_exec_bin_true -i nonExistingInfra -s prod' '\[ERROR\]: nonExistingInfra not found in configuration file'
