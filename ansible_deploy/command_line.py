@@ -31,6 +31,7 @@ def get_sub_command(command):
     else:
         logger.error("Unknown subcommand :%s", (command))
         sys.exit("55")
+    logger.debug("Returning subcommand: %s", subcommand)
     return subcommand
 
 def set_logging(log_dir: str, name: str, timestamp: str):
