@@ -6,6 +6,7 @@ import argparse
 import logging
 import datetime
 import subprocess
+import pwd
 #TODO: Add an option to explicitly enable syslog logging
 #from logging import handlers as log_han
 
@@ -227,25 +228,44 @@ def lock_inventory(lockdir: str, lockpath: str):
     done every other process should be rejected this access.
     The file should match inventory file name.
     """
+    logger.debug("Started lock_inventory for lockdir: %s and lockpath %s.", lockdir, lockpath)
     os.makedirs(lockdir, exist_ok=True)
 
     try:
         with open(lockpath, "x", encoding="utf8") as fh:
             fh.write(str(os.getpid()))
-            fh.write(str(os.getuid()))
+            fh.write(str(pwd.getpwuid(os.getuid()).pw_name))
         logger.info("Infra locked.")
     except FileExistsError:
-        logger.error("Another process is using this infrastructure, please try again later.")
+        with open(lockpath, "r", encoding="utf8") as fh:
+            proc_pid, proc_user = fh.readlines()
+        logger.error("Another process (PID: %s) started by user %s is using this infrastructure, "
+                     "please try again later.", proc_pid, proc_user)
+        logger.error("Program will exit now.")
+        sys.exit(61)
     except Exception as exc:
         logger.error(exc)
+        logger.error("Program will exit now.")
+        sys.exit(62)
 
 
 def unlock_inventory(lockpath: str):
     """
     Function responsible for unlocking inventory file, See also lock_inventory
     """
-    os.remove(lockpath)
-    logger.info("Lock has been removed.")
+    logger.debug("Started unlock_inventory for lockpath %s.", lockpath)
+
+    try:
+        os.remove(lockpath)
+        logger.info("Lock %s has been removed.", lockpath)
+    except FileNotFoundError:
+        logger.error("Requested lock %s was not found. Nothing to do.", lockpath)
+        logger.error("Program will exit now.")
+        sys.exit(63)
+    except Exception as exc:
+        logger.error(exc)
+        logger.error("Program will exit now.")
+        sys.exit(64)
 
 
 def setup_ansible(setup_hooks, commit):
@@ -280,36 +300,59 @@ def setup_ansible(setup_hooks, commit):
             logger.error("Not supported")
 
 
-def get_play_items(config: dict, task_name: str):
-    play_items = []
+def get_playbooks(config: dict, task_name: str):
+    """
+    Function obtaining play items for specified task.
+    :param config:
+    :param task_name:
+    :return:
+    """
+    playbooks = []
 
     for item in config["tasks"]["tasks"]:
         if item["name"] == task_name:
             play_names = item["play_items"]
 
     for play in play_names:
-        for item in config["play_items"]:
+        for item in config["tasks"]["play_items"]:
             if item["name"] == play:
-                play_items.append(item["file"])
+                playbooks.append(item["file"])
 
-    return play_items
+    return playbooks
 
 
 def run_task(config: dict, options: dict, inventory: str):
     """
     Function implementing actual execution of ansible-playbook
     """
-    play_items = get_play_items(config, options["task"])
-    for play in play_items:
-        command = ["ansible-playbook", "-l", options["infra"], "-i", inventory, play]
-        try:
-            with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as proc:
-                std_oe = proc.communicate()
-                for std in std_oe:
-                    for line in std.split(b"\n\n"):
+    playbooks = get_playbooks(config, options["task"])
+    if len(playbooks) < 1:
+        logger.error("No playbooks found for requested task %s. Nothing to do.", options['task'])
+        logger.error("Program will exit now.")
+        sys.exit(70)
+    else:
+        for playbook in playbooks:
+            command = ["ansible-playbook", "-l", options["infra"], "-i", inventory, playbook]
+            logger.debug("Running '%s'.", command)
+            try:
+                with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as \
+                        proc:
+                    std_o, std_e = proc.communicate()
+                    for line in std_o.split(b"\n\n"):
                         logger.info(line.decode("utf-8"))
-        except Exception as exc:
-            logger.error(exc)
+                if proc.returncode == 0:
+                    logger.info("'%s' ran succesfully", command)
+                else:
+                    logger.error("'%s' failed due to:", command)
+                    for line in std_e.split(b"\n\n"):
+                        logger.error(line.decode("utf-8"))
+                    logger.error("Program will exit now.")
+                    sys.exit(71)
+            except Exception as exc:
+                logger.error("'%s' failed due to:")
+                logger.error(exc)
+                logger.error("Program will exit now.")
+                sys.exit(72)
 
 
 def list_tasks(config, options):
@@ -318,11 +361,13 @@ def list_tasks(config, options):
     """
     task_list = []
     for item in config["tasks"]["tasks"]:
-        task_list.append(item)
+        task_list.append(item["name"])
 
-    print(task_list)
+    logger.info("  ".join(task_list))
 
 
+# TODO: At least infra level should be returned from validate options since we do similar check
+# (existence) there.
 def get_inventory_file(config: dict, options: dict):
     """
     Function returning relativ path to inventory file.
@@ -350,7 +395,7 @@ def main():
     log_dir = os.getcwd()
     logger = set_logging(log_dir, LOGNAME, start_ts)
     if len(sys.argv) < 2:
-        logger.error("To fee arguments")
+        logger.error("Too few arguments")
         sys.exit(2)
 
     subcommand = get_sub_command(sys.argv[1])
