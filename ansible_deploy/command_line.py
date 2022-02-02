@@ -145,6 +145,8 @@ def validate_options(options, subcommand):
     if failed:
         logger.error("Failed to validate options")
         sys.exit(55)
+    else:
+        return required
 
 def load_configuration_file(config_file):
     """Function responsible for single file loading and validation"""
@@ -207,12 +209,30 @@ def validate_user_task():
     """Function checking if user has rights to execute the task
     Rquired for: run"""
 
-def validate_option_values_with_config(config, options):
+
+def validate_option_values_against_config(config: dict, options: dict, required_opts: list):
     """
     Function responsible for checking if option values match configuration
     """
-    validate_option_by_dict_with_name(options["infra"], config["infra"])
-    validate_option_by_dict_with_name(options["task"], config["tasks"]["tasks"])
+    for option in options.keys():
+        if option in required_opts:
+            validate_option_values_with_config(config, options, option)
+
+
+def validate_option_values_with_config(config: dict, options: dict, option: str):
+    """
+    Function responsible for checking if option values match configuration
+    """
+
+    if option == "infra":
+        validate_option_by_dict_with_name(options["infra"], config["infra"])
+    elif option == "task":
+        validate_option_by_dict_with_name(options["task"], config["tasks"]["tasks"])
+    elif option == "stage":
+        for item in config["infra"]:
+            if item["name"] == options["infra"]:
+                index = config["infra"].index(item)
+        validate_option_by_dict_with_name(options["stage"], config["infra"][index]["stages"])
     #TODO: validate if user is allowed to use --commit
     #TODO: validate if user is allowed to execute the task on infra/stag pair
     #(validate_user_infra_stage(), validate_usr_task())
@@ -235,6 +255,7 @@ def lock_inventory(lockdir: str, lockpath: str):
     try:
         with open(lockpath, "x", encoding="utf8") as fh:
             fh.write(str(os.getpid()))
+            fh.write(str(os.getuid()))
             fh.write(str(pwd.getpwuid(os.getuid()).pw_name))
         logger.info("Infra locked.")
     except FileExistsError:
@@ -408,9 +429,9 @@ def main():
 
     subcommand = get_sub_command(sys.argv[1])
     options = parse_options(sys.argv[2:])
-    validate_options(options, subcommand)
+    required_opts = validate_options(options, subcommand)
     config = load_configuration()
-    validate_option_values_with_config(config, options)
+    validate_option_values_against_config(config, options, required_opts)
 
     if options["dry"]:
         logger.info("Skipping execution because of --dry-run option")

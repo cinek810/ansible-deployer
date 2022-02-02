@@ -13,3 +13,6 @@ tasks:
     play_items:
       - run_bin_true
 
+  - name: task_empty
+    play_items: []
+
