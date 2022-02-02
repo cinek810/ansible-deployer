@@ -280,19 +280,36 @@ def setup_ansible(setup_hooks, commit):
             logger.error("Not supported")
 
 
-def run_task(options: dict, inventory: str):
+def get_play_items(config: dict, task_name: str):
+    play_items = []
+
+    for item in config["tasks"]["tasks"]:
+        if item["name"] == task_name:
+            play_names = item["play_items"]
+
+    for play in play_names:
+        for item in config["play_items"]:
+            if item["name"] == play:
+                play_items.append(item["file"])
+
+    return play_items
+
+
+def run_task(config: dict, options: dict, inventory: str):
     """
     Function implementing actual execution of ansible-playbook
     """
-    command = ["ansible-playbook", "-l", options["infra"], "-i", inventory, options["task"]]
-    try:
-        with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as proc:
-            std_oe = proc.communicate()
-            for std in std_oe:
-                for line in std.split(b"\n\n"):
-                    logger.info(line.decode("utf-8"))
-    except Exception as exc:
-        logger.error(exc)
+    play_items = get_play_items(config, options["task"])
+    for play in play_items:
+        command = ["ansible-playbook", "-l", options["infra"], "-i", inventory, play]
+        try:
+            with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as proc:
+                std_oe = proc.communicate()
+                for std in std_oe:
+                    for line in std.split(b"\n\n"):
+                        logger.info(line.decode("utf-8"))
+        except Exception as exc:
+            logger.error(exc)
 
 
 def list_tasks(config, options):
@@ -356,7 +373,7 @@ def main():
             create_workdir(start_ts, PARENT_WORKDIR)
             setup_ansible(config["tasks"]["setup_hooks"], options["commit"])
             lock_inventory(lockdir, lockpath)
-            run_task(options, inv_file)
+            run_task(config, options, inv_file)
             unlock_inventory(lockpath)
         elif subcommand == "lock":
             lock_inventory(lockdir, lockpath)
