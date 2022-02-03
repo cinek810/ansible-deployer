@@ -276,6 +276,8 @@ def setup_ansible(setup_hooks, commit):
     It passes the "commit" to the hook if one given, if not the hook should
     checkout the default repo.
     """
+    failed = False
+
     if not commit:
         commit = ""
     for hook in setup_hooks:
@@ -284,6 +286,8 @@ def setup_ansible(setup_hooks, commit):
                 with subprocess.Popen([hook["opts"]["file"], commit], stdout=subprocess.PIPE,
                                       stderr=subprocess.PIPE, stdin=subprocess.PIPE) as proc:
                     hook_out = proc.communicate()
+                    if proc.returncode != 0:
+                        failed = True
             except Exception as e:
                 logger.error("Failed executing %s: %s", hook["opts"]["file"], e)
                 sys.exit(41)
@@ -300,6 +304,8 @@ def setup_ansible(setup_hooks, commit):
 
         else:
             logger.error("Not supported")
+        if failed:
+            sys.exit(69)
 
 
 def get_playbooks(config: dict, task_name: str):
