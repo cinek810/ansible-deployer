@@ -228,6 +228,7 @@ def lock_inventory(lockdir: str, lockpath: str):
     done every other process should be rejected this access.
     The file should match inventory file name.
     """
+
     logger.debug("Started lock_inventory for lockdir: %s and lockpath %s.", lockdir, lockpath)
     os.makedirs(lockdir, exist_ok=True)
 
@@ -253,6 +254,7 @@ def unlock_inventory(lockpath: str):
     """
     Function responsible for unlocking inventory file, See also lock_inventory
     """
+
     logger.debug("Started unlock_inventory for lockpath %s.", lockpath)
 
     try:
@@ -413,7 +415,7 @@ def main():
     else:
         lockdir = os.path.join(PARENT_WORKDIR, "locks")
         inv_file = get_inventory_file(config, options)
-        lockpath = os.path.join(lockdir, inv_file)
+        lockpath = os.path.join(lockdir, inv_file.replace("/", "_"))
         if subcommand == "run":
             create_workdir(start_ts, PARENT_WORKDIR)
             setup_ansible(config["tasks"]["setup_hooks"], options["commit"])
