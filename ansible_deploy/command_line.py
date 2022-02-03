@@ -230,6 +230,8 @@ def lock_inventory(lockdir: str, lockpath: str):
     """
     logger.debug("Started lock_inventory for lockdir: %s and lockpath %s.", lockdir, lockpath)
     os.makedirs(lockdir, exist_ok=True)
+    #TODO: Is that possible to do that below more general for instance other platforms?
+    lockpath.replace("/", "_")
 
     try:
         with open(lockpath, "x", encoding="utf8") as fh:
