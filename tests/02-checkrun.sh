@@ -7,7 +7,7 @@ check_output_fail() {
 	eval "$CMD |& grep '$EXPTEXT'" 
 	if [ $? -eq 0 ]
 	then
-		echo "OK: '${CMD} returned ${EXPTEXT}'"
+		echo "OK: '${CMD}' returned '${EXPTEXT}'"
 	else
 		echo "FAILED: '${CMD}' didn't return '${EXPTEXT}'"
 		exit 1
