@@ -6,7 +6,7 @@ way it's executed - certain combinations of inventory/playbook/tag options used 
 goals. Having it in mind ansible-deploy may be treated as yet another ansible-playbook wrapper, but
 focused on comprehensive command line intrface and easy YAML based configuration.
 
-##Some main fatures are
+## Some main fatures are
 - The results of whole excution are logged and saved together with the ansible code state for
 potential review in the future.
 - Only one active ansible-deploy per ansible inventory is allowed, attempt to execute ansible-deploy
@@ -16,11 +16,11 @@ state used. This is done by site configurable hook.
 - It's possible to lock/unlock inventory (defined as --infra --stage pairs) for manual manipulation,
 stopping ansible-deploy from being used.
 
-##Configuration files
+## Configuration files
 - `tasks.yaml` - Configuration of tasks (sets of playbooks to be executed)
 - `infra.yaml` - Configuration of infrastructures and stages of those mapping to ansible inventory
 
-##Examples
+## Examples
 ```
 ansible-deploy run --task updateUsers --infra webServers --stage prod
 ```
