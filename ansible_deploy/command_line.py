@@ -334,7 +334,7 @@ def run_task(config: dict, options: dict, inventory: str):
         sys.exit(70)
     else:
         for playbook in playbooks:
-            command = ["ansible-playbook", "-l", options["infra"], "-i", inventory, playbook]
+            command = ["ansible-playbook", "-i", inventory, playbook]
             logger.debug("Running '%s'.", command)
             try:
                 with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as \
