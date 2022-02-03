@@ -14,10 +14,8 @@ import yaml
 from cerberus import Validator
 
 
-LOGNAME = "ansible-deploy_execution_{}.log"
-SEQUENCE_PREFIX = "SEQ"
-PARENT_WORKDIR = "/tmp"
-CONF_DIR = "/etc/ansible-deploy/"
+CONF = "/etc/ansible-deploy/ansible-deploy.yaml"
+LOG_NAME_FRMT = "ansible-deploy_execution_{}.log"
 
 
 def get_sub_command(command):
@@ -105,12 +103,13 @@ def create_workdir(timestamp: str, base_dir: str):
     #TODO: Add locking of the directory
 
     if short_ts not in os.listdir(base_dir):
-        seq_path = os.path.join(date_dir, f"{SEQUENCE_PREFIX}0000")
+        seq_path = os.path.join(date_dir, f"{conf['file_naming']['sequence_prefix']}0000")
     else:
         sequence_list = os.listdir(date_dir)
         sequence_list.sort()
-        new_sequence = int(sequence_list[-1].split(SEQUENCE_PREFIX)[1]) + 1
-        seq_path = os.path.join(date_dir, f"{SEQUENCE_PREFIX}{new_sequence:04d}")
+        new_sequence = int(sequence_list[-1].split(conf['file_naming']['sequence_prefix'])[1]) + 1
+        seq_path = os.path.join(date_dir, f"{conf['file_naming']['sequence_prefix']}"
+                                          f"{new_sequence:04d}")
 
     #TODO: Add error handling
     os.makedirs(seq_path)
@@ -153,14 +152,16 @@ def load_configuration_file(config_file):
     #TODO: Add verification of owner/group/persmissions
     logger.debug("Loading :%s", config_file)
 
-    with open(os.path.join(CONF_DIR, config_file), "r", encoding="utf8") as config_stream:
+    with open(os.path.join(conf["global_paths"]["config_dir"], config_file), "r", encoding="utf8") \
+            as config_stream:
         try:
             config = yaml.safe_load(config_stream)
         except yaml.YAMLError as e:
             logger.error(e)
             sys.exit(51)
 
-    with open(os.path.join(CONF_DIR, "schema", config_file), "r", encoding="utf8") as schema_stream:
+    with open(os.path.join(conf["global_paths"]["config_dir"], "schema", config_file), "r",
+              encoding="utf8") as schema_stream:
         try:
             schema = yaml.safe_load(schema_stream)
         except yaml.YAMLError as e:
@@ -255,7 +256,6 @@ def lock_inventory(lockdir: str, lockpath: str):
     try:
         with open(lockpath, "x", encoding="utf8") as fh:
             fh.write(str(os.getpid()))
-            fh.write(str(os.getuid()))
             fh.write(str(pwd.getpwuid(os.getuid()).pw_name))
         logger.info("Infra locked.")
     except FileExistsError:
@@ -416,16 +416,37 @@ def get_inventory_file(config: dict, options: dict):
     return inv_file
 
 
+def load_global_configuration(cfg_path: str):
+    """Function responsible for single file loading and validation"""
+    if cfg_path:
+        pass
+    else:
+        cfg_path = CONF
+    logger.debug("Loading :%s", cfg_path)
+
+    with open(cfg_path, "r", encoding="utf8") as config_stream:
+        try:
+            config = yaml.safe_load(config_stream)
+            logger.debug("Global configuration loaded:")
+            logger.debug(str(config))
+            return config
+        except yaml.YAMLError as e:
+            logger.error(e)
+            sys.exit(51)
+
+
 def main():
     """ansible-deploy endpoint function"""
+    global logger, conf
 
     start_ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    global logger
     log_dir = os.getcwd()
-    logger = set_logging(log_dir, LOGNAME, start_ts)
+    logger = set_logging(log_dir, LOG_NAME_FRMT, start_ts)
     if len(sys.argv) < 2:
         logger.error("Too few arguments")
         sys.exit(2)
+
+    conf = load_global_configuration(None)
 
     subcommand = get_sub_command(sys.argv[1])
     options = parse_options(sys.argv[2:])
@@ -440,11 +461,11 @@ def main():
     if subcommand == "list":
         list_tasks(config, options)
     else:
-        lockdir = os.path.join(PARENT_WORKDIR, "locks")
+        lockdir = os.path.join(conf["global_paths"]["work_dir"], "locks")
         inv_file = get_inventory_file(config, options)
         lockpath = os.path.join(lockdir, inv_file.replace("/", "_"))
         if subcommand == "run":
-            create_workdir(start_ts, PARENT_WORKDIR)
+            create_workdir(start_ts, conf["global_paths"]["work_dir"])
             setup_ansible(config["tasks"]["setup_hooks"], options["commit"])
             lock_inventory(lockdir, lockpath)
             run_task(config, options, inv_file)

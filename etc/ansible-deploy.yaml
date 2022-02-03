@@ -1,0 +1,7 @@
+global_paths:
+  work_dir: "/tmp"
+  config_dir: "/etc/ansible-deploy"
+
+file_naming:
+  log_file_name_frmt: "ansible-deploy_execution_{}.log"
+  sequence_prefix: "SEQ"
