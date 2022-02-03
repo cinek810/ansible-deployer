@@ -36,5 +36,8 @@ check_output_fail 'ansible-deploy run -t task_exec_bin_true -s prod_ERR -i testI
 
 # misc
 check_output_fail 'ansible-deploy run -t task_empty -s testing -i testInfra' '\[ERROR\]: No playbooks found for requested task'
+
+#Artificially generate lock
+check_run_ok "ansible-deploy lock -s locked -i testInfra"
 check_output_fail 'ansible-deploy run -t task_exec_bin_true -s locked -i testInfra' "is using this infrastructure, please try again later."
 
