@@ -256,6 +256,7 @@ def lock_inventory(lockdir: str, lockpath: str):
     try:
         with open(lockpath, "x", encoding="utf8") as fh:
             fh.write(str(os.getpid()))
+            fh.write(str("\n"))
             fh.write(str(pwd.getpwuid(os.getuid()).pw_name))
         logger.info("Infra locked.")
     except FileExistsError:
