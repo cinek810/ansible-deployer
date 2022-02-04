@@ -8,6 +8,7 @@ jobs:
   prepare_env:
     docker:
       - image: almalinux
+    resource_class: small
     steps:
 #      - run:
 #          command: dnf update -y
