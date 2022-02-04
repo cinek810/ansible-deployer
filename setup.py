@@ -19,7 +19,7 @@ README = read(str(HERE)+"/README.md")
 # This call to setup() does all the work
 setup(
     name="ansible-deploy",
-    version="0.0.11",
+    version="0.0.15",
     description="Wrapper around ansible-playbook allowing configurable tasks and permissions",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -30,7 +30,7 @@ setup(
     ],
     packages=["ansible_deploy"],
     include_package_data=True,
-    install_requires=["pyyaml", "cerberus"],
+    install_requires=["pyyaml>=5.3.1", "cerberus>=1.3.4"],
     entry_points={
         "console_scripts": [
             "ansible-deploy = ansible_deploy.command_line:main",
