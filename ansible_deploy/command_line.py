@@ -292,7 +292,7 @@ def unlock_inventory(lockpath: str):
         sys.exit(64)
 
 
-def setup_ansible(setup_hooks, commit):
+def setup_ansible(setup_hooks, commit, workdir):
     """
     Function responsible for execution of setup_hooks
     It passes the "commit" to the hook if one given, if not the hook should
@@ -305,8 +305,13 @@ def setup_ansible(setup_hooks, commit):
     for hook in setup_hooks:
         if hook["module"] == "script":
             try:
-                with subprocess.Popen([hook["opts"]["file"], commit], stdout=subprocess.PIPE,
-                                      stderr=subprocess.PIPE, stdin=subprocess.PIPE) as proc:
+                hook_env = os.environ.copy()
+                hook_env["ANSIBLE_DEPLOY_WORKDIR"] = workdir
+                with subprocess.Popen([hook["opts"]["file"], commit],
+                                      stdout=subprocess.PIPE,
+                                      stderr=subprocess.PIPE,
+                                      stdin=subprocess.PIPE,
+                                      env=hook_env) as proc:
                     hook_out = proc.communicate()
                     if proc.returncode != 0:
                         failed = True
@@ -466,8 +471,8 @@ def main():
         inv_file = get_inventory_file(config, options)
         lockpath = os.path.join(lockdir, inv_file.replace("/", "_"))
         if subcommand == "run":
-            create_workdir(start_ts, conf["global_paths"]["work_dir"])
-            setup_ansible(config["tasks"]["setup_hooks"], options["commit"])
+            workdir = create_workdir(start_ts, conf["global_paths"]["work_dir"])
+            setup_ansible(config["tasks"]["setup_hooks"], options["commit"], workdir)
             lock_inventory(lockdir, lockpath)
             run_task(config, options, inv_file)
             unlock_inventory(lockpath)
