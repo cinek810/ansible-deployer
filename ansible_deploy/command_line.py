@@ -473,7 +473,7 @@ def main():
     else:
         lockdir = os.path.join(conf["global_paths"]["work_dir"], "locks")
         inv_file = get_inventory_file(config, options)
-        lockpath = os.path.join(lockdir, inv_file.replace("/", "_"))
+        lockpath = os.path.join(lockdir, inv_file.replace(os.sep, "_"))
         if subcommand == "run":
             workdir = create_workdir(start_ts, conf["global_paths"]["work_dir"])
             setup_ansible(config["tasks"]["setup_hooks"], options["commit"], workdir)
