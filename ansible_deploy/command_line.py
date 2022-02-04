@@ -29,17 +29,12 @@ def get_sub_command(command):
     elif command == "list":
         subcommand = "list"
     else:
-        logger.error("Unknown subcommand :%s", (command))
+        print("Unknown subcommand :%s", (command), file=sys.stderr)
         sys.exit("55")
-    logger.debug("Returning subcommand: %s", subcommand)
     return subcommand
 
 def set_logging(log_dir: str, name: str, timestamp: str):
     """Function to create logging objects"""
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-    log_path = os.path.join(log_dir, name.format(timestamp))
-
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter("%(asctime)s [%(levelname)s]: %(message)s")
@@ -56,10 +51,13 @@ def set_logging(log_dir: str, name: str, timestamp: str):
     console_handler.setLevel(logging.DEBUG)
     logger.addHandler(console_handler)
 
-    file_handler = logging.FileHandler(log_path)
-    file_handler.setFormatter(formatter)
-    file_handler.setLevel(logging.DEBUG)
-    logger.addHandler(file_handler)
+    if log_dir:
+        os.makedirs(log_dir, exist_ok=True)
+        log_path = os.path.join(log_dir, name.format(timestamp))
+        file_handler = logging.FileHandler(log_path)
+        file_handler.setFormatter(formatter)
+        file_handler.setLevel(logging.DEBUG)
+        logger.addHandler(file_handler)
 
     return logger
 
@@ -95,7 +93,6 @@ def create_workdir(timestamp: str, base_dir: str):
     Function to create working directory on file system, we expect it to change
     the cwd to newly created workdir at the end.
     """
-    logger.debug("Entering create_workdir")
     short_ts = timestamp.split("_")[0]
     date_dir = os.path.join(base_dir, short_ts)
 
@@ -115,10 +112,9 @@ def create_workdir(timestamp: str, base_dir: str):
         os.makedirs(seq_path)
         os.chdir(seq_path)
     except Exception as e:
-        logger.error("Failed to create work dir:%s error was:%s", seq_path, e)
+        print("Failed to create work dir:%s error was:%s", seq_path, e, file=sys.stderr)
         sys.exit(90)
-
-    logger.info("Successfully created workdir: %s", seq_path)
+    print("Successfully created workdir: %s", seq_path)
     return seq_path
 
 def validate_options(options, subcommand):
@@ -432,16 +428,13 @@ def load_global_configuration(cfg_path: str):
         pass
     else:
         cfg_path = CONF
-    logger.debug("Loading :%s", cfg_path)
 
     with open(cfg_path, "r", encoding="utf8") as config_stream:
         try:
             config = yaml.safe_load(config_stream)
-            logger.debug("Global configuration loaded:")
-            logger.debug(str(config))
             return config
         except yaml.YAMLError as e:
-            logger.error(e)
+            print(e, file=sys.stderr)
             sys.exit(51)
 
 
@@ -450,15 +443,20 @@ def main():
     global logger, conf
 
     start_ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_dir = os.getcwd()
-    logger = set_logging(log_dir, LOG_NAME_FRMT, start_ts)
+
     if len(sys.argv) < 2:
-        logger.error("Too few arguments")
+        print("Too few arguments", file=sys.stderr)
         sys.exit(2)
-
-    conf = load_global_configuration(None)
-
     subcommand = get_sub_command(sys.argv[1])
+
+    log_dir = None
+    conf = load_global_configuration(None)
+    if subcommand == "run":
+        workdir = create_workdir(start_ts, conf["global_paths"]["work_dir"])
+        log_dir = workdir
+
+    logger = set_logging(log_dir, LOG_NAME_FRMT, start_ts)
+
     options = parse_options(sys.argv[2:])
     required_opts = validate_options(options, subcommand)
     config = load_configuration()
@@ -475,7 +473,6 @@ def main():
         inv_file = get_inventory_file(config, options)
         lockpath = os.path.join(lockdir, inv_file.replace(os.sep, "_"))
         if subcommand == "run":
-            workdir = create_workdir(start_ts, conf["global_paths"]["work_dir"])
             setup_ansible(config["tasks"]["setup_hooks"], options["commit"], workdir)
             lock_inventory(lockdir, lockpath)
             run_task(config, options, inv_file)
