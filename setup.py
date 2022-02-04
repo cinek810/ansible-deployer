@@ -1,4 +1,4 @@
-"""Setuptools configuration for ansible-deploy"""
+"""Setuptools configuration for ansible-deployer"""
 import pathlib
 import os
 from setuptools import setup
@@ -18,22 +18,22 @@ README = read(str(HERE)+"/README.md")
 
 # This call to setup() does all the work
 setup(
-    name="ansible-deploy",
+    name="ansible-deployer",
     version="0.0.16",
     description="Wrapper around ansible-playbook allowing configurable tasks and permissions",
     long_description=README,
     long_description_content_type="text/markdown",
-    url="https://github.com/cinek810/ansible-deploy",
+    url="https://github.com/cinek810/ansible-deployer",
     license="MIT",
     classifiers=[
         "Programming Language :: Python :: 3.9"
     ],
-    packages=["ansible_deploy"],
+    packages=["ansible_deployer"],
     include_package_data=True,
     install_requires=["pyyaml>=5.3.1", "cerberus>=1.3.4"],
     entry_points={
         "console_scripts": [
-            "ansible-deploy = ansible_deploy.command_line:main",
+            "ansible-deployer = ansible_deployer.command_line:main",
         ]
     },
 )
