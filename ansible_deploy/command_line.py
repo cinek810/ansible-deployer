@@ -33,7 +33,7 @@ def get_sub_command(command):
         sys.exit("55")
     return subcommand
 
-def set_logging(log_dir: str, name: str, timestamp: str):
+def set_logging(log_dir: str, name: str, timestamp: str, options: dict):
     """Function to create logging objects"""
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
@@ -48,7 +48,7 @@ def set_logging(log_dir: str, name: str, timestamp: str):
 
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(console_formatter)
-    console_handler.setLevel(logging.DEBUG)
+    console_handler.setLevel(logging.DEBUG if options["debug"] else logging.INFO)
     logger.addHandler(console_handler)
 
     if log_dir:
@@ -58,7 +58,6 @@ def set_logging(log_dir: str, name: str, timestamp: str):
         file_handler.setFormatter(formatter)
         file_handler.setLevel(logging.DEBUG)
         logger.addHandler(file_handler)
-
     return logger
 
 
@@ -76,6 +75,7 @@ def parse_options(argv):
     parser.add_argument("--task", "-t", nargs=1, default=[None], metavar='"TASK NAME"',
                         help='Provide task name in "".')
     parser.add_argument("--dry", default=False, action='store_true')
+    parser.add_argument("--debug", "-d", default=False, action="store_true")
 
     arguments = parser.parse_args(argv)
 
@@ -85,6 +85,7 @@ def parse_options(argv):
     options["commit"] = arguments.commit[0]
     options["task"] = arguments.task[0]
     options["dry"] = arguments.dry
+    options["debug"] = arguments.debug
 
     return options
 
@@ -448,6 +449,7 @@ def main():
         print("Too few arguments", file=sys.stderr)
         sys.exit(2)
     subcommand = get_sub_command(sys.argv[1])
+    options = parse_options(sys.argv[2:])
 
     log_dir = None
     conf = load_global_configuration(None)
@@ -455,9 +457,8 @@ def main():
         workdir = create_workdir(start_ts, conf["global_paths"]["work_dir"])
         log_dir = workdir
 
-    logger = set_logging(log_dir, LOG_NAME_FRMT, start_ts)
+    logger = set_logging(log_dir, LOG_NAME_FRMT, start_ts, options)
 
-    options = parse_options(sys.argv[2:])
     required_opts = validate_options(options, subcommand)
     config = load_configuration()
     validate_option_values_against_config(config, options, required_opts)
