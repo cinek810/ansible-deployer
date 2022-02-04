@@ -4,6 +4,8 @@ check_output_fail() {
 	CMD=$1
 	EXPTEXT=$2
 
+	echo "Check: $CMD"
+
 	eval "$CMD |& grep '$EXPTEXT'" 
 	if [ $? -eq 0 ]
 	then
@@ -16,6 +18,7 @@ check_output_fail() {
 
 check_run_ok() {
 	CMD=$1
+	echo "Check: $CMD"
 	$CMD
 	if [ $? -ne 0 ]
 	then
