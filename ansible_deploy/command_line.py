@@ -111,9 +111,13 @@ def create_workdir(timestamp: str, base_dir: str):
         seq_path = os.path.join(date_dir, f"{conf['file_naming']['sequence_prefix']}"
                                           f"{new_sequence:04d}")
 
-    #TODO: Add error handling
-    os.makedirs(seq_path)
-    os.chdir(seq_path)
+    try:
+        os.makedirs(seq_path)
+        os.chdir(seq_path)
+    except Exception as e:
+        logger.error("Failed to create work dir:%s error was:%s", seq_path, e)
+        sys.exit(90)
+
     logger.info("Successfully created workdir: %s", seq_path)
     return seq_path
 
