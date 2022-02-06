@@ -42,3 +42,6 @@ check_output_fail 'ansible-deploy run -t task_empty -s testing -i testInfra' '\[
 check_run_ok "ansible-deploy lock -s locked -i testInfra"
 check_output_fail 'ansible-deploy run -t task_exec_bin_true -s locked -i testInfra' "is using this infrastructure, please try again later."
 
+#Check --debug option
+check_run_ok "ansible-deploy list --debug" "\[DEBUG\]: load_configuration called"
+
