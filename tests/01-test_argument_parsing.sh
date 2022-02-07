@@ -6,7 +6,7 @@ check_output_fail() {
 
 	echo "Check: $CMD"
 
-	eval "$CMD |& grep '$EXPTEXT'" 
+        eval "$CMD |& grep '$EXPTEXT'"
 	if [ $? -eq 0 ]
 	then
 		echo "OK: '${CMD}' returned '${EXPTEXT}'"
@@ -42,16 +42,20 @@ check_output_fail 'ansible-deployer lock -t testTask -i testInfra' '\[ERROR\]: t
 check_output_fail 'ansible-deployer lock -t testTask -i testInfra -s prod' '\[ERROR\]: task is not supported by lock'
 check_output_fail 'ansible-deployer lock -t testTask -s prod' '\[ERROR\]: infra is required for lock'
 check_output_fail 'ansible-deployer lock -t testTask -s prod -c X' '\[ERROR\]: commit is not supported by lock'
+check_output_fail 'ansible-deployer lock -t testTask -l test_hosts_1' '\[ERROR\]: limit is not supported by lock'
 
 check_output_fail 'ansible-deployer unlock -t testTask -i testInfra' '\[ERROR\]: task is not supported by unlock'
 check_output_fail 'ansible-deployer unlock -t testTask -i testInfra -s prod' '\[ERROR\]: task is not supported by unlock'
 check_output_fail 'ansible-deployer unlock -t testTask -s test' '\[ERROR\]: infra is required for unlock'
 check_output_fail 'ansible-deployer unlock -t testTask -s prod -c X' '\[ERROR\]: commit is not supported by unlock'
+check_output_fail 'ansible-deployer unlock -t testTask -l test_hosts_1' '\[ERROR\]: limit is not supported by unlock'
 
 check_output_fail 'ansible-deployer list --commit testTask'  '\[ERROR\]: commit is not supported by list'
+check_output_fail 'ansible-deployer list -l test_hosts_1'  '\[ERROR\]: limit is not supported by list'
 
 #Check if correct combinations are accepted
 check_run_ok "ansible-deployer run --dry -t task_exec_bin_true -s prod -i testInfra"
+check_run_ok "ansible-deployer run --dry -t task_with_limit -s testing -i testInfra -l test_hosts_1"
 check_run_ok "ansible-deployer run --dry -t task_exec_bin_true -s prod -i testInfra --commit test_version"
 check_run_ok "ansible-deployer lock --dry -s prod -i testInfra"
 check_run_ok "ansible-deployer unlock --dry -s prod -i testInfra"

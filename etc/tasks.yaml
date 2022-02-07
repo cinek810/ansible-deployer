@@ -18,6 +18,7 @@ tasks:
           - name: testInfra
             stages:
               - testing
+            limit: []
       - group: root
         infra:
           - name: testInfra
@@ -25,7 +26,7 @@ tasks:
               - testing
               - prod
               - locked
-
+            limit: []
 
   - name: task_empty
     play_items: []
@@ -35,6 +36,8 @@ tasks:
           - name: testInfra
             stages:
               - testing
+            limit: []
+
   - name: root_only_task
     play_items:
       - run_bin_true
@@ -44,6 +47,7 @@ tasks:
           - name: testInfra
             stages:
               - testing
+            limit: []
 
   - name: non_root_task
     play_items:
@@ -54,5 +58,24 @@ tasks:
           - name: testInfra
             stages:
               - testing
+            limit: []
 
-
+  - name: task_with_limit
+    play_items:
+      - run_bin_true
+    allowed_for:
+      - group: testGroup
+        infra:
+          - name: testInfra
+            stages:
+              - testing
+            limit:
+              - testHost1
+              - testHost2
+          - name: testInfra2
+            stages:
+              - testing
+            limit:
+              - xyzHosts
+              - xyzHost12
+              - xyzHost58

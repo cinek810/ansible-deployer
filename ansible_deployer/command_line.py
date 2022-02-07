@@ -78,6 +78,8 @@ def parse_options(argv):
                         help='Provide task name in "".')
     parser.add_argument("--dry", default=False, action='store_true')
     parser.add_argument("--debug", "-d", default=False, action="store_true")
+    parser.add_argument("--limit", "-l", nargs=1, default=[None], metavar="[LIMIT]",
+                        help='Limit task execution to specified host.')
 
     arguments = parser.parse_args(argv)
 
@@ -88,6 +90,7 @@ def parse_options(argv):
     options["task"] = arguments.task[0]
     options["dry"] = arguments.dry
     options["debug"] = arguments.debug
+    options["limit"] = arguments.limit[0]
 
     return options
 
@@ -129,9 +132,9 @@ def validate_options(options, subcommand):
         required = ["task", "infra", "stage"]
     elif subcommand in ("lock", "unlock"):
         required = ["infra", "stage"]
-        notsupported = ["task", "commit"]
+        notsupported = ["task", "commit", "limit"]
     elif subcommand == "list":
-        notsupported = ["commit"]
+        notsupported = ["commit", "limit"]
 
     failed = False
     for req in required:
@@ -242,6 +245,16 @@ def validate_option_values_against_config(config: dict, options: dict, required_
                         index = config["infra"].index(item)
                 selected_items["stage"] = validate_option_by_dict_with_name(options["stage"],\
                                                                 config["infra"][index]["stages"])
+            elif option == "limit":
+                for item in config["tasks"]["tasks"]:
+                    if item["name"] == options["task"]:
+                        for elem in item["allowed_limit"]:
+                            if elem == option["limit"]:
+                                break
+                        else:
+                            logger.error("Limit %s is not allowed for task %s.",
+                                        option["limit"], option["task"])
+                            sys.exit(54)
             #TODO: validate if user is allowed to use --commit
             #TODO: validate if user is allowed to execute the task on infra/stag pair
             #(validate_user_infra_stage(), validate_usr_task())
@@ -378,6 +391,9 @@ def run_task(config: dict, options: dict, inventory: str):
     else:
         for playbook in playbooks:
             command = ["ansible-playbook", "-i", inventory, playbook]
+            if options["limit"]:
+                command.append("-l")
+                command.append(options["limit"])
             logger.debug("Running '%s'.", command)
             try:
                 with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as \
