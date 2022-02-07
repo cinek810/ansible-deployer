@@ -24,6 +24,13 @@ jobs:
           name: "Copy configuration files"
           command: cp -r ./etc /etc/ansible-deploy
       - run:
+          name: "Add user to test_group"
+          command: |
+            groupadd test_group
+            gpasswd -a root test_group
+            groups
+            /bin/bash -lc 'groups'
+      - run:
           name: "Run shell script for argument parsing"
           command: |
             ./tests/01-test_argument_parsing.sh
