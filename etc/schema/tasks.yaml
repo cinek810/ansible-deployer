@@ -62,4 +62,6 @@ tasks:
                   stages:
                     type: list
                     required: True
-                   
+                  limit:
+                    type: list
+                    required: True
