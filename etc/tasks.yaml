@@ -13,7 +13,7 @@ tasks:
     play_items:
       - run_bin_true
     allowed_for:
-      - group: testGroup
+      - group: test_group
         infra:
           - name: testInfra
             stages:
@@ -22,7 +22,7 @@ tasks:
   - name: task_empty
     play_items: []
     allowed_for:
-      - group: testGroup
+      - group: test_group
         infra:
           - name: testInfra
             stages:
