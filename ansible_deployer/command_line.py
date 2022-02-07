@@ -8,6 +8,7 @@ import datetime
 import subprocess
 import pwd
 import grp
+import errno
 #TODO: Add an option to explicitly enable syslog logging
 #from logging import handlers as log_han
 
@@ -406,17 +407,19 @@ def verify_task_permissions(selected_items, user_groups):
     s_task = selected_items["task"]
     s_infra = selected_items["infra"]
     o_stage = selected_items["stage"]
-    logger.debug("Running verify_task_permissions, for s_task:%s, s_infra:%s", s_task, s_infra)
+    logger.debug("Running verify_task_permissions, for s_task:%s, s_infra:%s, o_stage:%s and user"
+                 "groups: %s", s_task, s_infra, o_stage, user_groups)
 
     for allow_group in s_task["allowed_for"]:
-        logger.debug("\tChecking group: %s", allow_group)
+        logger.debug("\tChecking group: %s, for user_groups:%s", allow_group, user_groups)
         if allow_group["group"] in user_groups:
             for infra in allow_group["infra"]:
-                logger.debug("\t\tChecking infra: %s", infra)
+                logger.debug("\t\tChecking infra: %s for infra:%s", infra,
+                             selected_items["infra"]["name"])
                 if infra["name"] == selected_items["infra"]["name"]:
                     for stage in infra["stages"]:
-                        logger.debug("\t\t\tChecking stage:%s", stage)
-                        if stage == o_stage:
+                        logger.debug("\t\t\tChecking stage:%s for stage:%s", stage, o_stage["name"])
+                        if stage == o_stage["name"]:
                             logger.debug("Task allowed, based on %s", allow_group)
                             return True
     logger.debug("Task forbidden")
@@ -453,6 +456,16 @@ def get_inventory_file(config: dict, options: dict):
 
     return inv_file
 
+def get_all_user_groups():
+    """
+    Function returning all user groups in form of their names
+    """
+    user_groups = [grp.getgrgid(g).gr_name for g in os.getgroups()]
+    logger.debug("User groups:%s %s", user_groups, grp.getgrgid(os.getgid()).gr_name)
+    user_groups.append(str(grp.getgrgid(os.getgid()).gr_name))
+
+
+    return user_groups
 
 def load_global_configuration(cfg_path: str):
     """Function responsible for single file loading and validation"""
@@ -468,17 +481,6 @@ def load_global_configuration(cfg_path: str):
         except yaml.YAMLError as e:
             print(e, file=sys.stderr)
             sys.exit(51)
-
-def build_user_groups():
-    """
-    Retrieve user groups from OS
-    """
-    user_groups = []
-    logger.debug("Building user groups")
-    for group in grp.getgrall():
-        user_groups.append(group[0])
-    logger.debug("Completed building user groups. User groups are: %s", user_groups)
-    return user_groups
 
 def main():
     """ansible-deploy endpoint function"""
@@ -504,7 +506,7 @@ def main():
     config = load_configuration()
     selected_items = validate_option_values_against_config(config, options, required_opts)
 
-    user_groups = build_user_groups()
+    user_groups = get_all_user_groups()
 
     if options["dry"]:
         logger.info("Skipping execution because of --dry-run option")
@@ -517,7 +519,9 @@ def main():
         inv_file = get_inventory_file(config, options)
         lockpath = os.path.join(lockdir, inv_file.replace(os.sep, "_"))
         if subcommand == "run":
-            verify_task_permissions(selected_items, user_groups)
+            if not verify_task_permissions(selected_items, user_groups):
+                logger.error("Task forbidden")
+                sys.exit(errno.EPERM)
             setup_ansible(config["tasks"]["setup_hooks"], options["commit"], workdir)
             lock_inventory(lockdir, lockpath)
             run_task(config, options, inv_file)
