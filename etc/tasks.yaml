@@ -18,13 +18,41 @@ tasks:
           - name: testInfra
             stages:
               - testing
+      - group: root
+        infra:
+          - name: testInfra
+            stages:
+              - testing
+              - prod
+              - locked
+
 
   - name: task_empty
     play_items: []
+    allowed_for:
+      - group: root
+        infra:
+          - name: testInfra
+            stages:
+              - testing
+  - name: root_only_task
+    play_items:
+      - run_bin_true
+    allowed_for:
+      - group: root
+        infra:
+          - name: testInfra
+            stages:
+              - testing
+
+  - name: non_root_task
+    play_items:
+      - run_bin_true
     allowed_for:
       - group: test_group
         infra:
           - name: testInfra
             stages:
               - testing
+
 

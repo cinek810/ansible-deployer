@@ -45,3 +45,10 @@ check_output_fail 'ansible-deployer run -t task_exec_bin_true -s locked -i testI
 #Check --debug option
 check_run_ok "ansible-deployer list --debug" "\[DEBUG\]: load_configuration called"
 
+#Try execution of task without permissions
+if [ $UID -ne 0 ]
+then
+	check_output_fail "ansible-deployer run -t root_only_task -i testInfra -s testing" "\[ERROR\]: Task forbidden"
+else
+	check_output_fail "ansible-deployer run -t non_root_task -i testInfra -s testing" "\[ERROR\]: Task forbidden"
+fi
