@@ -7,3 +7,9 @@ infrastructures:
         inventory: ./prod_infra1_inv.yaml
       - name: locked
         inventory: ./lock_infra1_inv.yaml
+
+  - name: testInfra2
+    stages:
+      - name: testing
+        inventory: ./test_infra2_inv.yaml
+
