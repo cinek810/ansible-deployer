@@ -30,6 +30,8 @@ check_run_ok() {
 # Correct execution.
 check_run_ok "ansible-deployer run -t task_exec_bin_true -s prod -i testInfra"
 check_run_ok "ansible-deployer run -t task_with_limit -s testing -i testInfra -l testHost1"
+# # multiple hosts in limit
+check_run_ok "ansible-deployer run -t task_with_limit -s testing -i testInfra2 -l xyzHosts"
 
 # Non-existent option values
 check_output_fail 'ansible-deployer run -t task_exec_bin_ERR -s prod -i testInfra' '\[ERROR\]: task_exec_bin_ERR not found in configuration file.'
@@ -47,6 +49,7 @@ check_output_fail 'ansible-deployer run -t task_exec_bin_true -s locked -i testI
 check_run_ok "ansible-deployer list --debug" "\[DEBUG\]: load_configuration called"
 
 # Check --limit option
+check_output_fail 'ansible-deployer run -t task_with_limit -s testing -i testInfra2 -l xyzHost4' 'ERROR\! Specified hosts and/or --limit does not match any hosts'
 
 #Try execution of task without permissions
 if [ $UID -ne 0 ]
