@@ -232,7 +232,8 @@ def validate_option_values_against_config(config: dict, options: dict, required_
     """
     selected_items = {}
     for option in options.keys():
-        if option in required_opts:
+        if options[option]:
+        #if option in required_opts:
             if option == "infra":
                 selected_items["infra"] = validate_option_by_dict_with_name(options["infra"],
                                                                             config["infra"])
@@ -248,13 +249,13 @@ def validate_option_values_against_config(config: dict, options: dict, required_
             elif option == "limit":
                 for item in config["tasks"]["tasks"]:
                     if item["name"] == options["task"]:
-                        for elem in item["allowed_limit"]:
-                            if elem == option["limit"]:
-                                break
-                        else:
-                            logger.error("Limit %s is not allowed for task %s.",
-                                        option["limit"], option["task"])
-                            sys.exit(54)
+                        if item["allow_limit"]:
+                            selected_items["limit"] = options["limit"]
+                            break
+                else:
+                    logger.error("Limit %s is not available for task %s.", options["limit"],
+                                 options["task"])
+                    sys.exit(54)
             #TODO: validate if user is allowed to use --commit
             #TODO: validate if user is allowed to execute the task on infra/stag pair
             #(validate_user_infra_stage(), validate_usr_task())

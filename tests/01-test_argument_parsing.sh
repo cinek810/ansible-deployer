@@ -55,7 +55,7 @@ check_output_fail 'ansible-deployer list -l test_hosts_1'  '\[ERROR\]: limit is 
 
 #Check if correct combinations are accepted
 check_run_ok "ansible-deployer run --dry -t task_exec_bin_true -s prod -i testInfra"
-check_run_ok "ansible-deployer run --dry -t task_with_limit -s testing -i testInfra -l test_hosts_1"
+check_run_ok "ansible-deployer run --dry -t task_with_limit -s testing -i testInfra -l testHost1"
 check_run_ok "ansible-deployer run --dry -t task_exec_bin_true -s prod -i testInfra --commit test_version"
 check_run_ok "ansible-deployer lock --dry -s prod -i testInfra"
 check_run_ok "ansible-deployer unlock --dry -s prod -i testInfra"
