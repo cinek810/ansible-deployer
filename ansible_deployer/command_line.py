@@ -287,7 +287,7 @@ def lock_inventory(lockdir: str, lockpath: str):
         with open(lockpath, "r", encoding="utf8") as fh:
             proc_pid, proc_user = fh.readlines()
         logger.error("Another process (PID: %s) started by user %s is using this infrastructure, "
-                     "please try again later.", proc_pid, proc_user)
+                     "please try again later.", proc_pid.strip(), proc_user.strip())
         logger.error("Program will exit now.")
         sys.exit(61)
     except Exception as exc:
