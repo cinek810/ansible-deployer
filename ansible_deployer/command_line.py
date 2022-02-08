@@ -468,7 +468,7 @@ def get_inventory_file(config: dict, options: dict):
         if item["name"] == options["infra"]:
             for elem in item["stages"]:
                 if elem["name"] == options["stage"]:
-                    inv_file = elem["inventory"]
+                    inv_file = os.path.basename(elem["inventory"])
 
     return inv_file
 

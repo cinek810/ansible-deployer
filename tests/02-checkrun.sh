@@ -29,6 +29,7 @@ check_run_ok() {
 
 # Correct execution.
 check_run_ok "ansible-deployer run -t task_exec_bin_true -s prod -i testInfra"
+check_run_ok "ansible-deployer run -t task_with_limit -s testing -i testInfra -l testHost1"
 
 # Non-existent option values
 check_output_fail 'ansible-deployer run -t task_exec_bin_ERR -s prod -i testInfra' '\[ERROR\]: task_exec_bin_ERR not found in configuration file.'
