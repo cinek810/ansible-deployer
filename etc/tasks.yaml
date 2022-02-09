@@ -7,6 +7,8 @@ setup_hooks:
 play_items:
   - name: run_bin_true
     file: runBinTrue.yaml
+  - name: run_bin
+    file: runBin.yaml
 
 tasks:
   - name: task_exec_bin_true
@@ -26,6 +28,7 @@ tasks:
               - prod
               - locked
     allow_limit: True
+    tags: []
 
   - name: task_empty
     play_items: []
@@ -36,6 +39,7 @@ tasks:
             stages:
               - testing
     allow_limit: True
+    tags: []
 
   - name: root_only_task
     play_items:
@@ -47,6 +51,7 @@ tasks:
             stages:
               - testing
     allow_limit: True
+    tags: []
 
   - name: non_root_task
     play_items:
@@ -58,6 +63,7 @@ tasks:
             stages:
               - testing
     allow_limit: True
+    tags: []
 
   - name: task_with_limit
     play_items:
@@ -72,4 +78,36 @@ tasks:
             stages:
               - testing
     allow_limit: True
+    tags: []
 
+  - name: tagged_task_true
+    play_items:
+      - run_bin
+    allowed_for:
+      - group: root
+        infra:
+          - name: testInfra
+            stages:
+              - testing
+          - name: testInfra2
+            stages:
+              - testing
+    allow_limit: True
+    tags:
+      - tag_true
+
+  - name: tagged_task_false
+    play_items:
+      - run_bin
+    allowed_for:
+      - group: root
+        infra:
+          - name: testInfra
+            stages:
+              - testing
+          - name: testInfra2
+            stages:
+              - testing
+    allow_limit: True
+    tags:
+      - tag_false

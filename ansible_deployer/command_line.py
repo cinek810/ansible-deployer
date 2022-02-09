@@ -385,6 +385,7 @@ def run_task(config: dict, options: dict, inventory: str):
     Function implementing actual execution of ansible-playbook
     """
     playbooks = get_playbooks(config, options["task"])
+    tags = get_tags_for_task(config, options)
     if len(playbooks) < 1:
         logger.error("No playbooks found for requested task %s. Nothing to do.", options['task'])
         logger.error("Program will exit now.")
@@ -395,6 +396,10 @@ def run_task(config: dict, options: dict, inventory: str):
             if options["limit"]:
                 command.append("-l")
                 command.append(options["limit"])
+            if tags:
+                tag_string = ",".join(tags)
+                command.append("-t")
+                command.append(tag_string)
             logger.debug("Running '%s'.", command)
             try:
                 with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as \
@@ -498,6 +503,15 @@ def load_global_configuration(cfg_path: str):
         except yaml.YAMLError as e:
             print(e, file=sys.stderr)
             sys.exit(51)
+
+def get_tags_for_task(config: dict, options: dict):
+    """Function to get task's tags"""
+    tags = []
+    for task in config["tasks"]["tasks"]:
+        if task["name"] == options["task"]:
+            tags = task["tags"]
+
+    return tags
 
 def main():
     """ansible-deploy endpoint function"""

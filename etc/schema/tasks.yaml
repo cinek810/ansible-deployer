@@ -65,3 +65,7 @@ tasks:
       allow_limit:
         type: boolean
         required: True
+      tags:
+        type: list
+        required: False
+

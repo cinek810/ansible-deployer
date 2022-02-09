@@ -30,6 +30,7 @@ check_run_ok() {
 # Correct execution.
 check_run_ok "ansible-deployer run -t task_exec_bin_true -s prod -i testInfra"
 check_run_ok "ansible-deployer run -t task_with_limit -s testing -i testInfra -l testHost1"
+check_run_ok "ansible-deployer run -t tagged_task_true -s testing -i testInfra"
 # # multiple hosts in limit
 check_run_ok "ansible-deployer run -t task_with_limit -s testing -i testInfra2 -l xyzHosts"
 
