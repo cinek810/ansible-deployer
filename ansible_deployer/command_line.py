@@ -90,18 +90,18 @@ def parse_options(argv):
 
     return options
 
-def create_workdir(timestamp: str, base_dir: str):
+def create_workdir(timestamp: str):
     """
     Function to create working directory on file system, we expect it to change
     the cwd to newly created workdir at the end.
     """
     short_ts = timestamp.split("_")[0]
-    date_dir = os.path.join(base_dir, short_ts)
+    date_dir = os.path.join(conf["global_paths"]["work_dir"], short_ts)
 
     #
     #TODO: Add locking of the directory
 
-    if short_ts not in os.listdir(base_dir):
+    if short_ts not in os.listdir(conf["global_paths"]["work_dir"]):
         seq_path = os.path.join(date_dir, f"{conf['file_naming']['sequence_prefix']}0000")
     else:
         sequence_list = os.listdir(date_dir)
@@ -517,13 +517,13 @@ def main():
         sys.exit(2)
     options = parse_options(sys.argv[1:])
 
-    log_dir = None
     conf = load_global_configuration(None)
     if options["subcommand"] == "run":
-        workdir = create_workdir(start_ts, conf["global_paths"]["work_dir"])
-        log_dir = workdir
+        workdir = create_workdir(start_ts)
+    else:
+        workdir = None
 
-    logger = set_logging(log_dir, LOG_NAME_FRMT, start_ts, options)
+    logger = set_logging(workdir, LOG_NAME_FRMT, start_ts, options)
 
     validate_options(options)
     config = load_configuration()
