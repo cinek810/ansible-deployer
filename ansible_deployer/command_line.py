@@ -146,8 +146,6 @@ def validate_options(options):
     if failed:
         logger.error("Failed to validate options")
         sys.exit(55)
-    else:
-        return required
 
 def load_configuration_file(config_file):
     """Function responsible for single file loading and validation"""
@@ -222,14 +220,13 @@ def validate_user_task():
     Rquired for: run"""
 
 
-def validate_option_values_against_config(config: dict, options: dict, required_opts: list):
+def validate_option_values_against_config(config: dict, options: dict):
     """
     Function responsible for checking if option values match configuration
     """
     selected_items = {}
     for option in options.keys():
         if options[option]:
-        #if option in required_opts:
             if option == "infra":
                 selected_items["infra"] = validate_option_by_dict_with_name(options["infra"],
                                                                             config["infra"])
@@ -528,9 +525,9 @@ def main():
 
     logger = set_logging(log_dir, LOG_NAME_FRMT, start_ts, options)
 
-    required_opts = validate_options(options)
+    validate_options(options)
     config = load_configuration()
-    selected_items = validate_option_values_against_config(config, options, required_opts)
+    selected_items = validate_option_values_against_config(config, options)
 
     user_groups = get_all_user_groups()
 
