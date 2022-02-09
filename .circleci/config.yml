@@ -27,9 +27,8 @@ jobs:
           name: "Add user to test_group"
           command: |
             groupadd test_group
-            gpasswd -a root test_group
+            newgrp test_group
             groups
-            /bin/bash -lc 'groups'
       - run:
           name: "Run shell script for argument parsing"
           command: |
