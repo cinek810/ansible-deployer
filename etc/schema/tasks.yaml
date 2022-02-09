@@ -61,5 +61,5 @@ tasks:
                     required: True
                   stages:
                     type: list
-                    required: true
+                    required: True
                    
