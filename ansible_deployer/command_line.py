@@ -18,20 +18,11 @@ CONF = "/etc/ansible-deploy/ansible-deploy.yaml"
 LOG_NAME_FRMT = "ansible-deploy_execution_{}.log"
 
 
-def get_sub_command(command):
-    """Function to check the first arguments (argv[1..]) looking for a subcommand"""
-    if command == "run":
-        subcommand = "run"
-    elif command == "lock":
-        subcommand = "lock"
-    elif command == "unlock":
-        subcommand = "unlock"
-    elif command == "list":
-        subcommand = "list"
-    else:
+def verify_subcommand(command: str):
+    """Function to check the first arguments for a valid subcommand"""
+    if command not in ("run", "list", "lock", "unlock"):
         print("Unknown subcommand :%s", (command), file=sys.stderr)
         sys.exit("55")
-    return subcommand
 
 def set_logging(log_dir: str, name: str, timestamp: str, options: dict):
     """Function to create logging objects"""
@@ -66,6 +57,8 @@ def parse_options(argv):
     specific subcommand outside"""
     parser = argparse.ArgumentParser()
 
+    parser.add_argument("subcommand", nargs=1, default=[None], metavar="SUBCOMMAND",
+                        help='Specify command to run. Available commands: run, list, lock, unlock.')
     parser.add_argument("--infrastructure", "-i", nargs=1, default=[None], metavar="INFRASTRUCTURE",
                         help='Specify infrastructure for deploy.')
     parser.add_argument("--stage", "-s", nargs=1, default=[None], metavar="STAGE",
@@ -84,6 +77,8 @@ def parse_options(argv):
     arguments = parser.parse_args(argv)
 
     options = {}
+    options["subcommand"] = arguments.subcommand[0]
+    verify_subcommand(options["subcommand"])
     options["infra"] = arguments.infrastructure[0]
     options["stage"] = arguments.stage[0]
     options["commit"] = arguments.commit[0]
@@ -124,28 +119,28 @@ def create_workdir(timestamp: str, base_dir: str):
     print("Successfully created workdir: %s", seq_path)
     return seq_path
 
-def validate_options(options, subcommand):
+def validate_options(options):
     """Function checking if the options set are allowed in this subcommand"""
-    logger.debug("validate_options running for subcommand: %s", (subcommand))
+    logger.debug("validate_options running for subcommand: %s", options["subcommand"])
     required = []
     notsupported = []
-    if subcommand == "run":
+    if options["subcommand"] == "run":
         required = ["task", "infra", "stage"]
-    elif subcommand in ("lock", "unlock"):
+    elif options["subcommand"] in ("lock", "unlock"):
         required = ["infra", "stage"]
         notsupported = ["task", "commit", "limit"]
-    elif subcommand == "list":
+    elif options["subcommand"] == "list":
         notsupported = ["commit", "limit"]
 
     failed = False
     for req in required:
         if options[req] is None:
-            logger.error("%s is required for %s", req, subcommand)
+            logger.error("%s is required for %s", req, options["subcommand"])
             failed = True
 
     for notsup in notsupported:
         if options[notsup] is not None:
-            logger.error("%s is not supported by %s", notsup, subcommand)
+            logger.error("%s is not supported by %s", notsup, options["subcommand"])
             failed = True
 
     if failed:
@@ -523,18 +518,17 @@ def main():
     if len(sys.argv) < 2:
         print("Too few arguments", file=sys.stderr)
         sys.exit(2)
-    subcommand = get_sub_command(sys.argv[1])
-    options = parse_options(sys.argv[2:])
+    options = parse_options(sys.argv[1:])
 
     log_dir = None
     conf = load_global_configuration(None)
-    if subcommand == "run":
+    if options["subcommand"] == "run":
         workdir = create_workdir(start_ts, conf["global_paths"]["work_dir"])
         log_dir = workdir
 
     logger = set_logging(log_dir, LOG_NAME_FRMT, start_ts, options)
 
-    required_opts = validate_options(options, subcommand)
+    required_opts = validate_options(options)
     config = load_configuration()
     selected_items = validate_option_values_against_config(config, options, required_opts)
 
@@ -544,13 +538,13 @@ def main():
         logger.info("Skipping execution because of --dry-run option")
         sys.exit(0)
 
-    if subcommand == "list":
+    if options["subcommand"] == "list":
         list_tasks(config, options)
     else:
         lockdir = os.path.join(conf["global_paths"]["work_dir"], "locks")
         inv_file = get_inventory_file(config, options)
         lockpath = os.path.join(lockdir, inv_file.replace(os.sep, "_"))
-        if subcommand == "run":
+        if options["subcommand"] == "run":
             if not verify_task_permissions(selected_items, user_groups):
                 logger.error("Task forbidden")
                 sys.exit(errno.EPERM)
@@ -558,9 +552,9 @@ def main():
             lock_inventory(lockdir, lockpath)
             run_task(config, options, inv_file)
             unlock_inventory(lockpath)
-        elif subcommand == "lock":
+        elif options["subcommand"] == "lock":
             lock_inventory(lockdir, lockpath)
-        elif subcommand == "unlock":
+        elif options["subcommand"] == "unlock":
             unlock_inventory(lockpath)
 
     sys.exit(0)
