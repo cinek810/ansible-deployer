@@ -51,7 +51,6 @@ def set_logging(log_dir: str, timestamp: str, options: dict):
         logger.addHandler(file_handler)
     return logger
 
-
 def parse_options(argv):
     """Generic function to parse options for all commands, we validate if the option was allowed for
     specific subcommand outside"""
@@ -79,6 +78,7 @@ def parse_options(argv):
     options = {}
     options["subcommand"] = arguments.subcommand[0]
     verify_subcommand(options["subcommand"])
+
     options["infra"] = arguments.infrastructure[0]
     options["stage"] = arguments.stage[0]
     options["commit"] = arguments.commit[0]
@@ -119,11 +119,12 @@ def create_workdir(timestamp: str):
     print("Successfully created workdir: %s", seq_path)
     return seq_path
 
-def validate_options(options):
+def validate_options(options: dict):
     """Function checking if the options set are allowed in this subcommand"""
     logger.debug("validate_options running for subcommand: %s", options["subcommand"])
     required = []
     notsupported = []
+
     if options["subcommand"] == "run":
         required = ["task", "infra", "stage"]
     elif options["subcommand"] in ("lock", "unlock"):
@@ -147,7 +148,7 @@ def validate_options(options):
         logger.error("Failed to validate options")
         sys.exit(55)
 
-def load_configuration_file(config_file):
+def load_configuration_file(config_file: str):
     """Function responsible for single file loading and validation"""
     #TODO: Add verification of owner/group/persmissions
     logger.debug("Loading :%s", config_file)
@@ -167,10 +168,12 @@ def load_configuration_file(config_file):
         except yaml.YAMLError as e:
             logger.error(e)
             sys.exit(52)
+
     validator = Validator(schema)
     if not validator.validate(config, schema):
         logger.error(validator.errors)
         sys.exit(53)
+
     logger.debug("Loaded:\n%s", str(config))
     return config
 
@@ -190,13 +193,13 @@ def load_configuration():
 
     return config
 
-def validate_option_by_dict_with_name(optval, conf_dict):
+def validate_option_by_dict_with_name(optval: str, conf: dict):
     """
     Validate if given dictionary contains element with name equal to optval
     """
     elem = None
     if optval:
-        for elem in conf_dict:
+        for elem in conf:
             if elem["name"] == optval:
                 break
         else:
@@ -214,11 +217,9 @@ def validate_user_infra_stage():
 
     return inventory
 
-
 def validate_user_task():
     """Function checking if user has rights to execute the task
     Rquired for: run"""
-
 
 def validate_option_values_against_config(config: dict, options: dict):
     """
@@ -288,7 +289,6 @@ def lock_inventory(lockdir: str, lockpath: str):
         logger.error("Program will exit now.")
         sys.exit(62)
 
-
 def unlock_inventory(lockpath: str):
     """
     Function responsible for unlocking inventory file, See also lock_inventory
@@ -308,8 +308,7 @@ def unlock_inventory(lockpath: str):
         logger.error("Program will exit now.")
         sys.exit(64)
 
-
-def setup_ansible(setup_hooks, commit, workdir):
+def setup_ansible(setup_hooks: list, commit: str, workdir: str):
     """
     Function responsible for execution of setup_hooks
     It passes the "commit" to the hook if one given, if not the hook should
@@ -351,7 +350,6 @@ def setup_ansible(setup_hooks, commit, workdir):
         if failed:
             sys.exit(69)
 
-
 def get_playbooks(config: dict, task_name: str):
     """
     Function obtaining play items for specified task.
@@ -371,7 +369,6 @@ def get_playbooks(config: dict, task_name: str):
                 playbooks.append(item["file"])
 
     return playbooks
-
 
 def run_task(config: dict, options: dict, inventory: str):
     """
@@ -414,7 +411,6 @@ def run_task(config: dict, options: dict, inventory: str):
                 logger.error("Program will exit now.")
                 sys.exit(72)
 
-
 def verify_task_permissions(selected_items, user_groups):
     """
     Function verifies if the running user is allowed to run the task
@@ -440,7 +436,7 @@ def verify_task_permissions(selected_items, user_groups):
     logger.debug("Task forbidden")
     return False
 
-def list_tasks(config, options):
+def list_tasks(config: dict, options: dict):
     """
     Function listing tasks available to the user limited to given infra/stage/task
     """
@@ -449,7 +445,6 @@ def list_tasks(config, options):
         task_list.append(item["name"])
 
     logger.info("  ".join(task_list))
-
 
 # TODO: At least infra level should be returned from validate options since we do similar check
 # (existence) there.
