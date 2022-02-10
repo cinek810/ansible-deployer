@@ -69,6 +69,8 @@ def parse_options(argv):
     parser.add_argument("--dry", "-C", default=False, action='store_true', help='Perform dry run.')
     parser.add_argument("--debug", "-d", default=False, action="store_true",
                         help='Print debug output.')
+    parser.add_argument("--syslog", "-v", default=False, action="store_true", help='Log warnings '
+                        'and errors to syslog. --debug doesn\'t affect this option!')
     parser.add_argument("--limit", "-l", nargs=1, default=[None], metavar="[LIMIT]",
                         help='Limit task execution to specified host.')
 
