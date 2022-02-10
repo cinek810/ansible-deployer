@@ -7,8 +7,19 @@ setup_hooks:
 play_items:
   - name: run_bin_true
     file: runBinTrue.yaml
+    skip: []
   - name: run_bin
     file: runBin.yaml
+    skip: []
+  - name: run_skippable
+    file: runBinTrue.yaml
+    skip:
+      - infra: testInfra
+        stage: testing
+      - infra: testInfra2
+        stage: testing
+      - infra: testInfra3
+        stage: testing
 
 tasks:
   - name: task_exec_bin_true
@@ -111,3 +122,24 @@ tasks:
     allow_limit: True
     tags:
       - tag_false
+
+  - name: task_skipping
+    play_items:
+      - run_skippable
+    allowed_for:
+      - group: root
+        infra:
+          - name: testInfra
+            stages:
+              - testing
+              - prod
+          - name: testInfra2
+            stages:
+              - testing
+          - name: testInfra3
+            stages:
+              - testing
+              - prod
+    allow_limit: True
+    tags: []
+

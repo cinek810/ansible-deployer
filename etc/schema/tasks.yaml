@@ -24,6 +24,18 @@ play_items:
       file:
         type: string
         required: True
+      skip:
+        type: list
+        required: False
+        schema:
+          type: dict
+          schema:
+            infra:
+              type: string
+              required: True
+            stage:
+              type: string
+              required: True
 tasks:
   type: list
   required: True
