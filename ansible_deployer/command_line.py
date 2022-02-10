@@ -15,7 +15,6 @@ from cerberus import Validator
 
 
 APP_CONF = "/etc/ansible-deploy/ansible-deploy.yaml"
-LOG_NAME_FRMT = "ansible-deploy_execution_{}.log"
 
 
 def verify_subcommand(command: str):
@@ -24,9 +23,9 @@ def verify_subcommand(command: str):
         print("Unknown subcommand :%s", (command), file=sys.stderr)
         sys.exit("55")
 
-def set_logging(log_dir: str, name: str, timestamp: str, options: dict):
+def set_logging(log_dir: str, timestamp: str, options: dict):
     """Function to create logging objects"""
-    logger = logging.getLogger(name)
+    logger = logging.getLogger("ansible-deployer_log")
     logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter("%(asctime)s [%(levelname)s]: %(message)s")
     console_formatter = logging.Formatter("\n%(asctime)s [%(levelname)s]: %(message)s\n")
@@ -44,7 +43,8 @@ def set_logging(log_dir: str, name: str, timestamp: str, options: dict):
 
     if log_dir:
         os.makedirs(log_dir, exist_ok=True)
-        log_path = os.path.join(log_dir, name.format(timestamp))
+        log_path = os.path.join(log_dir,
+                                conf["file_naming"]["log_file_name_frmt"].format(timestamp))
         file_handler = logging.FileHandler(log_path)
         file_handler.setFormatter(formatter)
         file_handler.setLevel(logging.DEBUG)
@@ -518,7 +518,7 @@ def main():
     else:
         workdir = None
 
-    logger = set_logging(workdir, LOG_NAME_FRMT, start_ts, options)
+    logger = set_logging(workdir, start_ts, options)
 
     validate_options(options)
     config = load_configuration()
