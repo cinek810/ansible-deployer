@@ -54,22 +54,21 @@ def set_logging(log_dir: str, timestamp: str, options: dict):
 def parse_options(argv):
     """Generic function to parse options for all commands, we validate if the option was allowed for
     specific subcommand outside"""
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(add_help=True)
 
     parser.add_argument("subcommand", nargs=1, default=[None], metavar="SUBCOMMAND",
                         help='Specify command to run. Available commands: run, list, lock, unlock.')
     parser.add_argument("--infrastructure", "-i", nargs=1, default=[None], metavar="INFRASTRUCTURE",
                         help='Specify infrastructure for deploy.')
     parser.add_argument("--stage", "-s", nargs=1, default=[None], metavar="STAGE",
-                        help='Specify stage type. Available types are: "testing" and "production".')
-    parser.add_argument("--commit", "-c", nargs=1, default=[None], metavar="COMMIT", help='Provide '
-                        'commit ID.')
-    parser.add_argument("--task", "-t", nargs=1, default=[None], metavar='"TASK NAME"',
-                        help='Provide task name in "".')
-    parser.add_argument("--dry", default=False, action='store_true')
-    parser.add_argument("--debug", "-d", default=False, action="store_true")
-    parser.add_argument("--syslog", "-v", default=False, action="store_true", help='Log warnings '
-                        'and errors to syslog. --debug doesn\'t affect this option!')
+                        help='Specify stage type. Available types are: "testing" and "prod".')
+    parser.add_argument("--commit", "-c", nargs=1, default=[None], metavar="COMMIT",
+                        help='Provide commit ID.')
+    parser.add_argument("--task", "-t", nargs=1, default=[None], metavar='TASK_NAME',
+                        help='Provide task_name.')
+    parser.add_argument("--dry", "-C", default=False, action='store_true', help='Perform dry run.')
+    parser.add_argument("--debug", "-d", default=False, action="store_true",
+                        help='Print debug output.')
     parser.add_argument("--limit", "-l", nargs=1, default=[None], metavar="[LIMIT]",
                         help='Limit task execution to specified host.')
 
