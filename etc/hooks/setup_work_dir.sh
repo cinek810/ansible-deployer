@@ -44,3 +44,8 @@ END
 cat << END > ./prod_infra1_inv.yaml
 localhost
 END
+
+cat << END > ./prod_infra3_inv.yaml
+localhost
+END
+

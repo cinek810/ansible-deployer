@@ -13,3 +13,8 @@ infrastructures:
       - name: testing
         inventory: ./test_infra2_inv.yaml
 
+  - name: testInfra3
+    stages:
+      - name: prod
+        inventory: ./prod_infra3_inv.yaml
+

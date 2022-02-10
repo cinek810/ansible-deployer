@@ -351,7 +351,7 @@ def setup_ansible(setup_hooks: list, commit: str, workdir: str):
         if failed:
             sys.exit(69)
 
-def get_playbooks(config: dict, task_name: str):
+def get_playbooks(config: dict, options: dict):
     """
     Function obtaining play items for specified task.
     :param config:
@@ -361,21 +361,31 @@ def get_playbooks(config: dict, task_name: str):
     playbooks = []
 
     for item in config["tasks"]["tasks"]:
-        if item["name"] == task_name:
+        if item["name"] == options["task"]:
             play_names = item["play_items"]
 
     for play in play_names:
         for item in config["tasks"]["play_items"]:
             if item["name"] == play:
-                playbooks.append(item["file"])
+                if item["skip"]:
+                    for elem in item["skip"]:
+                        if elem["infra"] == options["infra"] and elem["stage"] == options["stage"]:
+                            logger.info("Skipping playbook %s on %s and %s stage.", play,
+                                        options["infra"], options["stage"])
+                            break
+                    else:
+                        playbooks.append(item["file"])
+                else:
+                    playbooks.append(item["file"])
 
+    # TODO add check if everything was skipped
     return playbooks
 
 def run_task(config: dict, options: dict, inventory: str):
     """
     Function implementing actual execution of ansible-playbook
     """
-    playbooks = get_playbooks(config, options["task"])
+    playbooks = get_playbooks(config, options)
     tags = get_tags_for_task(config, options)
     if len(playbooks) < 1:
         logger.error("No playbooks found for requested task %s. Nothing to do.", options['task'])
