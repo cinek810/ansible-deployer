@@ -9,9 +9,7 @@ import subprocess
 import pwd
 import grp
 import errno
-#TODO: Add an option to explicitly enable syslog logging
-#from logging import handlers as log_han
-
+from logging import handlers as log_han
 import yaml
 from cerberus import Validator
 
@@ -42,11 +40,11 @@ def set_logging(log_dir: str, name: str, timestamp: str, options: dict):
     formatter = logging.Formatter("%(asctime)s [%(levelname)s]: %(message)s")
     console_formatter = logging.Formatter("\n%(asctime)s [%(levelname)s]: %(message)s\n")
 
-#   TODO: Add an option to explicitly enable syslog logging
-#    rsys_handler = log_han.SysLogHandler(address="/dev/log")
-#    rsys_handler.setFormatter(formatter)
-#    rsys_handler.setLevel(logging.ERROR)
-#    logger.addHandler(rsys_handler)
+    if options["syslog"]:
+        rsys_handler = log_han.SysLogHandler(address="/dev/log")
+        rsys_handler.setFormatter(formatter)
+        rsys_handler.setLevel(logging.WARNING)
+        logger.addHandler(rsys_handler)
 
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(console_formatter)
@@ -78,6 +76,8 @@ def parse_options(argv):
                         help='Provide task name in "".')
     parser.add_argument("--dry", default=False, action='store_true')
     parser.add_argument("--debug", "-d", default=False, action="store_true")
+    parser.add_argument("--syslog", "-v", default=False, action="store_true", help='Log warnings '
+                        'and errors to syslog. --debug doesn\'t affect this option!')
     parser.add_argument("--limit", "-l", nargs=1, default=[None], metavar="[LIMIT]",
                         help='Limit task execution to specified host.')
 
@@ -90,6 +90,7 @@ def parse_options(argv):
     options["task"] = arguments.task[0]
     options["dry"] = arguments.dry
     options["debug"] = arguments.debug
+    options["syslog"] = arguments.syslog
     options["limit"] = arguments.limit[0]
 
     return options
