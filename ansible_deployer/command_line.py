@@ -14,7 +14,7 @@ import yaml
 from cerberus import Validator
 
 
-CONF = "/etc/ansible-deploy/ansible-deploy.yaml"
+APP_CONF = "/etc/ansible-deploy/ansible-deploy.yaml"
 LOG_NAME_FRMT = "ansible-deploy_execution_{}.log"
 
 
@@ -482,14 +482,9 @@ def get_all_user_groups():
 
     return user_groups
 
-def load_global_configuration(cfg_path: str):
+def load_global_configuration():
     """Function responsible for single file loading and validation"""
-    if cfg_path:
-        pass
-    else:
-        cfg_path = CONF
-
-    with open(cfg_path, "r", encoding="utf8") as config_stream:
+    with open(APP_CONF, "r", encoding="utf8") as config_stream:
         try:
             config = yaml.safe_load(config_stream)
             return config
@@ -517,7 +512,7 @@ def main():
         sys.exit(2)
     options = parse_options(sys.argv[1:])
 
-    conf = load_global_configuration(None)
+    conf = load_global_configuration()
     if options["subcommand"] == "run":
         workdir = create_workdir(start_ts)
     else:
