@@ -65,6 +65,8 @@ check_run_ok "ansible-deployer list --debug" "\[DEBUG\]: load_configuration call
 
 # Check --limit option
 check_message_in_output 'ansible-deployer run -t task_with_limit -s testing -i testInfra2 -l xyzHost4' 'ERROR\! Specified hosts and/or --limit does not match any hosts'
+# # unlock infra for further tests
+check_run_ok "ansible-deployer unlock -s testing -i testInfra"
 
 #Try execution of task without permissions
 if [ $UID -ne 0 ]
@@ -73,3 +75,12 @@ then
 else
 	check_message_in_output "ansible-deployer run -t non_root_task -i testInfra -s testing" "\[ERROR\]: Task forbidden"
 fi
+
+# Check infra/stage skipping
+# # Sometimes skip (depending on stage)
+check_message_in_output "ansible-deployer run -t task_skipping -s testing -i testInfra" "\[INFO\]: Skipping playbook"
+check_message_in_output "ansible-deployer run -t task_skipping -s prod -i testInfra" "ran succesfully"
+# # Always skip
+check_message_not_in_output "ansible-deployer run -t task_skipping -s testing -i testInfra2" "ran succesfully"
+# # Never skip
+check_message_not_in_output "ansible-deployer run -t task_skipping -s prod -i testInfra3" "\[INFO\]: Skipping playbook"
