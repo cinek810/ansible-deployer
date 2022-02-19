@@ -20,10 +20,10 @@ APP_CONF = "/etc/ansible-deploy/ansible-deploy.yaml"
 def verify_subcommand(command: str):
     """Function to check the first arguments for a valid subcommand"""
     if command not in ("run", "list", "lock", "unlock"):
-        print("Unknown subcommand :%s", (command), file=sys.stderr)
+        print("[ERROR]: Unknown subcommand :%s", (command), file=sys.stderr)
         sys.exit("55")
 
-def set_logging(log_dir: str, timestamp: str, options: dict):
+def set_logging(options: dict):
     """Function to create logging objects"""
     logger = logging.getLogger("ansible-deployer_log")
     logger.setLevel(logging.DEBUG)
@@ -41,15 +41,17 @@ def set_logging(log_dir: str, timestamp: str, options: dict):
     console_handler.setLevel(logging.DEBUG if options["debug"] else logging.INFO)
     logger.addHandler(console_handler)
 
-    if log_dir:
-        os.makedirs(log_dir, exist_ok=True)
-        log_path = os.path.join(log_dir,
-                                conf["file_naming"]["log_file_name_frmt"].format(timestamp))
-        file_handler = logging.FileHandler(log_path)
-        file_handler.setFormatter(formatter)
-        file_handler.setLevel(logging.DEBUG)
-        logger.addHandler(file_handler)
     return logger
+
+def set_logging_to_file(log_dir: str, timestamp: str):
+    """Function adding file handler to existing logger"""
+    os.makedirs(log_dir, exist_ok=True)
+    log_path = os.path.join(log_dir,
+                                conf["file_naming"]["log_file_name_frmt"].format(timestamp))
+    file_handler = logging.FileHandler(log_path)
+    file_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s]: %(message)s"))
+    file_handler.setLevel(logging.DEBUG)
+    logger.addHandler(file_handler)
 
 def parse_options(argv):
     """Generic function to parse options for all commands, we validate if the option was allowed for
@@ -115,9 +117,9 @@ def create_workdir(timestamp: str):
         os.makedirs(seq_path)
         os.chdir(seq_path)
     except Exception as e:
-        print("Failed to create work dir:%s error was:%s", seq_path, e, file=sys.stderr)
+        logger.error("Failed to create work dir:%s error was:%s", seq_path, e, file=sys.stderr)
         sys.exit(90)
-    print("Successfully created workdir: %s", seq_path)
+    logger.debug("Successfully created workdir: %s", seq_path)
     return seq_path
 
 def validate_options(options: dict):
@@ -496,7 +498,7 @@ def load_global_configuration():
             config = yaml.safe_load(config_stream)
             return config
         except yaml.YAMLError as e:
-            print(e, file=sys.stderr)
+            logger.error(e, file=sys.stderr)
             sys.exit(51)
 
 def get_tags_for_task(config: dict, options: dict):
@@ -515,17 +517,15 @@ def main():
     start_ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
     if len(sys.argv) < 2:
-        print("Too few arguments", file=sys.stderr)
+        print("[ERROR]: Too few arguments", file=sys.stderr)
         sys.exit(2)
     options = parse_options(sys.argv[1:])
+    logger = set_logging(options)
 
     conf = load_global_configuration()
     if options["subcommand"] == "run":
         workdir = create_workdir(start_ts)
-    else:
-        workdir = None
-
-    logger = set_logging(workdir, start_ts, options)
+        set_logging_to_file(workdir, start_ts)
 
     validate_options(options)
     config = load_configuration()
