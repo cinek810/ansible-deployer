@@ -15,6 +15,7 @@ from cerberus import Validator
 
 
 APP_CONF = "/etc/ansible-deploy/ansible-deploy.yaml"
+CFG_PERMISSIONS = 33188
 
 
 def verify_subcommand(command: str):
@@ -154,10 +155,11 @@ def validate_options(options: dict):
 def load_configuration_file(config_file: str):
     """Function responsible for single file loading and validation"""
     #TODO: Add verification of owner/group/persmissions
+    config_path = os.path.join(conf["global_paths"]["config_dir"], config_file)
+    check_cfg_permissions_and_owner(config_path)
     logger.debug("Loading :%s", config_file)
 
-    with open(os.path.join(conf["global_paths"]["config_dir"], config_file), "r", encoding="utf8") \
-            as config_stream:
+    with open(config_path, "r", encoding="utf8") as config_stream:
         try:
             config = yaml.safe_load(config_stream)
         except yaml.YAMLError as e:
@@ -179,6 +181,22 @@ def load_configuration_file(config_file: str):
 
     logger.debug("Loaded:\n%s", str(config))
     return config
+
+def check_cfg_permissions_and_owner(cfg_path: str):
+    """Function to verify permissions and owner for config files"""
+    stat_info = os.stat(cfg_path)
+
+    if stat_info.st_uid == 0:
+        if stat_info.st_mode <= CFG_PERMISSIONS:
+            logger.debug("Correct permissions and owner for config file %s.", cfg_path)
+        else:
+            logger.error("File %s permissions are too high! Contact your sys admin.", cfg_path)
+            logger.error("Program will exit now.")
+            sys.exit(40)
+    else:
+        logger.error("File %s owner is not root! Contact your sys admin.", cfg_path)
+        logger.error("Program will exit now.")
+        sys.exit(41)
 
 def load_configuration():
     """Function responsible for reading configuration files and running a schema validator against
@@ -492,6 +510,7 @@ def get_all_user_groups():
 
 def load_global_configuration():
     """Function responsible for single file loading and validation"""
+    check_cfg_permissions_and_owner(APP_CONF)
     with open(APP_CONF, "r", encoding="utf8") as config_stream:
         try:
             config = yaml.safe_load(config_stream)
