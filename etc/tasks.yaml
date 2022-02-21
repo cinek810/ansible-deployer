@@ -29,6 +29,8 @@ tasks:
           - name: testInfra
             stages:
               - testing
+        commit:
+          - test_version
       - group: root
         infra:
           - name: testInfra
@@ -36,6 +38,8 @@ tasks:
               - testing
               - prod
               - locked
+        commit:
+          - test_version
     allow_limit: True
 
   - name: task_empty
@@ -135,3 +139,22 @@ tasks:
               - prod
     allow_limit: True
 
+  - name: task_with_commit
+    play_items:
+      - run_bin_true
+    allowed_for:
+      - group: root
+        infra:
+          - name: testInfra
+            stages:
+              - testing
+          - name: testInfra2
+            stages:
+              - testing
+        commit:
+          - tags/v1.\d+
+          - tags/v2.4
+          - tags/v2.5.\d+
+          - tags/v3.\d+.5
+          - tags/v5.\d+
+    allow_limit: True

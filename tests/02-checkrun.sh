@@ -29,9 +29,21 @@ check_message_not_in_output "ansible-deployer run -t task_skipping -s prod -i te
 check_run_ok "ansible-deployer unlock -s testing -i testInfra"
 check_run_ok "ansible-deployer unlock -s testing -i testInfra2"
 
+echo -e "  ___ ____                                     _   _\n / _ \___ \            _____  _____  ___ _   _| |_(_) ___  _ __\n| | | |__) |  _____   / _ \ \/ / _ \/ __| | | | __| |/ _ \| '_ \ \n| |_| / __/  |_____| |  __/>  <  __/ (__| |_| | |_| | (_) | | | |\n \___/_____|          \___/_/\_\___|\___|\__,_|\__|_|\___/|_| |_|\n\n                               _ _\n  ___ ___  _ __ ___  _ __ ___ (_) |_ ___\n / __/ _ \| '_ \` _ \| '_ \` _ \| | __/ __|\n| (_| (_) | | | | | | | | | | | | |_\__ \ \n \___\___/|_| |_| |_|_| |_| |_|_|\__|___/\n"
+# Check --commit option
+check_run_ok "ansible-deployer run -t task_with_commit -s testing -i testInfra -c tags/v1.1"
+check_run_ok "ansible-deployer run -t task_with_commit -s testing -i testInfra -c tags/v2.4"
+check_run_ok "ansible-deployer run -t task_with_commit -s testing -i testInfra -c tags/v2.5.1"
+check_run_ok "ansible-deployer run -t task_with_commit -s testing -i testInfra -c tags/v3.6.5"
+check_message_in_output "ansible-deployer run -t task_with_commit -s testing -i testInfra -c tags/v1.0.1" '\[ERROR\]: Requested commit tags/v1.0.1 is not valid for task task_with_commit.'
+check_message_in_output "ansible-deployer run -t task_with_commit -s testing -i testInfra -c tags/v2.1" '\[ERROR\]: Requested commit tags/v2.1 is not valid for task task_with_commit.'
+check_message_in_output "ansible-deployer run -t task_with_commit -s testing -i testInfra -c tags/v3.6.6" '\[ERROR\]: Requested commit tags/v3.6.6 is not valid for task task_with_commit.'
+
 echo -e "   ___ ____                                     _   _\n  / _ \___ \            _____  _____  ___ _   _| |_(_) ___  _ __\n | | | |__) |  _____   / _ \ \/ / _ \/ __| | | | __| |/ _ \| '_ \ \n | |_| / __/  |_____| |  __/>  <  __/ (__| |_| | |_| | (_) | | | |\n  \___/_____|          \___/_/\_\___|\___|\__,_|\__|_|\___/|_| |_|\n \n        _   _\n   ___ | |_| |__   ___ _ __ ___\n  / _ \| __| '_ \ / _ \ '__/ __|\n | (_) | |_| | | |  __/ |  \__ \\n  \___/ \__|_| |_|\___|_|  |___/\n \n"
 # misc
 check_message_in_output 'ansible-deployer run -t task_empty -s testing -i testInfra' '\[ERROR\]: No playbooks found for requested task'
+# # unlock infra for further tests
+check_run_ok "ansible-deployer unlock -s testing -i testInfra"
 
 #Artificially generate lock
 check_run_ok "ansible-deployer lock -s locked -i testInfra"
