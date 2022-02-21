@@ -1,5 +1,19 @@
 #!/bin/bash -l
 
+commit_id=$1
+unset https_proxy
+export GIT_SSL_NO_VERIFY=true
+mkdir HPCAdmins-ansible
+#if [ "$commit_id" = "master" ]; then
+#  git clone --depth=1 --branch "master" https://hpc-gitlab.aptiv.com/qjy4vw/HPCAdmins-ansible.git HPCAdmins-ansible
+#else
+#  pushd HPCAdmins-ansible
+#  git init
+#  git remote add current_master https://hpc-gitlab.aptiv.com/qjy4vw/HPCAdmins-ansible.git
+#  git pull current_master "$commit_id"
+#  popd
+#fi
+
 cat << END > ./runBinTrue.yaml
 - hosts: all
   connection: "local"

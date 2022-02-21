@@ -242,6 +242,30 @@ def validate_user_task():
     """Function checking if user has rights to execute the task
     Rquired for: run"""
 
+def validate_commit(options: dict, config: dict):
+    """Function to validate commit value against config and assign final value"""
+    if not options["commit"]:
+        commit_id = "master"
+        logger.debug("Using latest (master) commit.")
+    else:
+        for item in config["tasks"]["tasks"]:
+            if item["name"] == options["task"]:
+                for elem in item["allowed_for"]:
+                    try:
+                        if options["commit"] in elem["commit"]:
+                            commit_id = options["commit"]
+                            break
+                    except KeyError:
+                        commit_id = "master"
+                        logger.debug("Using latest (master) commit.")
+                else:
+                    commit_id = "master"
+                    logger.warning("Requested commit %s is not valid for task %s.",
+                    options["commit"], options["task"])
+                    logger.info("Using latest (master) commit.")
+
+    return commit_id
+
 def validate_option_values_against_config(config: dict, options: dict):
     """
     Function responsible for checking if option values match configuration
@@ -271,10 +295,13 @@ def validate_option_values_against_config(config: dict, options: dict):
                     logger.error("Limit %s is not available for task %s.", options["limit"],
                                  options["task"])
                     sys.exit(54)
+
+    selected_items["commit"] = validate_commit(options, config)
+    logger.debug("Completed validate_option_values_with_config")
+
             #TODO: validate if user is allowed to use --commit
             #TODO: validate if user is allowed to execute the task on infra/stag pair
             #(validate_user_infra_stage(), validate_usr_task())
-            logger.debug("Completed validate_option_values_with_config")
 
     return selected_items
 
