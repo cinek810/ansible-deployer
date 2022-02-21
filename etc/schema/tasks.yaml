@@ -74,6 +74,11 @@ tasks:
                   stages:
                     type: list
                     required: True
+            commit:
+              type: list
+              required: False
+              schema:
+                type: string
       allow_limit:
         type: boolean
         required: True

@@ -3,6 +3,7 @@
 import sys
 import os
 import stat
+import re
 import argparse
 import logging
 import datetime
@@ -250,6 +251,32 @@ def validate_user_task():
     """Function checking if user has rights to execute the task
     Rquired for: run"""
 
+def validate_commit(options: dict, config: dict):
+    """Function to validate commit value against config and assign final value"""
+    if not options["commit"]:
+        commit_id = None
+        logger.debug("Using default commit.")
+    else:
+        for item in config["tasks"]["tasks"]:
+            if item["name"] == options["task"]:
+                for elem in item["allowed_for"]:
+                    available_commits = elem.get("commit", [])
+                    for commit in available_commits:
+                        if re.match(commit, options["commit"]):
+                            commit_id = commit
+                            logger.debug("Using commit: %s .", commit_id)
+                            break
+                    else:
+                        continue
+                    break
+                else:
+                    logger.error("Requested commit %s is not valid for task %s.",
+                    options["commit"], options["task"])
+                    logger.error("Program will exit now.")
+                    sys.exit(56)
+
+    return commit_id
+
 def validate_option_values_against_config(config: dict, options: dict):
     """
     Function responsible for checking if option values match configuration
@@ -280,10 +307,13 @@ def validate_option_values_against_config(config: dict, options: dict):
                                  options["task"])
                     logger.error("Program will exit now.")
                     sys.exit(54)
+
+    selected_items["commit"] = validate_commit(options, config)
+    logger.debug("Completed validate_option_values_with_config")
+
             #TODO: validate if user is allowed to use --commit
             #TODO: validate if user is allowed to execute the task on infra/stag pair
             #(validate_user_infra_stage(), validate_usr_task())
-            logger.debug("Completed validate_option_values_with_config")
 
     return selected_items
 
