@@ -31,9 +31,5 @@ setup(
     packages=["ansible_deployer"],
     include_package_data=True,
     install_requires=["pyyaml>=5.3.1", "cerberus>=1.3.4"],
-    entry_points={
-        "console_scripts": [
-            "ansible-deployer = ansible_deployer.command_line:main",
-        ]
-    },
+    scripts=['ansible_deployer/ansible-deployer']
 )

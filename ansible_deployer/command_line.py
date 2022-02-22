@@ -513,10 +513,10 @@ def main():
 
     start_ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 3:
         print("Too few arguments", file=sys.stderr)
         sys.exit(2)
-    options = parse_options(sys.argv[1:])
+    options = parse_options(sys.argv[2:])
 
     conf = load_global_configuration()
     if options["subcommand"] == "run":
@@ -554,5 +554,5 @@ def main():
             lock_inventory(lockdir, lockpath)
         elif options["subcommand"] == "unlock":
             unlock_inventory(lockpath)
-
     sys.exit(0)
+main()
