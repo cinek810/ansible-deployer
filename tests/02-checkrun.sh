@@ -32,6 +32,8 @@ check_run_ok "ansible-deployer unlock -s testing -i testInfra2"
 echo -e "   ___ ____                                     _   _\n  / _ \___ \            _____  _____  ___ _   _| |_(_) ___  _ __\n | | | |__) |  _____   / _ \ \/ / _ \/ __| | | | __| |/ _ \| '_ \ \n | |_| / __/  |_____| |  __/>  <  __/ (__| |_| | |_| | (_) | | | |\n  \___/_____|          \___/_/\_\___|\___|\__,_|\__|_|\___/|_| |_|\n \n        _   _\n   ___ | |_| |__   ___ _ __ ___\n  / _ \| __| '_ \ / _ \ '__/ __|\n | (_) | |_| | | |  __/ |  \__ \\n  \___/ \__|_| |_|\___|_|  |___/\n \n"
 # misc
 check_message_in_output 'ansible-deployer run -t task_empty -s testing -i testInfra' '\[ERROR\]: No playbooks found for requested task'
+# # unlock infra for further tests
+check_run_ok "ansible-deployer unlock -s testing -i testInfra"
 
 #Artificially generate lock
 check_run_ok "ansible-deployer lock -s locked -i testInfra"
@@ -44,10 +46,6 @@ check_run_ok "ansible-deployer list --debug" "\[DEBUG\]: load_configuration call
 check_message_in_output 'ansible-deployer run -t task_with_limit -s testing -i testInfra2 -l xyzHost4' 'ERROR\! Specified hosts and/or --limit does not match any hosts'
 
 #Try execution of task without permissions
-if [ $UID -ne 0 ]
-then
-	check_message_in_output "ansible-deployer run -t root_only_task -i testInfra -s testing" "\[ERROR\]: Task forbidden"
-else
-	check_message_in_output "ansible-deployer run -t non_root_task -i testInfra -s testing" "\[ERROR\]: Task forbidden"
-fi
+check_message_in_output "ansible-deployer run -t root_only_task -i testInfra -s testing" "ran succesfully"
+check_message_in_output "ansible-deployer run -t non_root_task -i testInfra -s testing -d" "\[ERROR\]: Task forbidden"
 

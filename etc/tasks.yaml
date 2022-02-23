@@ -68,7 +68,7 @@ tasks:
     play_items:
       - run_bin_true
     allowed_for:
-      - group: test_group
+      - group: test_group2
         infra:
           - name: testInfra
             stages:
