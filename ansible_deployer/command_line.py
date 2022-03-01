@@ -71,8 +71,8 @@ def parse_options(argv):
                         help='Print debug output.')
     parser.add_argument("--syslog", "-v", default=False, action="store_true", help='Log warnings '
                         'and errors to syslog. --debug doesn\'t affect this option!')
-    parser.add_argument("--limit", "-l", nargs=1, default=[None], metavar="[LIMIT]",
-                        help='Limit task execution to specified host.')
+    parser.add_argument("--limit", "-l", nargs='+', default=[], metavar="LIMIT_1 LIMIT_2",
+                        help='Limit task execution to specified host(s).')
 
     arguments = parser.parse_args(argv)
 
@@ -87,7 +87,7 @@ def parse_options(argv):
     options["dry"] = arguments.dry
     options["debug"] = arguments.debug
     options["syslog"] = arguments.syslog
-    options["limit"] = arguments.limit[0]
+    options["limit"] = arguments.limit
 
     return options
 
@@ -141,7 +141,7 @@ def validate_options(options: dict):
             failed = True
 
     for notsup in notsupported:
-        if options[notsup] is not None:
+        if options[notsup]:
             logger.error("%s is not supported by %s", notsup, options["subcommand"])
             failed = True
 
@@ -396,7 +396,7 @@ def run_task(config: dict, options: dict, inventory: str):
             command = ["ansible-playbook", "-i", inventory, playbook]
             if options["limit"]:
                 command.append("-l")
-                command.append(options["limit"])
+                command.append(",".join(options["limit"]).rstrip(", "))
             if tags:
                 tag_string = ",".join(tags)
                 command.append("-t")

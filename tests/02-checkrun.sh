@@ -10,6 +10,7 @@ check_run_ok "ansible-deployer run -t task_with_limit -s testing -i testInfra -l
 check_run_ok "ansible-deployer run -t tagged_task_true -s testing -i testInfra"
 # # multiple hosts in limit
 check_run_ok "ansible-deployer run -t task_with_limit -s testing -i testInfra2 -l xyzHosts"
+check_run_ok "ansible-deployer run -t task_with_limit -s testing -i testInfra2 -l xyzHost1 xyzHost2"
 
 echo -e "   ___ ____                                     _   _\n  / _ \___ \            _____  _____  ___ _   _| |_(_) ___  _ __\n | | | |__) |  _____   / _ \ \/ / _ \/ __| | | | __| |/ _ \| '_ \ \n | |_| / __/  |_____| |  __/>  <  __/ (__| |_| | |_| | (_) | | | |\n  \___/_____|          \___/_/\_\___|\___|\__,_|\__|_|\___/|_| |_|\n \n  _                 _ _     _               _   _\n (_)_ ____   ____ _| (_) __| |   ___  _ __ | |_(_) ___  _ __  ___\n | | '_ \ \ / / _\` | | |/ _\` |  / _ \| '_ \| __| |/ _ \| '_ \/ __|\n | | | | \ V / (_| | | | (_| | | (_) | |_) | |_| | (_) | | | \__ \\n |_|_| |_|\_/ \__,_|_|_|\__,_|  \___/| .__/ \__|_|\___/|_| |_|___/\n                                     |_|\n \n"
 # Non-existent option values
