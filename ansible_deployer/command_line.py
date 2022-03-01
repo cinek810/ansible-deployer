@@ -504,7 +504,7 @@ def get_tags_for_task(config: dict, options: dict):
     tags = []
     for task in config["tasks"]["tasks"]:
         if task["name"] == options["task"]:
-            tags = task["tags"]
+            tags = task.get("tags", [])
 
     return tags
 

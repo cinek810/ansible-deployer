@@ -37,7 +37,6 @@ tasks:
               - prod
               - locked
     allow_limit: True
-    tags: []
 
   - name: task_empty
     play_items: []
@@ -48,7 +47,6 @@ tasks:
             stages:
               - testing
     allow_limit: True
-    tags: []
 
   - name: root_only_task
     play_items:
@@ -60,7 +58,6 @@ tasks:
             stages:
               - testing
     allow_limit: True
-    tags: []
 
   - name: non_root_task
     play_items:
@@ -72,7 +69,6 @@ tasks:
             stages:
               - testing
     allow_limit: True
-    tags: []
 
   - name: task_with_limit
     play_items:
@@ -87,7 +83,6 @@ tasks:
             stages:
               - testing
     allow_limit: True
-    tags: []
 
   - name: tagged_task_true
     play_items:
@@ -139,5 +134,4 @@ tasks:
               - testing
               - prod
     allow_limit: True
-    tags: []
 
