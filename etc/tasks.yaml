@@ -7,10 +7,8 @@ setup_hooks:
 play_items:
   - name: run_bin_true
     file: runBinTrue.yaml
-    skip: []
   - name: run_bin
     file: runBin.yaml
-    skip: []
   - name: run_skippable
     file: runBinTrue.yaml
     skip:

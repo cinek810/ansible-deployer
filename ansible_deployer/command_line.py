@@ -367,7 +367,8 @@ def get_playbooks(config: dict, options: dict):
     for play in play_names:
         for item in config["tasks"]["play_items"]:
             if item["name"] == play:
-                if item["skip"]:
+                skip = item.get("skip", [])
+                if skip:
                     for elem in item["skip"]:
                         if elem["infra"] == options["infra"] and elem["stage"] == options["stage"]:
                             logger.info("Skipping playbook %s on %s and %s stage.", play,
