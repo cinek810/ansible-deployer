@@ -15,7 +15,7 @@ jobs:
       - run:
           command: dnf install -y epel-release
       - run:
-          command: dnf install -y ansible python3 python3-pip
+          command: dnf install -y ansible python3 python3-pip sudo
       - checkout
       - run:
           name: "Install ansible-deployer"
@@ -23,6 +23,13 @@ jobs:
       - run:
           name: "Copy configuration files"
           command: cp -r ./etc /etc/ansible-deploy
+      - run:
+          name: "Add super user"
+          command: |
+            useradd deployer_user
+            gpasswd -a deployer_user root
+            groups
+            /bin/bash -lc 'groups'
       - run:
           name: "Add user to test_group"
           command: |

@@ -1,3 +1,6 @@
+user_vars:
+  super_user: "deployer_user"
+
 global_paths:
   work_dir: "/tmp"
   config_dir: "/etc/ansible-deploy"

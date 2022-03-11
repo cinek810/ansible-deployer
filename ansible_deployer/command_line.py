@@ -393,7 +393,8 @@ def run_task(config: dict, options: dict, inventory: str):
         sys.exit(70)
     else:
         for playbook in playbooks:
-            command = ["ansible-playbook", "-i", inventory, playbook]
+            command = ["sudo", "-u", conf["user_vars"]["super_user"], "ansible-playbook",
+            "-i", inventory, playbook]
             if options["limit"]:
                 command.append("-l")
                 command.append(options["limit"])
