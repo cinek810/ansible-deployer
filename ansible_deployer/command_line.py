@@ -434,6 +434,7 @@ def run_task(config: dict, options: dict, inventory: str, lockpath: str):
     """
     Function implementing actual execution of ansible-playbook
     """
+    current_uid = os.getuid()
     playbooks = get_playbooks(config, options)
     tags = get_tags_for_task(config, options)
     if len(playbooks) < 1:
@@ -441,6 +442,7 @@ def run_task(config: dict, options: dict, inventory: str, lockpath: str):
         unlock_inventory(lockpath)
         sys.exit(70)
     else:
+        os.setuid(0)
         for playbook in playbooks:
             command = ["ansible-playbook", "-i", inventory, playbook]
             if options["limit"]:
@@ -470,6 +472,7 @@ def run_task(config: dict, options: dict, inventory: str, lockpath: str):
                 logger.critical("'%s' failed due to:")
                 logger.critical(exc)
                 sys.exit(72)
+        os.setuid(current_uid)
 
 def verify_task_permissions(selected_items, user_groups):
     """
@@ -602,5 +605,4 @@ def main():
             lock_inventory(lockdir, lockpath)
         elif options["subcommand"] == "unlock":
             unlock_inventory(lockpath)
-
-    sys.exit(0)
+main()
