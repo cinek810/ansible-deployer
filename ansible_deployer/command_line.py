@@ -530,7 +530,7 @@ def main():
 
     if len(sys.argv) < 2:
         print("[ERROR]: Too few arguments", file=sys.stderr)
-        logger.error("Program will exit now.")
+        print("[ERROR]: Program will exit now.")
         sys.exit(2)
     options = parse_options(sys.argv[1:])
     logger = set_logging(options)
