@@ -444,7 +444,7 @@ def get_playbooks(config: dict, options: dict):
     # TODO add check if everything was skipped
     return playbooks
 
-def run_task(config: dict, options: dict, inventory: str):
+def run_task(config: dict, options: dict, inventory: str, lockpath: str):
     """
     Function implementing actual execution of ansible-playbook
     """
@@ -452,6 +452,7 @@ def run_task(config: dict, options: dict, inventory: str):
     tags = get_tags_for_task(config, options)
     if len(playbooks) < 1:
         logger.error("No playbooks found for requested task %s. Nothing to do.", options['task'])
+        unlock_inventory(lockpath)
         logger.error("Program will exit now.")
         sys.exit(70)
     else:
@@ -477,6 +478,7 @@ def run_task(config: dict, options: dict, inventory: str):
                     logger.error("'%s' failed due to:", command)
                     for line in std_e.split(b"\n\n"):
                         logger.error(line.decode("utf-8"))
+                    unlock_inventory(lockpath)
                     logger.error("Program will exit now.")
                     sys.exit(71)
             except Exception as exc:
@@ -613,7 +615,7 @@ def main():
                 sys.exit(errno.EPERM)
             setup_ansible(config["tasks"]["setup_hooks"], options["commit"], workdir)
             lock_inventory(lockdir, lockpath)
-            run_task(config, options, inv_file)
+            run_task(config, options, inv_file, lockpath)
             unlock_inventory(lockpath)
         elif options["subcommand"] == "lock":
             lock_inventory(lockdir, lockpath)
