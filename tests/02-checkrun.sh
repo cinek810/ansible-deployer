@@ -25,9 +25,6 @@ check_message_in_output "ansible-deployer run -t task_skipping -s prod -i testIn
 # # Always skip
 check_message_not_in_output "ansible-deployer run -t task_skipping -s testing -i testInfra2" "ran succesfully"# # Never skip
 check_message_not_in_output "ansible-deployer run -t task_skipping -s prod -i testInfra3" "\[INFO\]: Skipping playbook"
-# # unlock infra for further tests
-check_run_ok "ansible-deployer unlock -s testing -i testInfra"
-check_run_ok "ansible-deployer unlock -s testing -i testInfra2"
 
 echo -e "  ___ ____                                     _   _\n / _ \___ \            _____  _____  ___ _   _| |_(_) ___  _ __\n| | | |__) |  _____   / _ \ \/ / _ \/ __| | | | __| |/ _ \| '_ \ \n| |_| / __/  |_____| |  __/>  <  __/ (__| |_| | |_| | (_) | | | |\n \___/_____|          \___/_/\_\___|\___|\__,_|\__|_|\___/|_| |_|\n\n                               _ _\n  ___ ___  _ __ ___  _ __ ___ (_) |_ ___\n / __/ _ \| '_ \` _ \| '_ \` _ \| | __/ __|\n| (_| (_) | | | | | | | | | | | | |_\__ \ \n \___\___/|_| |_| |_|_| |_| |_|_|\__|___/\n"
 # Check --commit option
