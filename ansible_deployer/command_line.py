@@ -23,8 +23,7 @@ CFG_PERMISSIONS = "0o644"
 def verify_subcommand(command: str):
     """Function to check the first arguments for a valid subcommand"""
     if command not in ("run", "list", "lock", "unlock"):
-        print("[ERROR]: Unknown subcommand :%s", (command), file=sys.stderr)
-        print("[ERROR]: Program will exit now.")
+        print("[CRITICAL]: Unknown subcommand :%s", (command), file=sys.stderr)
         sys.exit("55")
 
 def set_logging(options: dict):
@@ -121,8 +120,7 @@ def create_workdir(timestamp: str):
         os.makedirs(seq_path)
         os.chdir(seq_path)
     except Exception as e:
-        logger.error("Failed to create work dir:%s error was:%s", seq_path, e, file=sys.stderr)
-        logger.error("Program will exit now.")
+        logger.critical("Failed to create work dir:%s error was:%s", seq_path, e, file=sys.stderr)
         sys.exit(90)
     logger.debug("Successfully created workdir: %s", seq_path)
     return seq_path
@@ -153,8 +151,7 @@ def validate_options(options: dict):
             failed = True
 
     if failed:
-        logger.error("Failed to validate options")
-        logger.error("Program will exit now.")
+        logger.critical("Failed to validate options")
         sys.exit(55)
 
 def load_configuration_file(config_file: str):
@@ -168,8 +165,7 @@ def load_configuration_file(config_file: str):
         try:
             config = yaml.safe_load(config_stream)
         except yaml.YAMLError as e:
-            logger.error(e)
-            logger.error("Program will exit now.")
+            logger.critical(e)
             sys.exit(51)
 
     with open(os.path.join(conf["global_paths"]["config_dir"], "schema", config_file), "r",
@@ -177,14 +173,12 @@ def load_configuration_file(config_file: str):
         try:
             schema = yaml.safe_load(schema_stream)
         except yaml.YAMLError as e:
-            logger.error(e)
-            logger.error("Program will exit now.")
+            logger.critical(e)
             sys.exit(52)
 
     validator = Validator(schema)
     if not validator.validate(config, schema):
-        logger.error(validator.errors)
-        logger.error("Program will exit now.")
+        logger.critical(validator.errors)
         sys.exit(53)
 
     logger.debug("Loaded:\n%s", str(config))
@@ -232,8 +226,7 @@ def validate_option_by_dict_with_name(optval: str, conf: dict):
             if elem["name"] == optval:
                 break
         else:
-            logger.error("%s not found in configuration file.", optval)
-            logger.error("Program will exit now.")
+            logger.critical("%s not found in configuration file.", optval)
             sys.exit(54)
 
     return elem
@@ -303,9 +296,8 @@ def validate_option_values_against_config(config: dict, options: dict):
                             selected_items["limit"] = options["limit"]
                             break
                 else:
-                    logger.error("Limit %s is not available for task %s.", options["limit"],
+                    logger.critical("Limit %s is not available for task %s.", options["limit"],
                                  options["task"])
-                    logger.error("Program will exit now.")
                     sys.exit(54)
 
     selected_items["commit"] = validate_commit(options, config)
@@ -340,13 +332,11 @@ def lock_inventory(lockdir: str, lockpath: str):
     except FileExistsError:
         with open(lockpath, "r", encoding="utf8") as fh:
             proc_pid, proc_user = fh.readlines()
-        logger.error("Another process (PID: %s) started by user %s is using this infrastructure, "
-                     "please try again later.", proc_pid.strip(), proc_user.strip())
-        logger.error("Program will exit now.")
+        logger.critical("Another process (PID: %s) started by user %s is using this infrastructure"
+                        ", please try again later.", proc_pid.strip(), proc_user.strip())
         sys.exit(61)
     except Exception as exc:
-        logger.error(exc)
-        logger.error("Program will exit now.")
+        logger.critical(exc)
         sys.exit(62)
 
 def unlock_inventory(lockpath: str):
@@ -360,12 +350,10 @@ def unlock_inventory(lockpath: str):
         os.remove(lockpath)
         logger.info("Lock %s has been removed.", lockpath)
     except FileNotFoundError:
-        logger.error("Requested lock %s was not found. Nothing to do.", lockpath)
-        logger.error("Program will exit now.")
+        logger.critical("Requested lock %s was not found. Nothing to do.", lockpath)
         sys.exit(63)
     except Exception as exc:
-        logger.error(exc)
-        logger.error("Program will exit now.")
+        logger.critical(exc)
         sys.exit(64)
 
 def setup_ansible(setup_hooks: list, commit: str, workdir: str):
@@ -392,8 +380,7 @@ def setup_ansible(setup_hooks: list, commit: str, workdir: str):
                     if proc.returncode != 0:
                         failed = True
             except Exception as e:
-                logger.error("Failed executing %s: %s", hook["opts"]["file"], e)
-                logger.error("Program will exit now.")
+                logger.critical("Failed executing %s: %s", hook["opts"]["file"], e)
                 sys.exit(41)
             else:
                 if hook_out != ("", ""):
@@ -401,8 +388,7 @@ def setup_ansible(setup_hooks: list, commit: str, workdir: str):
                                 hook_out[0].decode(), hook_out[1].decode())
                     logger.info(hook_out)
                 if proc.returncode:
-                    logger.error("Setup hook %s failed, cannot continue", hook["name"])
-                    logger.error("Program will exit now.")
+                    logger.critical("Setup hook %s failed, cannot continue", hook["name"])
                     sys.exit(40)
                 else:
                     logger.info("Setup completed in %s", os.getcwd())
@@ -410,7 +396,7 @@ def setup_ansible(setup_hooks: list, commit: str, workdir: str):
         else:
             logger.error("Not supported")
         if failed:
-            logger.error("Program will exit now.")
+            logger.critical("Program will exit now.")
             sys.exit(69)
 
 def get_playbooks(config: dict, options: dict):
@@ -451,9 +437,8 @@ def run_task(config: dict, options: dict, inventory: str, lockpath: str):
     playbooks = get_playbooks(config, options)
     tags = get_tags_for_task(config, options)
     if len(playbooks) < 1:
-        logger.error("No playbooks found for requested task %s. Nothing to do.", options['task'])
+        logger.critical("No playbooks found for requested task %s. Nothing to do.", options['task'])
         unlock_inventory(lockpath)
-        logger.error("Program will exit now.")
         sys.exit(70)
     else:
         for playbook in playbooks:
@@ -479,12 +464,11 @@ def run_task(config: dict, options: dict, inventory: str, lockpath: str):
                     for line in std_e.split(b"\n\n"):
                         logger.error(line.decode("utf-8"))
                     unlock_inventory(lockpath)
-                    logger.error("Program will exit now.")
+                    logger.critical("Program will exit now.")
                     sys.exit(71)
             except Exception as exc:
-                logger.error("'%s' failed due to:")
-                logger.error(exc)
-                logger.error("Program will exit now.")
+                logger.critical("'%s' failed due to:")
+                logger.critical(exc)
                 sys.exit(72)
 
 def verify_task_permissions(selected_items, user_groups):
@@ -561,8 +545,7 @@ def load_global_configuration():
             config = yaml.safe_load(config_stream)
             return config
         except yaml.YAMLError as e:
-            logger.error(e, file=sys.stderr)
-            logger.error("Program will exit now.")
+            logger.critical(e, file=sys.stderr)
             sys.exit(51)
 
 def get_tags_for_task(config: dict, options: dict):
@@ -581,8 +564,7 @@ def main():
     start_ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
     if len(sys.argv) < 2:
-        print("[ERROR]: Too few arguments", file=sys.stderr)
-        print("[ERROR]: Program will exit now.")
+        print("[CRITICAL]: Too few arguments", file=sys.stderr)
         sys.exit(2)
     options = parse_options(sys.argv[1:])
     logger = set_logging(options)
@@ -610,8 +592,7 @@ def main():
         lockpath = os.path.join(lockdir, inv_file.replace(os.sep, "_"))
         if options["subcommand"] == "run":
             if not verify_task_permissions(selected_items, user_groups):
-                logger.error("Task forbidden")
-                logger.error("Program will exit now.")
+                logger.critical("Task forbidden")
                 sys.exit(errno.EPERM)
             setup_ansible(config["tasks"]["setup_hooks"], options["commit"], workdir)
             lock_inventory(lockdir, lockpath)
