@@ -429,17 +429,23 @@ def setup_ansible(setup_hooks: list, commit: str, workdir: str):
                                       stderr=subprocess.PIPE,
                                       stdin=subprocess.PIPE,
                                       env=hook_env) as proc:
-                    hook_out = proc.communicate()
+                    std_out, std_err = proc.communicate()
                     if proc.returncode != 0:
                         failed = True
             except Exception as e:
                 logger.critical("Failed executing %s: %s", hook["opts"]["file"], e)
                 sys.exit(41)
             else:
-                if hook_out != ("", ""):
-                    logger.info("setup_hook(%s),\nstdout:\n%s\nstdrr:\n%s", hook["name"],
-                                hook_out[0].decode(), hook_out[1].decode())
-                    logger.info(hook_out)
+                if std_out:
+                    logger.info("Setup hook %s stdout:", hook["name"])
+                    for line in std_out.split(b"\n"):
+                        if line:
+                            logger.info(line.decode("utf-8"))
+                if std_err:
+                    logger.error("Setup hook %s stderr:", hook["name"])
+                    for line in std_err.split(b"\n"):
+                        if line:
+                            logger.error(line.decode("utf-8"))
                 if proc.returncode:
                     logger.critical("Setup hook %s failed, cannot continue", hook["name"])
                     sys.exit(40)
