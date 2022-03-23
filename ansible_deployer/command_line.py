@@ -536,7 +536,7 @@ def get_inventory_file(config: dict, options: dict):
         if item["name"] == options["infra"]:
             for elem in item["stages"]:
                 if elem["name"] == options["stage"]:
-                    inv_file = os.path.basename(elem["inventory"])
+                    inv_file = elem["inventory"]
 
     return inv_file
 
@@ -605,7 +605,7 @@ def main():
     else:
         lockdir = os.path.join(conf["global_paths"]["work_dir"], "locks")
         inv_file = get_inventory_file(config, options)
-        lockpath = os.path.join(lockdir, inv_file.replace(os.sep, "_"))
+        lockpath = os.path.join(lockdir, inv_file.lstrip(f".{os.sep}").replace(os.sep, "_"))
         if options["subcommand"] == "run":
             if not verify_task_permissions(selected_items, user_groups):
                 logger.error("Task forbidden")
