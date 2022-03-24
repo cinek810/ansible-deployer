@@ -154,11 +154,11 @@ def validate_options(options: dict):
         logger.critical("Failed to validate options")
         sys.exit(55)
 
-def load_configuration_file(config_file: str):
+def load_configuration_file(config_path: str):
     """Function responsible for single file loading and validation"""
     #TODO: Add verification of owner/group/persmissions
-    config_path = os.path.join(conf["global_paths"]["config_dir"], config_file)
     check_cfg_permissions_and_owner(config_path)
+    config_file = os.path.basename(config_path)
     logger.debug("Loading :%s", config_file)
 
     with open(config_path, "r", encoding="utf8") as config_stream:
@@ -200,15 +200,54 @@ def check_cfg_permissions_and_owner(cfg_path: str):
         logger.error("Program will exit now.")
         sys.exit(41)
 
+def get_config_paths():
+    """Function to create absolute config paths and check their extension compatibility"""
+    ymls = []
+    yamls = []
+    infra_cfg = None
+    tasks_cfg = None
+
+    for config in os.listdir(conf["global_paths"]["config_dir"]):
+        if config != "ansible-deploy.yaml":
+            if config.endswith(".yml"):
+                ymls.append(config)
+            elif config.endswith(".yaml"):
+                yamls.append(config)
+
+            if config.startswith("infra"):
+                infra_cfg = os.path.join(conf["global_paths"]["config_dir"], config)
+            elif config.startswith("tasks"):
+                tasks_cfg = os.path.join(conf["global_paths"]["config_dir"], config)
+
+    if len(ymls) > 0 and len(yamls) > 0:
+        logger.debug("Config files with yml extensions: %s", " ".join(ymls))
+        logger.debug("Config files with yaml extensions: %s", " ".join(yamls))
+        logger.critical("Config files with different extensions (.yml and .yaml) are not allowed "
+                        "in conf dir %s !", conf["global_paths"]["config_dir"])
+        sys.exit(42)
+
+    if not infra_cfg:
+        logger.critical("Infrastructure configuration file does not exist in %s!",
+                        conf["global_paths"]["config_dir"])
+        sys.exit(43)
+
+    if not tasks_cfg:
+        logger.critical("Tasks configuration file does not exist in %s!",
+                        conf["global_paths"]["config_dir"])
+        sys.exit(44)
+
+    return infra_cfg, tasks_cfg
+
 def load_configuration():
     """Function responsible for reading configuration files and running a schema validator against
     it
     """
     logger.debug("load_configuration called")
     #TODO: validate files/directories permissions - should be own end editable only by special user
+    infra_cfg, tasks_cfg = get_config_paths()
 
-    infra = load_configuration_file("infra.yaml")
-    tasks = load_configuration_file("tasks.yaml")
+    infra = load_configuration_file(infra_cfg)
+    tasks = load_configuration_file(tasks_cfg)
 
     config = {}
     config["infra"] = infra["infrastructures"]
