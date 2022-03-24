@@ -49,6 +49,8 @@ check_run_ok "ansible-deployer list --debug" "\[DEBUG\]: load_configuration call
 
 # Check --limit option
 check_message_in_output 'ansible-deployer run -t task_with_limit -s testing -i testInfra2 -l xyzHost4' 'ERROR\! Specified hosts and/or --limit does not match any hosts'
+check_message_in_output 'ansible-deployer run -t task_without_limit -s testing -i testInfra -l testHost1' '\[CRITICAL\]: Limit testHost1 is not available for task task_without_limit.'
+check_message_in_output 'ansible-deployer run -t task_exec_bin_true -s prod -i testInfra -l testHost1' '\[CRITICAL\]: Limit testHost1 is not available for task task_exec_bin_true.'
 
 #Try execution of task without permissions
 if [ $UID -ne 0 ]

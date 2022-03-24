@@ -292,7 +292,8 @@ def validate_option_values_against_config(config: dict, options: dict):
             elif option == "limit":
                 for item in config["tasks"]["tasks"]:
                     if item["name"] == options["task"]:
-                        if item["allow_limit"]:
+                        allow_limit = item.get("allow_limit", False)
+                        if allow_limit:
                             selected_items["limit"] = options["limit"]
                             break
                 else:
