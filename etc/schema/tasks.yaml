@@ -81,7 +81,7 @@ tasks:
                 type: string
       allow_limit:
         type: boolean
-        required: True
+        required: False
       tags:
         type: list
         required: False
