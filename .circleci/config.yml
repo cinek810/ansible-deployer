@@ -15,7 +15,7 @@ jobs:
       - run:
           command: dnf install -y epel-release
       - run:
-          command: dnf install -y ansible python3 python3-pip
+          command: dnf install -y ansible python3 python3-pip e2fsprogs
       - checkout
       - run:
           name: "Install ansible-deployer"
@@ -31,11 +31,45 @@ jobs:
             groups
             /bin/bash -lc 'groups'
       - run:
+          name: "costam"
+          command: cat /etc/passwd
+
+  run_tests:
+    docker:
+      - image: almalinux
+        user: test_user
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          command: sudo dnf install -y ansible python3
+      - run:
+          name: "Install ansible-deployer"
+          command: "pip3.6 install ."
+      - run:
+          name: "Copy configuration files"
+          command: cp -r ./etc /etc/ansible-deploy
+      - run:
           name: "Run shell script for argument parsing"
           command: |
             ./tests/01-test_argument_parsing.sh
             ./tests/02-checkrun.sh
             ./tests/05-permission_checks.sh
+      - run:
+          name: "Create invalid workdir"
+          command: |
+            cp ./tests/files/etc/ansible-deploy_workdir.yaml /etc/ansible-deploy/ansible-deploy.yaml
+            mkdir /tmp/workdir
+            chmod 0400 /tmp/workdir
+      - run:
+          name: "Workdir not writable tests"
+          user: nobody
+          command: |
+            chmod 0400 /tmp/workdir
+            ./tests/06-error_create_workdir.sh
+      - run:
+          name: "Reset global configuration"
+          command: cp ./etc/ansible-deploy.yaml /etc/ansible-deploy/
       - run:
           name: "Copy failing hooks"
           command: cp ./tests/files/etc/hooks/* /etc/ansible-deploy/hooks
@@ -87,6 +121,7 @@ workflows:
   tests-without-ansible-playbook:
     jobs:
       - prepare_env
+      - run_tests
         #      - install_and_exec:
         #          requires:
         #            - prepare_env

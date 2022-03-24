@@ -112,29 +112,34 @@ def create_workdir(timestamp: str):
     #
     #TODO: Add locking of the directory
 
-    if short_ts not in os.listdir(conf["global_paths"]["work_dir"]):
-        seq_path = os.path.join(date_dir, f"{conf['file_naming']['sequence_prefix']}0000")
-        try:
-            os.mkdir(date_dir)
-            os.chmod(date_dir, int(conf["permissions"]["parent_workdir"].split("o")[1], 8))
-            logger.debug("Successfully created parent work dir: %s", seq_path)
-        except Exception as e:
-            logger.critical("Failed to create parent work dir: %s error was: %s", seq_path, e,
-                            file=sys.stderr)
-            sys.exit(90)
-    else:
-        sequence_list = os.listdir(date_dir)
-        sequence_list.sort()
-        new_sequence = int(sequence_list[-1].split(conf['file_naming']['sequence_prefix'])[1]) + 1
-        seq_path = os.path.join(date_dir, f"{conf['file_naming']['sequence_prefix']}"
-                                          f"{new_sequence:04d}")
+    try:
+        if short_ts not in os.listdir(conf["global_paths"]["work_dir"]):
+            seq_path = os.path.join(date_dir, f"{conf['file_naming']['sequence_prefix']}0000")
+            try:
+                os.mkdir(date_dir)
+                os.chmod(date_dir, int(conf["permissions"]["parent_workdir"].split("o")[1], 8))
+                logger.debug("Successfully created parent work dir: %s", date_dir)
+            except Exception as e:
+                logger.critical("Failed to create parent work dir: %s error was: %s", date_dir, e)
+                sys.exit(90)
+        else:
+            sequence_list = os.listdir(date_dir)
+            sequence_list.sort()
+            new_sequence = int(sequence_list[-1].split(conf['file_naming']['sequence_prefix'])[1])\
+                               + 1
+            seq_path = os.path.join(date_dir, f"{conf['file_naming']['sequence_prefix']}"
+                                    f"{new_sequence:04d}")
+
+    except Exception as exc:
+        logger.critical("Failed to list work dir due to: %s", exc)
+        sys.exit(91)
 
     try:
         os.mkdir(seq_path)
         os.chdir(seq_path)
-    except Exception as e:
-        logger.critical("Failed to create work dir: %s error was: %s", seq_path, e, file=sys.stderr)
-        sys.exit(91)
+    except Exception as exc:
+        logger.critical("Failed to create work dir: %s due to: %s", seq_path, exc)
+        sys.exit(92)
     logger.debug("Successfully created workdir: %s", seq_path)
     return seq_path
 
