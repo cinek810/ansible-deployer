@@ -35,6 +35,13 @@ jobs:
           command: |
             ./tests/01-test_argument_parsing.sh
             ./tests/02-checkrun.sh
+      - run:
+          name: "Create incompatible config file"
+          command: cp ./tests/files/incompatible_config.yml /etc/ansible-deploy
+      - run:
+          name: "Run shell script for invalid config tests"
+          command: |
+            ./tests/03-invalid_configs.sh
 
   install_and_exec:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
