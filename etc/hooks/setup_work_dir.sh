@@ -49,3 +49,4 @@ cat << END > ./prod_infra3_inv.yaml
 localhost
 END
 
+echo "setup_work_dir finished succesfully"
