@@ -35,6 +35,7 @@ jobs:
           command: |
             ./tests/01-test_argument_parsing.sh
             ./tests/02-checkrun.sh
+            ./tests/05-permission_checks.sh
       - run:
           name: "Create incompatible config file"
           command: cp ./tests/files/incompatible_config.yml /etc/ansible-deploy

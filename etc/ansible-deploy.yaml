@@ -5,3 +5,6 @@ global_paths:
 file_naming:
   log_file_name_frmt: "ansible-deploy_execution_{}.log"
   sequence_prefix: "SEQ"
+
+permissions:
+  parent_workdir: "0o1750"
