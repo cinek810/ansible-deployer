@@ -1,0 +1,36 @@
+setup_hooks:
+  - name: setup_ansible
+    module: script
+    opts:
+      file: /etc/ansible-deploy/hooks/setup_work_dir.sh
+  - name: exit_hook
+    module: script
+    opts:
+      file: /etc/ansible-deploy/hooks/exit_hook.sh
+
+play_items:
+  - name: run_bin_true
+    file: runBinTrue.yaml
+
+tasks:
+  - name: task_exec_bin_true
+    play_items:
+      - run_bin_true
+    allowed_for:
+      - group: test_group
+        infra:
+          - name: testInfra
+            stages:
+              - testing
+        commit:
+          - test_version
+      - group: root
+        infra:
+          - name: testInfra
+            stages:
+              - testing
+              - prod
+              - locked
+        commit:
+          - test_version
+    allow_limit: False

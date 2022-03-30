@@ -39,6 +39,7 @@ check_message_in_output "ansible-deployer run -t task_with_commit -s testing -i 
 echo -e "   ___ ____                                     _   _\n  / _ \___ \            _____  _____  ___ _   _| |_(_) ___  _ __\n | | | |__) |  _____   / _ \ \/ / _ \/ __| | | | __| |/ _ \| '_ \ \n | |_| / __/  |_____| |  __/>  <  __/ (__| |_| | |_| | (_) | | | |\n  \___/_____|          \___/_/\_\___|\___|\__,_|\__|_|\___/|_| |_|\n \n        _   _\n   ___ | |_| |__   ___ _ __ ___\n  / _ \| __| '_ \ / _ \ '__/ __|\n | (_) | |_| | | |  __/ |  \__ \\n  \___/ \__|_| |_|\___|_|  |___/\n \n"
 # misc
 check_message_in_output 'ansible-deployer run -t task_empty -s testing -i testInfra' '\[CRITICAL\]: No playbooks found for requested task'
+check_message_in_output 'ansible-deployer run -t task_exec_bin_true -s prod -i testInfra' '\[INFO\]: setup_work_dir finished succesfully'
 
 #Artificially generate lock
 check_run_ok "ansible-deployer lock -s locked -i testInfra"
