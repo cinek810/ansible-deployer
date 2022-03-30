@@ -61,7 +61,7 @@ def parse_options(argv):
     specific subcommand outside"""
     parser = argparse.ArgumentParser(add_help=True)
 
-    parser.add_argument("subcommand", nargs=1, default=[None], metavar="SUBCOMMAND",
+    parser.add_argument("subcommand", nargs='?', default=None, metavar="SUBCOMMAND",
                         help='Specify command to run. Available commands: run, list, lock, unlock.')
     parser.add_argument("--infrastructure", "-i", nargs=1, default=[None], metavar="INFRASTRUCTURE",
                         help='Specify infrastructure for deploy.')
@@ -81,8 +81,13 @@ def parse_options(argv):
 
     arguments = parser.parse_args(argv)
 
+    if not arguments.subcommand:
+        print("[CRITICAL]: First positional argument (subcommand) is required! Available commands "
+              "are: run, list, lock, unlock.")
+        sys.exit(57)
+
     options = {}
-    options["subcommand"] = arguments.subcommand[0]
+    options["subcommand"] = arguments.subcommand.lower()
     verify_subcommand(options["subcommand"])
 
     options["infra"] = arguments.infrastructure[0]

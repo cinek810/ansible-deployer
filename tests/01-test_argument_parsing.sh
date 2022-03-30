@@ -12,6 +12,7 @@ check_message_in_output 'ansible-deployer run' '\[ERROR\]: stage is required for
 check_message_in_output 'ansible-deployer run  -t testTask' '\[ERROR\]: stage is required for run'
 check_message_in_output 'ansible-deployer run  -t testTask' '\[ERROR\]: infra is required for run'
 check_message_in_output 'ansible-deployer run  -t testTask -i testInfra' 'stage is required for run'
+check_message_in_output 'ansible-deployer -t testTask -i testInfra' '\[CRITICAL\]: First positional argument (subcommand) is required! Available commands are: run, list, lock, unlock.'
 
 check_message_in_output 'ansible-deployer lock -t testTask -i testInfra' '\[ERROR\]: task is not supported by lock'
 check_message_in_output 'ansible-deployer lock -t testTask -i testInfra -s prod' '\[ERROR\]: task is not supported by lock'
