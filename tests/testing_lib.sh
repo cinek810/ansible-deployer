@@ -41,3 +41,12 @@ check_message_not_in_output() {
         fi
 }
 
+check_file_permissions() {
+	filemode=$(stat -c '%a' $1)
+	if [ $filemode -eq $2 ]
+	then
+		echo "OK: $1 has correct permissions $2"
+	else
+		echo "FAILED: $1 has incorrect permissions $2"
+	fi
+}

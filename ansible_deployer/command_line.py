@@ -114,6 +114,14 @@ def create_workdir(timestamp: str):
 
     if short_ts not in os.listdir(conf["global_paths"]["work_dir"]):
         seq_path = os.path.join(date_dir, f"{conf['file_naming']['sequence_prefix']}0000")
+        try:
+            os.mkdir(date_dir)
+            os.chmod(date_dir, int(conf["permissions"]["parent_workdir"].split("o")[1], 8))
+            logger.debug("Successfully created parent work dir: %s", seq_path)
+        except Exception as e:
+            logger.critical("Failed to create parent work dir: %s error was: %s", seq_path, e,
+                            file=sys.stderr)
+            sys.exit(90)
     else:
         sequence_list = os.listdir(date_dir)
         sequence_list.sort()
@@ -122,11 +130,11 @@ def create_workdir(timestamp: str):
                                           f"{new_sequence:04d}")
 
     try:
-        os.makedirs(seq_path)
+        os.mkdir(seq_path)
         os.chdir(seq_path)
     except Exception as e:
-        logger.critical("Failed to create work dir:%s error was:%s", seq_path, e, file=sys.stderr)
-        sys.exit(90)
+        logger.critical("Failed to create work dir: %s error was: %s", seq_path, e, file=sys.stderr)
+        sys.exit(91)
     logger.debug("Successfully created workdir: %s", seq_path)
     return seq_path
 
