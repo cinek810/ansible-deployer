@@ -50,7 +50,7 @@ def set_logging_to_file(log_dir: str, timestamp: str):
     """Function adding file handler to existing logger"""
     os.makedirs(log_dir, exist_ok=True)
     log_path = os.path.join(log_dir,
-                                conf["file_naming"]["log_file_name_frmt"].format(timestamp))
+                            conf["file_naming"]["log_file_name_frmt"].format(timestamp))
     file_handler = logging.FileHandler(log_path)
     file_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s]: %(message)s"))
     file_handler.setLevel(logging.DEBUG)
@@ -316,7 +316,7 @@ def validate_commit(options: dict, config: dict):
                     break
                 else:
                     logger.error("Requested commit %s is not valid for task %s.",
-                    options["commit"], options["task"])
+                                 options["commit"], options["task"])
                     logger.error("Program will exit now.")
                     sys.exit(56)
 
@@ -350,7 +350,7 @@ def validate_option_values_against_config(config: dict, options: dict):
                             break
                 else:
                     logger.critical("Limit %s is not available for task %s.", options["limit"],
-                                 options["task"])
+                                    options["task"])
                     sys.exit(54)
 
     selected_items["commit"] = validate_commit(options, config)
