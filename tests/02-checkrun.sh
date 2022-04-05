@@ -20,11 +20,11 @@ check_message_in_output 'ansible-deployer run -t task_exec_bin_true -s prod_ERR 
 echo -e "   ___ ____                                     _   _\n  / _ \___ \            _____  _____  ___ _   _| |_(_) ___  _ __\n | | | |__) |  _____   / _ \ \/ / _ \/ __| | | | __| |/ _ \| '_ \ \n | |_| / __/  |_____| |  __/>  <  __/ (__| |_| | |_| | (_) | | | |\n  \___/_____|          \___/_/\_\___|\___|\__,_|\__|_|\___/|_| |_|\n \n      _    _             _\n  ___| | _(_)_ __  _ __ (_)_ __   __ _\n / __| |/ / | '_ \| '_ \| | '_ \ / _\` |\n \__ \   <| | |_) | |_) | | | | | (_| |\n |___/_|\_\_| .__/| .__/|_|_| |_|\__, |\n            |_|   |_|            |___/\n \n"
 # Check infra/stage skipping
 # # Sometimes skip (depending on stage)
-check_message_in_output "ansible-deployer run -t task_skipping -s testing -i testInfra" "\[INFO\]: Skipping playbook"
+check_message_in_output "ansible-deployer run -t task_skipping -s testing -i testInfra" "\[INFO\]: Skipping playitem"
 check_message_in_output "ansible-deployer run -t task_skipping -s prod -i testInfra" "ran succesfully"
 # # Always skip
 check_message_not_in_output "ansible-deployer run -t task_skipping -s testing -i testInfra2" "ran succesfully"# # Never skip
-check_message_not_in_output "ansible-deployer run -t task_skipping -s prod -i testInfra3" "\[INFO\]: Skipping playbook"
+check_message_not_in_output "ansible-deployer run -t task_skipping -s prod -i testInfra3" "\[INFO\]: Skipping playitem"
 
 echo -e "  ___ ____                                     _   _\n / _ \___ \            _____  _____  ___ _   _| |_(_) ___  _ __\n| | | |__) |  _____   / _ \ \/ / _ \/ __| | | | __| |/ _ \| '_ \ \n| |_| / __/  |_____| |  __/>  <  __/ (__| |_| | |_| | (_) | | | |\n \___/_____|          \___/_/\_\___|\___|\__,_|\__|_|\___/|_| |_|\n\n                               _ _\n  ___ ___  _ __ ___  _ __ ___ (_) |_ ___\n / __/ _ \| '_ \` _ \| '_ \` _ \| | __/ __|\n| (_| (_) | | | | | | | | | | | | |_\__ \ \n \___\___/|_| |_| |_|_| |_| |_|_|\__|___/\n"
 # Check --commit option
@@ -38,7 +38,7 @@ check_message_in_output "ansible-deployer run -t task_with_commit -s testing -i 
 
 echo -e "   ___ ____                                     _   _\n  / _ \___ \            _____  _____  ___ _   _| |_(_) ___  _ __\n | | | |__) |  _____   / _ \ \/ / _ \/ __| | | | __| |/ _ \| '_ \ \n | |_| / __/  |_____| |  __/>  <  __/ (__| |_| | |_| | (_) | | | |\n  \___/_____|          \___/_/\_\___|\___|\__,_|\__|_|\___/|_| |_|\n \n        _   _\n   ___ | |_| |__   ___ _ __ ___\n  / _ \| __| '_ \ / _ \ '__/ __|\n | (_) | |_| | | |  __/ |  \__ \\n  \___/ \__|_| |_|\___|_|  |___/\n \n"
 # misc
-check_message_in_output 'ansible-deployer run -t task_empty -s testing -i testInfra' '\[CRITICAL\]: No playbooks found for requested task'
+check_message_in_output 'ansible-deployer run -t task_empty -s testing -i testInfra' '\[CRITICAL\]: No playitems found for requested task'
 check_message_in_output 'ansible-deployer run -t task_exec_bin_true -s prod -i testInfra' '\[INFO\]: setup_work_dir finished succesfully'
 
 #Artificially generate lock
