@@ -18,11 +18,11 @@ from cerberus import Validator
 
 APP_CONF = "/etc/ansible-deploy/ansible-deploy.yaml"
 CFG_PERMISSIONS = "0o644"
-
+SUBCOMMANDS = ("run", "list", "lock", "unlock", "verify")
 
 def verify_subcommand(command: str):
     """Function to check the first arguments for a valid subcommand"""
-    if command not in ("run", "list", "lock", "unlock"):
+    if command not in SUBCOMMANDS:
         print("[CRITICAL]: Unknown subcommand :%s", (command), file=sys.stderr)
         sys.exit("55")
 
@@ -62,7 +62,7 @@ def parse_options(argv):
     parser = argparse.ArgumentParser(add_help=True)
 
     parser.add_argument("subcommand", nargs='?', default=None, metavar="SUBCOMMAND",
-                        help='Specify command to run. Available commands: run, list, lock, unlock.')
+                        help='Specify subcommand to execute. Available commands: '+str(SUBCOMMANDS))
     parser.add_argument("--infrastructure", "-i", nargs=1, default=[None], metavar="INFRASTRUCTURE",
                         help='Specify infrastructure for deploy.')
     parser.add_argument("--stage", "-s", nargs=1, default=[None], metavar="STAGE",
@@ -146,6 +146,9 @@ def validate_options(options: dict):
 
     if options["subcommand"] == "run":
         required = ["task", "infra", "stage"]
+    elif options["subcommand"] == "verify":
+        required = ["task", "infra", "stage"]
+        notsupported = ["commit"]
     elif options["subcommand"] in ("lock", "unlock"):
         required = ["infra", "stage"]
         notsupported = ["task", "commit", "limit"]
@@ -469,7 +472,13 @@ def get_playitems(config: dict, options: dict):
 
     for item in config["tasks"]["tasks"]:
         if item["name"] == options["task"]:
-            play_names = item["play_items"]
+            if options["subcommand"] == "run":
+                play_names = item["play_items"]
+            elif options["subcommand"] == "verify":
+                play_names = item["verify_items"]
+            else:
+                logger.critical("Should have never happen. Uncleaned lock left")
+                sys.exit(130)
 
     for play in play_names:
         for item in config["tasks"]["play_items"]:
@@ -482,9 +491,9 @@ def get_playitems(config: dict, options: dict):
                                         options["infra"], options["stage"])
                             break
                     else:
-                        playitems.append(item["file"])
+                        playitems.append(item)
                 else:
-                    playitems.append(item["file"])
+                    playitems.append(item)
 
     # TODO add check if everything was skipped
     return playitems
@@ -499,16 +508,26 @@ def run_playitem(config: dict, options: dict, inventory: str, lockpath: str):
         logger.critical("No playitems found for requested task %s. Nothing to do.", options['task'])
         unlock_inventory(lockpath)
         sys.exit(70)
-    else:
+    elif playitems is not None:
         for playitem in playitems:
-            command = ["ansible-playbook", "-i", inventory, playitem]
-            if options["limit"]:
-                command.append("-l")
-                command.append(options["limit"])
-            if tags:
-                tag_string = ",".join(tags)
-                command.append("-t")
-                command.append(tag_string)
+            if "runner" in playitem and playitem["runner"] == "py.test":
+                command = ["py.test", "--ansible-inventory", inventory]
+                if options["limit"]:
+                    command.append("--hosts='ansible://")
+                    command.append(options["limit"]+"'")
+                else:
+                    command.append("--hosts=ansible://all")
+                command.append("--junit-xml=junit_"+options['task']+'.xml')
+                command.append("./"+playitem["file"])
+            else:
+                command = ["ansible-playbook", "-i", inventory, playitem["file"]]
+                if options["limit"]:
+                    command.append("-l")
+                    command.append(options["limit"])
+                if tags:
+                    tag_string = ",".join(tags)
+                    command.append("-t")
+                    command.append(tag_string)
             logger.debug("Running '%s'.", command)
             try:
                 with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as \
@@ -529,6 +548,11 @@ def run_playitem(config: dict, options: dict, inventory: str, lockpath: str):
                 logger.critical("'%s' failed due to:")
                 logger.critical(exc)
                 sys.exit(72)
+    else:
+        logger.error("No playitems defined for action")
+        unlock_inventory(lockpath)
+        sys.exit(errno.ENOENT)
+
 
 def verify_task_permissions(selected_items, user_groups):
     """
@@ -629,7 +653,7 @@ def main():
     logger = set_logging(options)
 
     conf = load_global_configuration()
-    if options["subcommand"] == "run":
+    if options["subcommand"] in ("run", "verify"):
         workdir = create_workdir(start_ts)
         set_logging_to_file(workdir, start_ts)
 
@@ -649,7 +673,7 @@ def main():
         lockdir = os.path.join(conf["global_paths"]["work_dir"], "locks")
         inv_file = get_inventory_file(config, options)
         lockpath = os.path.join(lockdir, inv_file.lstrip(f".{os.sep}").replace(os.sep, "_"))
-        if options["subcommand"] == "run":
+        if options["subcommand"] in ("run", "verify"):
             if not verify_task_permissions(selected_items, user_groups):
                 logger.critical("Task forbidden")
                 sys.exit(errno.EPERM)
