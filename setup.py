@@ -1,39 +1,65 @@
 """Setuptools configuration for ansible-deployer"""
-import pathlib
-import os
+from pathlib import Path
+from shutil import copytree, copy
+from sys import platform, exit
+from os import mkdir, environ, walk, makedirs, sep
+from os.path import join, split
 from setuptools import setup
 
-# The directory containing this file
-HERE = pathlib.Path(__file__).parent
 
-# The text of the README file
-README = (HERE / "README.md").read_text()
+CFG_SOURCE = join(Path(__file__).parent, "etc")
+
+def get_cfg_location():
+    """Get destination of supplementary and config files"""
+    if platform == "linux":
+        location = join(environ["HOME"], ".ansible-deployer")
+    else:
+        print("[CRITICAL]: Your platform is not supported!")
+        exit(10)
+
+    return location
+
+def create_cfg_location(location: str):
+    """Create destination of supplementary and config files"""
+    try:
+        mkdir(location)
+    except FileExistsError:
+        print(f"[WARNING]: Config location already exists at {location}. Updating all files"
+        " included.")
+    except Exception as exc:
+        print(f"[CRITICAL]: Unable to create config location {location} due to {exc}.")
+        exit(11)
+
+    return location
+
+def install_configs(src_path: str, dst_path: str):
+    """Copy supplementary and config files to destination"""
+    try:
+        copytree(src_path, dst_path)
+    except FileExistsError:
+        for root, _, files in walk(src_path):
+            for file in files:
+                print(file)
+                full_path = join(root, file)
+                if split(full_path)[0] == src_path:
+                    copy(full_path, dst_path)
+                else:
+                    sub_path = join(dst_path, root.replace(src_path, "").strip(sep))
+                    try:
+                        makedirs(sub_path)
+                        copy(full_path, sub_path)
+                    except FileExistsError:
+                        copy(full_path, sub_path)
+                    except Exception as exc:
+                        print(f"[CRITICAL]: Unable to install config file {file} due to {exc}.")
+                        exit(13)
+    except Exception as exc:
+        print(f"[CRITICAL]: Unable to install config files due to {exc}.")
+        exit(12)
 
 
-def read(fname):
-    """Helper function for README"""
-    return open(os.path.join(os.path.dirname(__file__), fname), encoding='UTF-8').read()
-
-README = read(str(HERE)+"/README.md")
-
-# This call to setup() does all the work
-setup(
-    name="ansible-deployer",
-    version="0.0.18",
-    description="Wrapper around ansible-playbook allowing configurable tasks and permissions",
-    long_description=README,
-    long_description_content_type="text/markdown",
-    url="https://github.com/cinek810/ansible-deployer",
-    license="MIT",
-    classifiers=[
-        "Programming Language :: Python :: 3.9"
-    ],
-    packages=["ansible_deployer"],
-    include_package_data=True,
-    install_requires=["pyyaml>=5.3.1", "cerberus>=1.3.1"],
-    entry_points={
-        "console_scripts": [
-            "ansible-deployer = ansible_deployer.command_line:main",
-        ]
-    },
-)
+if __name__ == "__main__":
+    location = get_cfg_location()
+    create_cfg_location(location)
+    install_configs(CFG_SOURCE, location)
+    setup()
