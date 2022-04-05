@@ -22,10 +22,17 @@ jobs:
           command: "pip3.6 install wheel"
       - run:
           name: "Install ansible-deployer"
-          command: "pip3.6 install ."
+          command: "pip3.6 -vvv install ."
       - run:
-          name: "Copy configuration files"
-          command: cp -r ./etc /etc/ansible-deploy
+          name: "Copy main conf"
+          command: |
+            mkdir /etc/ansible-deploy
+            cp ./etc/ansible-deploy.yaml /etc/ansible-deploy/ansible-deploy.yaml
+      - run:
+          name: "check"
+          command: |
+            ls /etc/ansible-deploy
+            ls ~/.ansible-deploy
       - run:
           name: "Add user to test_group"
           command: |
