@@ -458,14 +458,14 @@ def setup_ansible(setup_hooks: list, commit: str, workdir: str):
             logger.critical("Program will exit now.")
             sys.exit(69)
 
-def get_playbooks(config: dict, options: dict):
+def get_playitems(config: dict, options: dict):
     """
     Function obtaining play items for specified task.
     :param config:
     :param task_name:
     :return:
     """
-    playbooks = []
+    playitems = []
 
     for item in config["tasks"]["tasks"]:
         if item["name"] == options["task"]:
@@ -478,30 +478,30 @@ def get_playbooks(config: dict, options: dict):
                 if skip:
                     for elem in item["skip"]:
                         if elem["infra"] == options["infra"] and elem["stage"] == options["stage"]:
-                            logger.info("Skipping playbook %s on %s and %s stage.", play,
+                            logger.info("Skipping playitem %s on %s and %s stage.", play,
                                         options["infra"], options["stage"])
                             break
                     else:
-                        playbooks.append(item["file"])
+                        playitems.append(item["file"])
                 else:
-                    playbooks.append(item["file"])
+                    playitems.append(item["file"])
 
     # TODO add check if everything was skipped
-    return playbooks
+    return playitems
 
-def run_task(config: dict, options: dict, inventory: str, lockpath: str):
+def run_playitem(config: dict, options: dict, inventory: str, lockpath: str):
     """
-    Function implementing actual execution of ansible-playbook
+    Function implementing actual execution of runner [ansible-playbook or py.test]
     """
-    playbooks = get_playbooks(config, options)
+    playitems = get_playitems(config, options)
     tags = get_tags_for_task(config, options)
-    if len(playbooks) < 1:
-        logger.critical("No playbooks found for requested task %s. Nothing to do.", options['task'])
+    if len(playitems) < 1:
+        logger.critical("No playitems found for requested task %s. Nothing to do.", options['task'])
         unlock_inventory(lockpath)
         sys.exit(70)
     else:
-        for playbook in playbooks:
-            command = ["ansible-playbook", "-i", inventory, playbook]
+        for playitem in playitems:
+            command = ["ansible-playbook", "-i", inventory, playitem]
             if options["limit"]:
                 command.append("-l")
                 command.append(options["limit"])
@@ -655,7 +655,7 @@ def main():
                 sys.exit(errno.EPERM)
             setup_ansible(config["tasks"]["setup_hooks"], options["commit"], workdir)
             lock_inventory(lockdir, lockpath)
-            run_task(config, options, inv_file, lockpath)
+            run_playitem(config, options, inv_file, lockpath)
             unlock_inventory(lockpath)
         elif options["subcommand"] == "lock":
             lock_inventory(lockdir, lockpath)
