@@ -8,6 +8,7 @@ echo -e "   ___ ____                                     _   _\n  / _ \___ \    
 check_run_ok "ansible-deployer run -t task_exec_bin_true -s prod -i testInfra"
 check_run_ok "ansible-deployer run -t task_with_limit -s testing -i testInfra -l testHost1"
 check_run_ok "ansible-deployer run -t tagged_task_true -s testing -i testInfra"
+check_run_ok 'ansible-deployer verify --task=task_exec_bin_true -s prod -i testInfra'
 # # multiple hosts in limit
 check_run_ok "ansible-deployer run -t task_with_limit -s testing -i testInfra2 -l xyzHosts"
 
@@ -35,6 +36,7 @@ check_run_ok "ansible-deployer run -t task_with_commit -s testing -i testInfra -
 check_message_in_output "ansible-deployer run -t task_with_commit -s testing -i testInfra -c tags/v1.0.1" '\[ERROR\]: Requested commit tags/v1.0.1 is not valid for task task_with_commit.'
 check_message_in_output "ansible-deployer run -t task_with_commit -s testing -i testInfra -c tags/v2.1" '\[ERROR\]: Requested commit tags/v2.1 is not valid for task task_with_commit.'
 check_message_in_output "ansible-deployer run -t task_with_commit -s testing -i testInfra -c tags/v3.6.6" '\[ERROR\]: Requested commit tags/v3.6.6 is not valid for task task_with_commit.'
+check_message_in_output 'ansible-deployer verify --task=task_exec_bin_true -s prod -i testInfra' '1 passed'
 
 echo -e "   ___ ____                                     _   _\n  / _ \___ \            _____  _____  ___ _   _| |_(_) ___  _ __\n | | | |__) |  _____   / _ \ \/ / _ \/ __| | | | __| |/ _ \| '_ \ \n | |_| / __/  |_____| |  __/>  <  __/ (__| |_| | |_| | (_) | | | |\n  \___/_____|          \___/_/\_\___|\___|\__,_|\__|_|\___/|_| |_|\n \n        _   _\n   ___ | |_| |__   ___ _ __ ___\n  / _ \| __| '_ \ / _ \ '__/ __|\n | (_) | |_| | | |  __/ |  \__ \\n  \___/ \__|_| |_|\___|_|  |___/\n \n"
 # misc

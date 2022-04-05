@@ -42,11 +42,22 @@ localhost
 END
 
 cat << END > ./prod_infra1_inv.yaml
-localhost
+localhost ansible_connection=local
 END
 
 cat << END > ./prod_infra3_inv.yaml
 localhost
+END
+
+cat << END > ./test_passwd.py
+'''Example test case'''
+def test_passwd_file(host):
+    '''Check if /etc/passwd permissions are correct'''
+    passwd = host.file("/etc/passwd")
+    assert passwd.contains("root")
+    assert passwd.user == "root"
+    assert passwd.group == "root"
+    assert passwd.mode == 0o644
 END
 
 echo "setup_work_dir finished succesfully"

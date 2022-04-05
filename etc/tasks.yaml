@@ -7,6 +7,9 @@ setup_hooks:
 play_items:
   - name: run_bin_true
     file: runBinTrue.yaml
+  - name: verify_passwd
+    runner: py.test
+    file: test_passwd.py
   - name: run_bin
     file: runBin.yaml
   - name: run_skippable
@@ -23,6 +26,8 @@ tasks:
   - name: task_exec_bin_true
     play_items:
       - run_bin_true
+    verify_items:
+      - verify_passwd
     allowed_for:
       - group: test_group
         infra:
@@ -77,6 +82,8 @@ tasks:
   - name: task_with_limit
     play_items:
       - run_bin_true
+    verify_items:
+      - verify_passwd
     allowed_for:
       - group: root
         infra:
