@@ -7,6 +7,8 @@ check_run_ok() {
         if [ $? -ne 0 ]
         then
                 echo "FAILED: ${CMD}"
+		echo "$CMD"
+		eval "$CMD"
                 exit 1
         else
                 echo "OK"
@@ -23,6 +25,8 @@ check_message_in_output() {
                 echo "OK: '${CMD}' returned '${EXPTEXT}'"
         else
                 echo "FAILED: '${CMD}' didn't return '${EXPTEXT}'"
+		echo $CMD
+		eval $CMD
                 exit 1
         fi
 }
@@ -35,6 +39,8 @@ check_message_not_in_output() {
         if [ $? -eq 0 ]
         then
                 echo "FAILED: '${CMD}' returned '${EXPTEXT}'"
+		echo $CMD
+		eval $CMD
                 exit 1
         else
                 echo "OK: '${CMD}' didn't return '${EXPTEXT}'"
