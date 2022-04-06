@@ -63,6 +63,12 @@ check_message_not_in_output 'ansible-deployer run -t task_with_ansible_fail -s t
 check_message_in_output "ansible-deployer run -t task_exec_bin_true -s testing -i testInfra -k -d" "\[DEBUG\]: Keep locked infra testInfra:testing ."
 check_run_ok "ansible-deployer unlock -s testing -i testInfra"
 
+# Check show subcommand
+check_message_in_output 'ansible-deployer show' 'Available infrastructures:'
+check_message_in_output 'ansible-deployer show' 'Available tasks:'
+check_message_in_output 'ansible-deployer show infra' 'Available infrastructures:'
+check_message_in_output 'ansible-deployer show task' 'Available tasks:'
+
 #Try execution of task without permissions
 if [ $UID -ne 0 ]
 then

@@ -18,13 +18,28 @@ from cerberus import Validator
 
 APP_CONF = "/etc/ansible-deployer"
 CFG_PERMISSIONS = "0o644"
-SUBCOMMANDS = ("run", "list", "lock", "unlock", "verify")
+SUBCOMMANDS = ("run", "list", "lock", "unlock", "verify", "show")
 
 def verify_subcommand(command: str):
     """Function to check the first arguments for a valid subcommand"""
     if command not in SUBCOMMANDS:
         print("[CRITICAL]: Unknown subcommand :%s", (command), file=sys.stderr)
         sys.exit("55")
+
+def verify_switches(switches: list):
+    """
+    Check if 2nd and following positional arguments are valid
+    """
+    if switches[0] != "show" and len(switches[1:]) > 0:
+        print("[CRITICAL]: Too many positional arguments! Only subcommand \"show\" can accept"
+              " following arguments: task, infra.")
+        sys.exit("56")
+
+    for switch in switches[1:]:
+        if switch not in ("task", "infra"):
+            print(f"[CRITICAL]: Invalid argument {switch}! Subcommand \"show\" can accept only"
+                  " following arguments: task, infra.")
+            sys.exit("57")
 
 def set_logging(options: dict):
     """Function to create logging objects"""
@@ -61,7 +76,7 @@ def parse_options(argv):
     specific subcommand outside"""
     parser = argparse.ArgumentParser(add_help=True)
 
-    parser.add_argument("subcommand", nargs='?', default=None, metavar="SUBCOMMAND",
+    parser.add_argument("subcommand", nargs='*', default=None, metavar="SUBCOMMAND",
                         help='Specify subcommand to execute. Available commands: '+str(SUBCOMMANDS))
     parser.add_argument("--infrastructure", "-i", nargs=1, default=[None], metavar="INFRASTRUCTURE",
                         help='Specify infrastructure for deploy.')
@@ -87,13 +102,17 @@ def parse_options(argv):
     arguments = parser.parse_args(argv)
 
     if not arguments.subcommand:
-        print("[CRITICAL]: First positional argument (subcommand) is required! Available commands "
-              "are: run, list, lock, unlock.")
+        sub_string = ", ".join(SUBCOMMANDS).strip(", ")
+        print(f"[CRITICAL]: First positional argument (subcommand) is required! Available commands"
+              f" are: {sub_string}.")
         sys.exit(57)
 
     options = {}
-    options["subcommand"] = arguments.subcommand.lower()
+    options["subcommand"] = arguments.subcommand[0].lower()
     verify_subcommand(options["subcommand"])
+    verify_switches(arguments.subcommand)
+
+    options["switches"] = arguments.subcommand[1:]
     options["infra"] = arguments.infrastructure[0]
     options["stage"] = arguments.stage[0]
     options["commit"] = arguments.commit[0]
@@ -107,17 +126,6 @@ def parse_options(argv):
         options["conf_dir"] = os.path.abspath(arguments.conf_dir[0])
     else:
         options["conf_dir"] = None
-
-
-    arguments = parser.parse_args(argv)
-
-    if not arguments.subcommand:
-        print("[CRITICAL]: First positional argument (subcommand) is required! Available commands "
-              "are: run, list, lock, unlock.")
-        sys.exit(57)
-
-    options["subcommand"] = arguments.subcommand.lower()
-    verify_subcommand(options["subcommand"])
 
     return options
 
@@ -173,6 +181,8 @@ def validate_options(options: dict):
         required = ["infra", "stage"]
         notsupported = ["task", "commit", "limit"]
     elif options["subcommand"] == "list":
+        notsupported = ["commit", "limit"]
+    elif options["subcommand"] == "show":
         notsupported = ["commit", "limit"]
 
     failed = False
@@ -672,6 +682,38 @@ def list_tasks(config: dict, options: dict):
 
     print("  ".join(task_list))
 
+def show_deployer(config: dict, options: dict):
+    """
+    Function showing available configs: tasks, infrastructures, permissions.
+    """
+    content = {}
+
+    if not options["switches"]:
+        options["switches"] = ["task", "infra"]
+
+    if "task" in options["switches"]:
+        content["tasks"] = []
+        for item in config["tasks"]["tasks"]:
+            content["tasks"].append(item["name"])
+
+    if "infra" in options["switches"]:
+        content["infrastructures"] = []
+        for item in config["infra"]:
+            content["infrastructures"].append(item["name"])
+
+    print(format_show_deployer(content))
+
+def format_show_deployer(print_data: dict):
+    """
+    Format data from show_deployer function to output
+    """
+    content = ""
+    for key, value in print_data.items():
+        values = ", ".join(value).strip(", ")
+        content = f"{content}\n\nAvailable {key}:\n{values}\n"
+
+    return content
+
 # TODO: At least infra level should be returned from validate options since we do similar check
 # (existence) there.
 def get_inventory_file(config: dict, options: dict):
@@ -758,6 +800,8 @@ def main():
 
     if options["subcommand"] == "list":
         list_tasks(config, options)
+    elif options["subcommand"] == "show":
+        show_deployer(config, options)
     else:
         lockdir = os.path.join(conf["global_paths"]["work_dir"], "locks")
         inv_file = get_inventory_file(config, options)
@@ -776,3 +820,4 @@ def main():
             unlock_inventory(lockpath, options)
 
     sys.exit(0)
+main()
