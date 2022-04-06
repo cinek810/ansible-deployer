@@ -1,0 +1,68 @@
+acl_lists:
+  - name: root_on_all_in_all
+    group: root
+    infra:
+      - name: testInfra
+        stages:
+          - testing
+          - prod
+          - locked
+      - name: testInfra2
+        stages:
+          - testing
+          - prod
+          - locked
+      - name: testInfra3
+        stages:
+          - testing
+          - prod
+          - locked
+
+  - name: root_on_all_in_testInfra
+    group: root
+    infra:
+      - name: testInfra
+        stages:
+          - testing
+          - prod
+          - locked
+
+  - name: test_on_testing_in_testInfra
+    group: test_group
+    infra:
+      - name: testInfra
+        stages:
+          - testing
+
+  - name: root_on_testing_in_testInfra
+    group: root
+    infra:
+      - name: testInfra
+        stages:
+          - testing
+
+  - name: root_on_testing_in_testInfra_testInfra2
+    group: root
+    infra:
+      - name: testInfra
+        stages:
+          - testing
+      - name: testInfra2
+        stages:
+          - testing
+
+  - name: root_mixed_0001 
+    group: root
+    infra:
+      - name: testInfra
+        stages:
+          - testing
+          - prod
+      - name: testInfra2
+        stages:
+          - testing
+      - name: testInfra3
+        stages:
+          - testing
+          - prod
+
