@@ -587,7 +587,7 @@ def list_tasks(config: dict, options: dict):
     for item in config["tasks"]["tasks"]:
         task_list.append(item["name"])
 
-    logger.info("  ".join(task_list))
+    print("  ".join(task_list))
 
 # TODO: At least infra level should be returned from validate options since we do similar check
 # (existence) there.
