@@ -31,20 +31,10 @@ tasks:
     verify_items:
       - verify_passwd
     allowed_for:
-      - group: test_group
-        infra:
-          - name: testInfra
-            stages:
-              - testing
+      - acl_group: test_on_testing_in_testInfra
         commit:
           - test_version
-      - group: root
-        infra:
-          - name: testInfra
-            stages:
-              - testing
-              - prod
-              - locked
+      - acl_group: root_on_all_in_testInfra
         commit:
           - test_version
     allow_limit: False
@@ -52,33 +42,21 @@ tasks:
   - name: task_empty
     play_items: []
     allowed_for:
-      - group: root
-        infra:
-          - name: testInfra
-            stages:
-              - testing
+      - acl_group: root_on_testing_in_testInfra
     allow_limit: False
 
   - name: root_only_task
     play_items:
       - run_bin_true
     allowed_for:
-      - group: root
-        infra:
-          - name: testInfra
-            stages:
-              - testing
+      - acl_group: root_on_testing_in_testInfra
     allow_limit: False
 
   - name: non_root_task
     play_items:
       - run_bin_true
     allowed_for:
-      - group: test_group
-        infra:
-          - name: testInfra
-            stages:
-              - testing
+      - acl_group: test_on_testing_in_testInfra
     allow_limit: False
 
   - name: task_with_limit
@@ -87,38 +65,20 @@ tasks:
     verify_items:
       - verify_passwd
     allowed_for:
-      - group: root
-        infra:
-          - name: testInfra
-            stages:
-              - testing
-          - name: testInfra2
-            stages:
-              - testing
+      - acl_group: root_on_testing_in_testInfra_testInfra2
     allow_limit: True
 
   - name: task_without_limit
     play_items:
       - run_bin_true
     allowed_for:
-      - group: root
-        infra:
-          - name: testInfra
-            stages:
-              - testing
+      - acl_group: root_on_testing_in_testInfra
 
   - name: tagged_task_true
     play_items:
       - run_bin
     allowed_for:
-      - group: root
-        infra:
-          - name: testInfra
-            stages:
-              - testing
-          - name: testInfra2
-            stages:
-              - testing
+      - acl_group: root_on_testing_in_testInfra_testInfra2
     allow_limit: False
     tags:
       - tag_true
@@ -127,14 +87,7 @@ tasks:
     play_items:
       - run_bin
     allowed_for:
-      - group: root
-        infra:
-          - name: testInfra
-            stages:
-              - testing
-          - name: testInfra2
-            stages:
-              - testing
+      - acl_group: root_on_testing_in_testInfra_testInfra2
     allow_limit: False
     tags:
       - tag_false
@@ -143,33 +96,14 @@ tasks:
     play_items:
       - run_skippable
     allowed_for:
-      - group: root
-        infra:
-          - name: testInfra
-            stages:
-              - testing
-              - prod
-          - name: testInfra2
-            stages:
-              - testing
-          - name: testInfra3
-            stages:
-              - testing
-              - prod
+      - acl_group: root_mixed_0001
     allow_limit: False
 
   - name: task_with_commit
     play_items:
       - run_bin_true
     allowed_for:
-      - group: root
-        infra:
-          - name: testInfra
-            stages:
-              - testing
-          - name: testInfra2
-            stages:
-              - testing
+      - acl_group: root_on_testing_in_testInfra_testInfra2
         commit:
           - tags/v1.\d+
           - tags/v2.4

@@ -181,20 +181,20 @@ def load_configuration_file(config_path: str):
         try:
             config = yaml.safe_load(config_stream)
         except yaml.YAMLError as e:
-            logger.critical(e)
+            logger.critical("Yaml loading failed for %s due to %s.", config_path, e)
             sys.exit(51)
 
-    with open(os.path.join(conf["global_paths"]["config_dir"], "schema", config_file), "r",
-              encoding="utf8") as schema_stream:
+    schema_path = os.path.join(conf["global_paths"]["config_dir"], "schema", config_file)
+    with open(schema_path, "r", encoding="utf8") as schema_stream:
         try:
             schema = yaml.safe_load(schema_stream)
         except yaml.YAMLError as e:
-            logger.critical(e)
+            logger.critical("Yaml loading failed for %s due to %s.", config_path, e)
             sys.exit(52)
 
     validator = Validator(schema)
     if not validator.validate(config, schema):
-        logger.critical(validator.errors)
+        logger.critical("Yaml validation failed for %s due to %s.", config_path, validator.errors)
         sys.exit(53)
 
     logger.debug("Loaded:\n%s", str(config))
@@ -222,6 +222,7 @@ def get_config_paths():
     yamls = []
     infra_cfg = None
     tasks_cfg = None
+    acl_cfg = None
 
     for config in os.listdir(conf["global_paths"]["config_dir"]):
         if config != "ansible-deploy.yaml":
@@ -234,6 +235,8 @@ def get_config_paths():
                 infra_cfg = os.path.join(conf["global_paths"]["config_dir"], config)
             elif config.startswith("tasks"):
                 tasks_cfg = os.path.join(conf["global_paths"]["config_dir"], config)
+            elif config.startswith("acl"):
+                acl_cfg = os.path.join(conf["global_paths"]["config_dir"], config)
 
     if len(ymls) > 0 and len(yamls) > 0:
         logger.debug("Config files with yml extensions: %s", " ".join(ymls))
@@ -252,7 +255,12 @@ def get_config_paths():
                         conf["global_paths"]["config_dir"])
         sys.exit(44)
 
-    return infra_cfg, tasks_cfg
+    if not acl_cfg:
+        logger.critical("Permission configuration file does not exist in %s!",
+                        conf["global_paths"]["config_dir"])
+        sys.exit(45)
+
+    return infra_cfg, tasks_cfg, acl_cfg
 
 def load_configuration():
     """Function responsible for reading configuration files and running a schema validator against
@@ -260,14 +268,21 @@ def load_configuration():
     """
     logger.debug("load_configuration called")
     #TODO: validate files/directories permissions - should be own end editable only by special user
-    infra_cfg, tasks_cfg = get_config_paths()
+    infra_cfg, tasks_cfg, acl_cfg = get_config_paths()
 
     infra = load_configuration_file(infra_cfg)
     tasks = load_configuration_file(tasks_cfg)
+    acl = load_configuration_file(acl_cfg)
 
     config = {}
     config["infra"] = infra["infrastructures"]
     config["tasks"] = tasks
+
+    config["acl"] = {}
+    for group in acl["acl_lists"]:
+        key = group["name"]
+        group.pop("name")
+        config["acl"][key] = group
 
     return config
 
@@ -595,27 +610,30 @@ def format_ansible_output(proces_output):
 
     return std_output, std_warning, std_error
 
-def verify_task_permissions(selected_items, user_groups):
+def verify_task_permissions(selected_items: dict, user_groups: list, config: dict):
     """
     Function verifies if the running user is allowed to run the task
     """
     s_task = selected_items["task"]
     s_infra = selected_items["infra"]
     o_stage = selected_items["stage"]
-    logger.debug("Running verify_task_permissions, for s_task:%s, s_infra:%s, o_stage:%s and user"
-                 "groups: %s", s_task, s_infra, o_stage, user_groups)
+    logger.debug("Running verify_task_permissions for s_task:\n%s,\ns_infra:\n%s,\no_stage:\n%s\n"
+                "and user groups:\n%s", s_task, s_infra, o_stage, user_groups)
 
-    for allow_group in s_task["allowed_for"]:
-        logger.debug("\tChecking group: %s, for user_groups:%s", allow_group, user_groups)
-        if allow_group["group"] in user_groups:
-            for infra in allow_group["infra"]:
-                logger.debug("\t\tChecking infra: %s for infra:%s", infra,
+    for item in s_task["allowed_for"]:
+        acl_group = item["acl_group"]
+        logger.debug("\tChecking permission group: %s, for user_groups: %s", acl_group, user_groups)
+        logger.debug("\tPermission group %s content: %s", acl_group, str(config["acl"][acl_group]))
+        if config["acl"][acl_group]["group"] in user_groups:
+            for infra in config["acl"][acl_group]["infra"]:
+                logger.debug("\t\tChecking infra: %s for infra: %s", infra,
                              selected_items["infra"]["name"])
                 if infra["name"] == selected_items["infra"]["name"]:
                     for stage in infra["stages"]:
-                        logger.debug("\t\t\tChecking stage:%s for stage:%s", stage, o_stage["name"])
+                        logger.debug("\t\t\tChecking stage: %s for stage: %s", stage,
+                                    o_stage["name"])
                         if stage == o_stage["name"]:
-                            logger.debug("Task allowed, based on %s", allow_group)
+                            logger.debug("Task allowed, based on %s", acl_group)
                             return True
     logger.debug("Task forbidden")
     return False
@@ -715,7 +733,7 @@ def main():
         inv_file = get_inventory_file(config, options)
         lockpath = os.path.join(lockdir, inv_file.lstrip(f".{os.sep}").replace(os.sep, "_"))
         if options["subcommand"] in ("run", "verify"):
-            if not verify_task_permissions(selected_items, user_groups):
+            if not verify_task_permissions(selected_items, user_groups, config):
                 logger.critical("Task forbidden")
                 sys.exit(errno.EPERM)
             setup_ansible(config["tasks"]["setup_hooks"], options["commit"], workdir)

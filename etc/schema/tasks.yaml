@@ -69,21 +69,9 @@ tasks:
           type: dict
           required: True
           schema:
-            group:
+            acl_group:
               type: string
-            infra:
-              type: list
               required: True
-              schema:
-                type: dict
-                required: True
-                schema:
-                  name:
-                    type: string
-                    required: True
-                  stages:
-                    type: list
-                    required: True
             commit:
               type: list
               required: False
