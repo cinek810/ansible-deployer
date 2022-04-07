@@ -20,6 +20,13 @@ cat << END > ./runBin.yaml
         tags: tag_false
 END
 
+cat << END > ./runll.yaml
+- hosts: all
+  connection: "local"
+  tasks:
+      - name: "Run ll"
+        shell: "ll"
+END
 
 cat << END > ./test_infra1_inv.yaml
 [testHosts]

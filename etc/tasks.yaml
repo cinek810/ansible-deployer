@@ -21,6 +21,8 @@ play_items:
         stage: testing
       - infra: testInfra3
         stage: testing
+  - name: run_ll_to_fail
+    file: runll.yaml
 
 tasks:
   - name: task_exec_bin_true
@@ -175,3 +177,15 @@ tasks:
           - tags/v3.\d+.5
           - tags/v5.\d+
     allow_limit: False
+
+  - name: task_with_ansible_fail
+    play_items:
+      - run_ll_to_fail
+      - run_bin_true
+    allowed_for:
+      - group: root
+        infra:
+          - name: testInfra
+            stages:
+              - testing
+

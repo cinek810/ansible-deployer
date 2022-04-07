@@ -55,6 +55,10 @@ check_message_in_output 'ansible-deployer run -t task_with_limit -s testing -i t
 check_message_in_output 'ansible-deployer run -t task_without_limit -s testing -i testInfra -l testHost1' '\[CRITICAL\]: Limit testHost1 is not available for task task_without_limit.'
 check_message_in_output 'ansible-deployer run -t task_exec_bin_true -s prod -i testInfra -l testHost1' '\[CRITICAL\]: Limit testHost1 is not available for task task_exec_bin_true.'
 
+# Check if deployer exits on 1st play item fail
+check_message_in_output 'ansible-deployer run -t task_with_ansible_fail -s testing -i testInfra' "\[ERROR\]: \"ansible-playbook -i ./test_infra1_inv.yaml runll.yaml\" failed due to"
+check_message_not_in_output 'ansible-deployer run -t task_with_ansible_fail -s testing -i testInfra' "\[INFO\]: \"ansible-playbook -i ./test_infra1_inv.yaml runBinTrue.yaml\" ran succesfully"
+
 #Try execution of task without permissions
 if [ $UID -ne 0 ]
 then
