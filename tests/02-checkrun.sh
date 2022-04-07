@@ -59,6 +59,9 @@ check_message_in_output 'ansible-deployer run -t task_exec_bin_true -s prod -i t
 check_message_in_output 'ansible-deployer run -t task_with_ansible_fail -s testing -i testInfra' "\[ERROR\]: \"ansible-playbook -i ./test_infra1_inv.yaml runll.yaml\" failed due to"
 check_message_not_in_output 'ansible-deployer run -t task_with_ansible_fail -s testing -i testInfra' "\[INFO\]: \"ansible-playbook -i ./test_infra1_inv.yaml runBinTrue.yaml\" ran succesfully"
 
+# Check --version option
+check_message_in_output 'ansible-deployer -v' 'ansible-deployer version:'
+
 #Try execution of task without permissions
 if [ $UID -ne 0 ]
 then

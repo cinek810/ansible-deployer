@@ -14,6 +14,7 @@ import errno
 from logging import handlers as log_han
 import yaml
 from cerberus import Validator
+import version
 
 
 APP_CONF = "/etc/ansible-deploy/ansible-deploy.yaml"
@@ -74,12 +75,18 @@ def parse_options(argv):
     parser.add_argument("--dry", "-C", default=False, action='store_true', help='Perform dry run.')
     parser.add_argument("--debug", "-d", default=False, action="store_true",
                         help='Print debug output.')
-    parser.add_argument("--syslog", "-v", default=False, action="store_true", help='Log warnings '
+    parser.add_argument("--syslog", "-g", default=False, action="store_true", help='Log warnings '
                         'and errors to syslog. --debug doesn\'t affect this option!')
     parser.add_argument("--limit", "-l", nargs=1, default=[None], metavar="[LIMIT]",
                         help='Limit task execution to specified host.')
+    parser.add_argument("--version", "-v", default=False, action="store_true", help='Display'
+                        'app version and exit.')
 
     arguments = parser.parse_args(argv)
+
+    if arguments.version:
+        print(f"ansible-deployer version: {version.__version__}")
+        sys.exit(0)
 
     if not arguments.subcommand:
         print("[CRITICAL]: First positional argument (subcommand) is required! Available commands "
@@ -704,6 +711,8 @@ def main():
     global logger, conf
 
     start_ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    print(sys.path)
+    print(os.getcwd())
 
     if len(sys.argv) < 2:
         print("[CRITICAL]: Too few arguments", file=sys.stderr)
@@ -746,3 +755,4 @@ def main():
             unlock_inventory(lockpath)
 
     sys.exit(0)
+main()

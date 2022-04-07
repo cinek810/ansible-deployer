@@ -2,6 +2,9 @@
 import pathlib
 import os
 from setuptools import setup
+from ansible_deployer import version
+
+#sys.path.append("/home/runner/work/ansible-deployer/ansible-deployer")
 
 # The directory containing this file
 HERE = pathlib.Path(__file__).parent
@@ -19,7 +22,7 @@ README = read(str(HERE)+"/README.md")
 # This call to setup() does all the work
 setup(
     name="ansible-deployer",
-    version="0.0.22",
+    version=version.__version__,
     description="Wrapper around ansible-playbook allowing configurable tasks and permissions",
     long_description=README,
     long_description_content_type="text/markdown",
