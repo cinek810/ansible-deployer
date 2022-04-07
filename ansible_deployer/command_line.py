@@ -532,20 +532,16 @@ def run_playitem(config: dict, options: dict, inventory: str, lockpath: str):
             try:
                 with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as \
                         proc:
-                    std_o, std_e = proc.communicate()
-                    for line in std_o.split(b"\n\n"):
-                        logger.info(line.decode("utf-8"))
+                    output, warning, error = format_ansible_output(proc.communicate())
                 if proc.returncode == 0:
-                    logger.info("'%s' ran succesfully", command)
+                    positive_ansible_output(warning, output, command)
                 else:
-                    logger.error("'%s' failed due to:", command)
-                    for line in std_e.split(b"\n\n"):
-                        logger.error(line.decode("utf-8"))
+                    negative_ansible_output(warning, error, command)
                     unlock_inventory(lockpath)
                     logger.critical("Program will exit now.")
                     sys.exit(71)
             except Exception as exc:
-                logger.critical("'%s' failed due to:")
+                logger.critical("\"%s\" failed due to:")
                 logger.critical(exc)
                 sys.exit(72)
     else:
@@ -553,6 +549,51 @@ def run_playitem(config: dict, options: dict, inventory: str, lockpath: str):
         unlock_inventory(lockpath)
         sys.exit(errno.ENOENT)
 
+def positive_ansible_output(warning: list, output: list, command: str):
+    """Log output for a positive case in ansible execution"""
+    if warning:
+        for line in warning:
+            logger.warning(line)
+    if output:
+        for line in output:
+            logger.info(line)
+    logger.info("\"%s\" ran succesfully", " ".join(command))
+
+def negative_ansible_output(warning: list, error: list, command: str):
+    """Log output for a negative case in ansible execution"""
+    if warning:
+        for line in warning:
+            logger.warning(line)
+    logger.error("\"%s\" failed due to:", " ".join(command))
+    if error:
+        for line in error:
+            logger.error(line)
+
+def format_ansible_output(proces_output):
+    """Group and format output from ansible execution"""
+    std_out, std_err = proces_output
+    std_output = []
+    std_warning = []
+    std_error = []
+    for line in std_out.split(b"\n\n"):
+        dec_line = line.decode("utf-8")
+        if "fatal" in dec_line.lower() or "err" in dec_line.lower():
+            std_error.append(dec_line)
+        elif "warn" in dec_line.lower():
+            std_warning.append(dec_line)
+        else:
+            std_output.append(dec_line)
+
+    for line in std_err.split(b"\n\n"):
+        dec_line = line.decode("utf-8")
+        if "fatal" in dec_line.lower() or "err" in dec_line.lower():
+            std_error.append(dec_line)
+        elif "warn" in dec_line.lower():
+            std_warning.append(dec_line)
+        else:
+            std_output.append(dec_line)
+
+    return std_output, std_warning, std_error
 
 def verify_task_permissions(selected_items, user_groups):
     """
