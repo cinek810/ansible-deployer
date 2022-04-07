@@ -59,6 +59,10 @@ check_message_in_output 'ansible-deployer run -t task_exec_bin_true -s prod -i t
 check_message_in_output 'ansible-deployer run -t task_with_ansible_fail -s testing -i testInfra' "\[ERROR\]: \"ansible-playbook -i ./test_infra1_inv.yaml runll.yaml\" failed due to"
 check_message_not_in_output 'ansible-deployer run -t task_with_ansible_fail -s testing -i testInfra' "\[INFO\]: \"ansible-playbook -i ./test_infra1_inv.yaml runBinTrue.yaml\" ran succesfully"
 
+# Check --keep-locked option
+check_message_in_output "ansible-deployer run -t task_exec_bin_true -s testing -i testInfra -k -d" "\[DEBUG\]: Keep locked infra testInfra:testing ."
+check_run_ok "ansible-deployer unlock -s testing -i testInfra"
+
 #Try execution of task without permissions
 if [ $UID -ne 0 ]
 then

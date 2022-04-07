@@ -72,6 +72,8 @@ def parse_options(argv):
     parser.add_argument("--task", "-t", nargs=1, default=[None], metavar='TASK_NAME',
                         help='Provide task_name.')
     parser.add_argument("--dry", "-C", default=False, action='store_true', help='Perform dry run.')
+    parser.add_argument("--keep-locked", "-k", default=False, action='store_true', help='Keep'
+                        ' infrastructure locked after task execution.')
     parser.add_argument("--debug", "-d", default=False, action="store_true",
                         help='Print debug output.')
     parser.add_argument("--syslog", "-v", default=False, action="store_true", help='Log warnings '
@@ -97,6 +99,7 @@ def parse_options(argv):
     options["commit"] = arguments.commit[0]
     options["task"] = arguments.task[0]
     options["dry"] = arguments.dry
+    options["keep_locked"] = arguments.keep_locked
     options["debug"] = arguments.debug
     options["syslog"] = arguments.syslog
     options["limit"] = arguments.limit[0]
@@ -428,22 +431,25 @@ def lock_inventory(lockdir: str, lockpath: str):
         logger.critical(exc)
         sys.exit(62)
 
-def unlock_inventory(lockpath: str):
+def unlock_inventory(lockpath: str, options: dict):
     """
     Function responsible for unlocking inventory file, See also lock_inventory
     """
 
     logger.debug("Started unlock_inventory for lockpath %s.", lockpath)
 
-    try:
-        os.remove(lockpath)
-        logger.info("Lock %s has been removed.", lockpath)
-    except FileNotFoundError:
-        logger.critical("Requested lock %s was not found. Nothing to do.", lockpath)
-        sys.exit(63)
-    except Exception as exc:
-        logger.critical(exc)
-        sys.exit(64)
+    if not options["keep_locked"]:
+        try:
+            os.remove(lockpath)
+            logger.info("Lock %s has been removed.", lockpath)
+        except FileNotFoundError:
+            logger.critical("Requested lock %s was not found. Nothing to do.", lockpath)
+            sys.exit(63)
+        except Exception as exc:
+            logger.critical(exc)
+            sys.exit(64)
+    else:
+        logger.debug("Keep locked infra %s:%s .", options["infra"], options["stage"])
 
 def setup_ansible(setup_hooks: list, commit: str, workdir: str):
     """
@@ -539,7 +545,7 @@ def run_playitem(config: dict, options: dict, inventory: str, lockpath: str):
     tags = get_tags_for_task(config, options)
     if len(playitems) < 1:
         logger.critical("No playitems found for requested task %s. Nothing to do.", options['task'])
-        unlock_inventory(lockpath)
+        unlock_inventory(lockpath, options)
         sys.exit(70)
     elif playitems is not None:
         for playitem in playitems:
@@ -570,7 +576,7 @@ def run_playitem(config: dict, options: dict, inventory: str, lockpath: str):
                     positive_ansible_output(warning, output, command)
                 else:
                     negative_ansible_output(warning, error, command)
-                    unlock_inventory(lockpath)
+                    unlock_inventory(lockpath, options)
                     logger.critical("Program will exit now.")
                     sys.exit(71)
             except Exception as exc:
@@ -579,7 +585,7 @@ def run_playitem(config: dict, options: dict, inventory: str, lockpath: str):
                 sys.exit(72)
     else:
         logger.error("No playitems defined for action")
-        unlock_inventory(lockpath)
+        unlock_inventory(lockpath, options)
         sys.exit(errno.ENOENT)
 
 def positive_ansible_output(warning: list, output: list, command: str):
@@ -763,10 +769,10 @@ def main():
             setup_ansible(config["tasks"]["setup_hooks"], options["commit"], workdir)
             lock_inventory(lockdir, lockpath)
             run_playitem(config, options, inv_file, lockpath)
-            unlock_inventory(lockpath)
+            unlock_inventory(lockpath, options)
         elif options["subcommand"] == "lock":
             lock_inventory(lockdir, lockpath)
         elif options["subcommand"] == "unlock":
-            unlock_inventory(lockpath)
+            unlock_inventory(lockpath, options)
 
     sys.exit(0)
