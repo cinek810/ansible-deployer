@@ -1,0 +1,20 @@
+infrastructures:
+  - name: testInfra
+    stages:
+      - name: testing
+        inventory: ./test_infra1_inv.yaml
+      - name: prod
+        inventory: ./prod_infra1_inv.yaml
+      - name: locked
+        inventory: ./lock_infra1_inv.yaml
+
+  - name: testInfra2
+    stages:
+      - name: testing
+        inventory: ./test_infra2_inv.yaml
+
+  - name: testInfra3
+    stages:
+      - name: prod
+        inventory: ./prod_infra3_inv.yaml
+

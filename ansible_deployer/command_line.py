@@ -78,6 +78,8 @@ def parse_options(argv):
                         'and errors to syslog. --debug doesn\'t affect this option!')
     parser.add_argument("--limit", "-l", nargs=1, default=[None], metavar="[LIMIT]",
                         help='Limit task execution to specified host.')
+    parser.add_argument("--config", "-f", nargs=1, default=[None], metavar="CONFIG_DIR",
+                        help='Provide path to directory with non-default configs.')
 
     arguments = parser.parse_args(argv)
 
@@ -98,6 +100,7 @@ def parse_options(argv):
     options["debug"] = arguments.debug
     options["syslog"] = arguments.syslog
     options["limit"] = arguments.limit[0]
+    options["config"] = arguments.config[0]
 
     return options
 
@@ -679,12 +682,14 @@ def get_all_user_groups():
 
     return user_groups
 
-def load_global_configuration():
+def load_global_configuration(options: dict):
     """Function responsible for single file loading and validation"""
     check_cfg_permissions_and_owner(APP_CONF)
     with open(APP_CONF, "r", encoding="utf8") as config_stream:
         try:
             config = yaml.safe_load(config_stream)
+            if options["config"]:
+                config["global_paths"]["config_dir"] = os.path.abspath(options["config"])
             return config
         except yaml.YAMLError as e:
             logger.critical(e, file=sys.stderr)
@@ -711,7 +716,8 @@ def main():
     options = parse_options(sys.argv[1:])
     logger = set_logging(options)
 
-    conf = load_global_configuration()
+    conf = load_global_configuration(options)
+
     if options["subcommand"] in ("run", "verify"):
         workdir = create_workdir(start_ts)
         set_logging_to_file(workdir, start_ts)

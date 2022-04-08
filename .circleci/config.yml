@@ -36,6 +36,7 @@ jobs:
             ./tests/01-test_argument_parsing.sh
             ./tests/02-checkrun.sh
             ./tests/05-permission_checks.sh
+            ./tests/06-specific_configs.sh
       - run:
           name: "Copy failing hooks"
           command: cp ./tests/files/etc/hooks/* /etc/ansible-deploy/hooks

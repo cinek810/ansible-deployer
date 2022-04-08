@@ -1,0 +1,23 @@
+acl_lists:
+  type: list
+  schema:
+    type: dict
+    schema:
+      name:
+        type: string
+        required: True
+      group:
+        type: string
+        required: True
+      infra:
+        type: list
+        schema:
+          type: dict
+          schema:
+            name:
+              type: string
+              required: True
+            stages:
+              type: list
+              required: True
+            
