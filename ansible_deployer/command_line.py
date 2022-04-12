@@ -92,7 +92,6 @@ def parse_options(argv):
     options = {}
     options["subcommand"] = arguments.subcommand.lower()
     verify_subcommand(options["subcommand"])
-
     options["infra"] = arguments.infrastructure[0]
     options["stage"] = arguments.stage[0]
     options["commit"] = arguments.commit[0]
@@ -111,18 +110,8 @@ def parse_options(argv):
               "are: run, list, lock, unlock.")
         sys.exit(57)
 
-    options = {}
     options["subcommand"] = arguments.subcommand.lower()
     verify_subcommand(options["subcommand"])
-
-    options["infra"] = arguments.infrastructure[0]
-    options["stage"] = arguments.stage[0]
-    options["commit"] = arguments.commit[0]
-    options["task"] = arguments.task[0]
-    options["dry"] = arguments.dry
-    options["debug"] = arguments.debug
-    options["syslog"] = arguments.syslog
-    options["limit"] = arguments.limit[0]
 
     return options
 
