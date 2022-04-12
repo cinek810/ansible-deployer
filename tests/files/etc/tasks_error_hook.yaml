@@ -2,11 +2,11 @@ setup_hooks:
   - name: setup_ansible
     module: script
     opts:
-      file: /etc/ansible-deploy/hooks/setup_work_dir.sh
+      file: /etc/ansible-deployer/hooks/setup_work_dir.sh
   - name: error_hook
     module: script
     opts:
-      file: /etc/ansible-deploy/hooks/error_hook.sh
+      file: /etc/ansible-deployer/hooks/error_hook.sh
 
 play_items:
   - name: run_bin_true

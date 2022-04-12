@@ -46,25 +46,25 @@ jobs:
             ./tests/05-permission_checks.sh
       - run:
           name: "Copy failing hooks"
-          command: cp ./tests/files/etc/hooks/* /etc/ansible-deploy/hooks
+          command: cp ./tests/files/etc/hooks/* /etc/ansible-deployer/hooks
       - run:
           name: "Run shell script for error returning hook"
           command: |
-            cp ./tests/files/etc/tasks_error_hook.yaml /etc/ansible-deploy/tasks.yaml
+            cp ./tests/files/etc/tasks_error_hook.yaml /etc/ansible-deployer/tasks.yaml
             ./tests/04-error_hook.sh
       - run:
           name: "Run shell script for error returning hook with exit"
           command: |
-            cp ./tests/files/etc/tasks_exit_hook.yaml /etc/ansible-deploy/tasks.yaml
+            cp ./tests/files/etc/tasks_exit_hook.yaml /etc/ansible-deployer/tasks.yaml
             ./tests/04-exit_hook.sh
       - run:
           name: "Run shell script for critical returning hook"
           command: |
-            chmod 0644 /etc/ansible-deploy/hooks/exit_hook.sh
+            chmod 0644 /etc/ansible-deployer/hooks/exit_hook.sh
             ./tests/04-critical_hook.sh
       - run:
           name: "Create incompatible config file"
-          command: cp ./tests/files/incompatible_config.yml /etc/ansible-deploy
+          command: cp ./tests/files/incompatible_config.yml /etc/ansible-deployer
       - run:
           name: "Run shell script for invalid config tests"
           command: |
