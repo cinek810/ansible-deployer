@@ -22,7 +22,7 @@ jobs:
           command: "pip3.6 install ."
       - run:
           name: "Copy configuration files"
-          command: cp -r ./etc /etc/ansible-deploy
+          command: cp -r ./etc /etc/ansible-deployer
       - run:
           name: "Add user to test_group"
           command: |
@@ -35,6 +35,14 @@ jobs:
           command: |
             ./tests/01-test_argument_parsing.sh
             ./tests/02-checkrun.sh
+            mv /etc/ansible-deployer /etc/alternate-deployer-dir
+            mkdir -p /etc/ansible-deployer/hooks
+            cp -r ./etc/schema /etc/ansible-deployer/
+            cp ./etc/hooks/setup_work_dir.sh /etc/ansible-deployer/hooks/
+            ./tests/02b-checkrun_with_conf_dir.sh
+            rm -rf /etc/ansible-deployer
+            rm -rf /etc/alternate-deployer-dir
+            cp -r ./etc /etc/ansible-deployer
             ./tests/05-permission_checks.sh
       - run:
           name: "Copy failing hooks"
