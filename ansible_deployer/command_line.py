@@ -16,7 +16,7 @@ import yaml
 from cerberus import Validator
 
 
-APP_CONF = "/etc/ansible-deploy/ansible-deploy.yaml"
+APP_CONF = "/etc/ansible-deploy"
 CFG_PERMISSIONS = "0o644"
 SUBCOMMANDS = ("run", "list", "lock", "unlock", "verify")
 
@@ -78,6 +78,31 @@ def parse_options(argv):
                         'and errors to syslog. --debug doesn\'t affect this option!')
     parser.add_argument("--limit", "-l", nargs=1, default=[None], metavar="[LIMIT]",
                         help='Limit task execution to specified host.')
+    parser.add_argument("--conf-dir", nargs=1, default=[None], metavar="conf_dir",
+                        help='Use non-default configuration directory, only allowed for \
+                              non-binarized exec')
+
+    arguments = parser.parse_args(argv)
+
+    if not arguments.subcommand:
+        print("[CRITICAL]: First positional argument (subcommand) is required! Available commands "
+              "are: run, list, lock, unlock.")
+        sys.exit(57)
+
+    options = {}
+    options["subcommand"] = arguments.subcommand.lower()
+    verify_subcommand(options["subcommand"])
+
+    options["infra"] = arguments.infrastructure[0]
+    options["stage"] = arguments.stage[0]
+    options["commit"] = arguments.commit[0]
+    options["task"] = arguments.task[0]
+    options["dry"] = arguments.dry
+    options["debug"] = arguments.debug
+    options["syslog"] = arguments.syslog
+    options["limit"] = arguments.limit[0]
+    options["conf_dir"] = arguments.conf_dir[0]
+
 
     arguments = parser.parse_args(argv)
 
@@ -184,7 +209,7 @@ def load_configuration_file(config_path: str):
             logger.critical("Yaml loading failed for %s due to %s.", config_path, e)
             sys.exit(51)
 
-    schema_path = os.path.join(conf["global_paths"]["config_dir"], "schema", config_file)
+    schema_path = os.path.join(APP_CONF, "schema", config_file)
     with open(schema_path, "r", encoding="utf8") as schema_stream:
         try:
             schema = yaml.safe_load(schema_stream)
@@ -216,7 +241,7 @@ def check_cfg_permissions_and_owner(cfg_path: str):
         logger.error("Program will exit now.")
         sys.exit(41)
 
-def get_config_paths():
+def get_config_paths(config_dir):
     """Function to create absolute config paths and check their extension compatibility"""
     ymls = []
     yamls = []
@@ -224,7 +249,7 @@ def get_config_paths():
     tasks_cfg = None
     acl_cfg = None
 
-    for config in os.listdir(conf["global_paths"]["config_dir"]):
+    for config in os.listdir(config_dir):
         if config != "ansible-deploy.yaml":
             if config.endswith(".yml"):
                 ymls.append(config)
@@ -232,27 +257,28 @@ def get_config_paths():
                 yamls.append(config)
 
             if config.startswith("infra"):
-                infra_cfg = os.path.join(conf["global_paths"]["config_dir"], config)
+                infra_cfg = os.path.join(config_dir, config)
             elif config.startswith("tasks"):
-                tasks_cfg = os.path.join(conf["global_paths"]["config_dir"], config)
+                tasks_cfg = os.path.join(config_dir, config)
             elif config.startswith("acl"):
-                acl_cfg = os.path.join(conf["global_paths"]["config_dir"], config)
+                acl_cfg = os.path.join(config_dir, config)
+                tasks_cfg = os.path.join(config_dir, config)
 
     if len(ymls) > 0 and len(yamls) > 0:
         logger.debug("Config files with yml extensions: %s", " ".join(ymls))
         logger.debug("Config files with yaml extensions: %s", " ".join(yamls))
         logger.critical("Config files with different extensions (.yml and .yaml) are not allowed "
-                        "in conf dir %s !", conf["global_paths"]["config_dir"])
+                        "in conf dir %s !", config_dir)
         sys.exit(42)
 
     if not infra_cfg:
         logger.critical("Infrastructure configuration file does not exist in %s!",
-                        conf["global_paths"]["config_dir"])
+                        config_dir)
         sys.exit(43)
 
     if not tasks_cfg:
         logger.critical("Tasks configuration file does not exist in %s!",
-                        conf["global_paths"]["config_dir"])
+                        config_dir)
         sys.exit(44)
 
     if not acl_cfg:
@@ -262,13 +288,13 @@ def get_config_paths():
 
     return infra_cfg, tasks_cfg, acl_cfg
 
-def load_configuration():
+def load_configuration(conf_dir):
     """Function responsible for reading configuration files and running a schema validator against
     it
     """
     logger.debug("load_configuration called")
     #TODO: validate files/directories permissions - should be own end editable only by special user
-    infra_cfg, tasks_cfg, acl_cfg = get_config_paths()
+    infra_cfg, tasks_cfg, acl_cfg = get_config_paths(conf_dir)
 
     infra = load_configuration_file(infra_cfg)
     tasks = load_configuration_file(tasks_cfg)
@@ -679,10 +705,11 @@ def get_all_user_groups():
 
     return user_groups
 
-def load_global_configuration():
+def load_global_configuration(conf_dir):
     """Function responsible for single file loading and validation"""
-    check_cfg_permissions_and_owner(APP_CONF)
-    with open(APP_CONF, "r", encoding="utf8") as config_stream:
+    main_config_file = os.path.join(conf_dir, "ansible-deploy.yaml")
+    check_cfg_permissions_and_owner(main_config_file)
+    with open(main_config_file, "r", encoding="utf8") as config_stream:
         try:
             config = yaml.safe_load(config_stream)
             return config
@@ -711,13 +738,17 @@ def main():
     options = parse_options(sys.argv[1:])
     logger = set_logging(options)
 
-    conf = load_global_configuration()
+    conf_dir = APP_CONF
+    if options["conf_dir"]:
+        conf_dir = options["conf_dir"]
+
+    conf = load_global_configuration(conf_dir)
     if options["subcommand"] in ("run", "verify"):
         workdir = create_workdir(start_ts)
         set_logging_to_file(workdir, start_ts)
 
     validate_options(options)
-    config = load_configuration()
+    config = load_configuration(conf_dir)
     selected_items = validate_option_values_against_config(config, options)
 
     user_groups = get_all_user_groups()
