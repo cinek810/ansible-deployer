@@ -251,7 +251,6 @@ def get_config_paths(config_dir):
                 tasks_cfg = os.path.join(config_dir, config)
             elif config.startswith("acl"):
                 acl_cfg = os.path.join(config_dir, config)
-                tasks_cfg = os.path.join(config_dir, config)
 
     if len(ymls) > 0 and len(yamls) > 0:
         logger.debug("Config files with yml extensions: %s", " ".join(ymls))
