@@ -1,0 +1,10 @@
+global_paths:
+  work_dir: "/tmp/workdir"
+  config_dir: "/etc/ansible-deploy"
+
+file_naming:
+  log_file_name_frmt: "ansible-deploy_execution_{}.log"
+  sequence_prefix: "SEQ"
+
+permissions:
+  parent_workdir: "0o1750"
