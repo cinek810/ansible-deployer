@@ -186,8 +186,9 @@ def validate_options(options: dict):
 
 def load_configuration_file(config_path: str):
     """Function responsible for single file loading and validation"""
-    #TODO: Add verification of owner/group/persmissions
-    check_cfg_permissions_and_owner(config_path)
+
+    if config_path == APP_CONF:
+        check_cfg_permissions_and_owner(config_path)
     config_file = os.path.basename(config_path)
     logger.debug("Loading :%s", config_file)
 
@@ -696,7 +697,8 @@ def get_all_user_groups():
 def load_global_configuration(conf_dir):
     """Function responsible for single file loading and validation"""
     main_config_file = os.path.join(conf_dir, "ansible-deploy.yaml")
-    check_cfg_permissions_and_owner(main_config_file)
+    if conf_dir == APP_CONF:
+        check_cfg_permissions_and_owner(main_config_file)
     with open(main_config_file, "r", encoding="utf8") as config_stream:
         try:
             config = yaml.safe_load(config_stream)
