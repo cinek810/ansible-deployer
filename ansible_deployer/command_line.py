@@ -100,7 +100,10 @@ def parse_options(argv):
     options["debug"] = arguments.debug
     options["syslog"] = arguments.syslog
     options["limit"] = arguments.limit[0]
-    options["conf_dir"] = arguments.conf_dir[0]
+    if arguments.conf_dir[0].startswith("."):
+        options["conf_dir"] = os.path.join(os.getcwd(), arguments.conf_dir[0])
+    else:
+        options["conf_dir"] = arguments.conf_dir[0]
 
 
     arguments = parser.parse_args(argv)
