@@ -12,7 +12,7 @@ from ansible_deployer.modules.outputs.logging import Loggers
 from ansible_deployer.modules.validators.validate import Validators
 from ansible_deployer.modules.runners.run import Runners
 from ansible_deployer.modules import misc
-
+from ansible_deployer import version
 
 def parse_options(argv):
     """Generic function to parse options for all commands, we validate if the option was allowed for
@@ -41,8 +41,14 @@ def parse_options(argv):
     parser.add_argument("--conf-dir", nargs=1, default=[None], metavar="conf_dir",
                         help='Use non-default configuration directory, only allowed for \
                               non-binarized exec')
+    parser.add_argument("--version", "-v", default=False, action="store_true", help='Display'
+                            'app version and exit.')
 
     arguments = parser.parse_args(argv)
+
+    if arguments.version:
+        print(f"ansible-deployer version: {version.__version__}")
+        sys.exit(0)
 
     if not arguments.subcommand:
         sub_string = ", ".join(SUBCOMMANDS).strip(", ")

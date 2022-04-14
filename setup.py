@@ -16,10 +16,13 @@ def read(fname):
 
 README = read(str(HERE)+"/README.md")
 
+VERSIONFILE=os.path.join(HERE, "source", "version.py")
+version = open(VERSIONFILE, "r").readlines()[2]
+
 # This call to setup() does all the work
 setup(
     name="ansible-deployer",
-    version="0.0.24",
+    version=version,
     description="Wrapper around ansible-playbook allowing configurable tasks and permissions",
     long_description=README,
     long_description_content_type="text/markdown",
