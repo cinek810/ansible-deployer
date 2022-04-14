@@ -5,6 +5,7 @@ import sys
 import argparse
 import datetime
 import errno
+import pkg_resources
 from ansible_deployer.modules.globalvars import SUBCOMMANDS
 from ansible_deployer.modules.configs.config import Config
 from ansible_deployer.modules.locking.locking import Locking
@@ -12,7 +13,6 @@ from ansible_deployer.modules.outputs.logging import Loggers
 from ansible_deployer.modules.validators.validate import Validators
 from ansible_deployer.modules.runners.run import Runners
 from ansible_deployer.modules import misc
-
 
 def parse_options(argv):
     """Generic function to parse options for all commands, we validate if the option was allowed for
@@ -34,15 +34,22 @@ def parse_options(argv):
                         ' infrastructure locked after task execution.')
     parser.add_argument("--debug", "-d", default=False, action="store_true",
                         help='Print debug output.')
-    parser.add_argument("--syslog", "-v", default=False, action="store_true", help='Log warnings '
-                        'and errors to syslog. --debug doesn\'t affect this option!')
+    parser.add_argument("--syslog", default=False, action="store_true", help='Log warnings and'
+                        ' errors to syslog. --debug doesn\'t affect this option!')
     parser.add_argument("--limit", "-l", nargs=1, default=[None], metavar="[LIMIT]",
                         help='Limit task execution to specified host.')
     parser.add_argument("--conf-dir", nargs=1, default=[None], metavar="conf_dir",
                         help='Use non-default configuration directory, only allowed for \
                               non-binarized exec')
+    parser.add_argument("--version", "-v", default=False, action="store_true", help='Display'
+                            'app version and exit.')
 
     arguments = parser.parse_args(argv)
+
+    if arguments.version:
+        version = pkg_resources.require("ansible_deployer")[0].version
+        print(f"ansible-deployer version: {version}")
+        sys.exit(0)
 
     if not arguments.subcommand:
         sub_string = ", ".join(SUBCOMMANDS).strip(", ")
