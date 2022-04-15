@@ -50,6 +50,12 @@ check_message_in_output 'ansible-deployer run -t task_exec_bin_true -s locked -i
 #Check --debug option
 check_run_ok "ansible-deployer list --debug" "\[DEBUG\]: load_configuration called"
 
+# Check different output options
+check_message_in_output 'ansible-deployer run -t task_with_ansible_fail -s testing -i testInfra' "\[ERROR\]: TASK \[Run ll\]"
+check_message_in_output 'ansible-deployer run -t task_with_ansible_fail -s testing -i testInfra -d' "\[DEBUG\]: TASK \[Run ll\]"
+check_message_not_in_output 'ansible-deployer run -t task_with_ansible_fail -s testing -i testInfra --raw-runner-output' "\[ERROR\]: TASK \[Run ll\]"
+check_message_in_output 'ansible-deployer run -t task_with_ansible_fail -s testing -i testInfra --raw-runner-output -d' "\[DEBUG\]: TASK \[Run ll\]"
+
 # Check --limit option
 check_message_in_output 'ansible-deployer run -t task_with_limit -s testing -i testInfra2 -l xyzHost4' 'ERROR\! Specified hosts and/or --limit does not match any hosts'
 check_message_in_output 'ansible-deployer run -t task_without_limit -s testing -i testInfra -l testHost1' '\[CRITICAL\]: Limit testHost1 is not available for task task_without_limit.'

@@ -43,6 +43,8 @@ def parse_options(argv):
                               non-binarized exec')
     parser.add_argument("--version", "-v", default=False, action="store_true", help='Display'
                             'app version and exit.')
+    parser.add_argument("--raw-runner-output", default=False, action="store_true", help='Print'
+                        ' original messages during runner execution instead of formatted ones.')
 
     arguments = parser.parse_args(argv)
 
@@ -72,6 +74,7 @@ def parse_options(argv):
     options["debug"] = arguments.debug
     options["syslog"] = arguments.syslog
     options["limit"] = arguments.limit[0]
+    options["raw_output"] = arguments.raw_runner_output
     if arguments.conf_dir[0]:
         options["conf_dir"] = os.path.abspath(arguments.conf_dir[0])
     else:
