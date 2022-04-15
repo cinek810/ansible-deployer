@@ -3,9 +3,7 @@
 import os
 import sys
 import subprocess
-import errno
 from ansible_deployer.modules.outputs.formatting import Formatters
-
 
 class Runners:
     """Class handling ansible hooks and ansible plays execution"""
@@ -106,31 +104,14 @@ class Runners:
         Function implementing actual execution of runner [ansible-playbook or py.test]
         """
         playitems = self.get_playitems(config, options)
-        tags = self.get_tags_for_task(config, options)
-        if len(playitems) < 1:
+        if not playitems:
             self.logger.critical("No playitems found for requested task %s. Nothing to do.",
                                  options['task'])
             self.lock_obj.unlock_inventory(lockpath)
             sys.exit(70)
-        elif playitems is not None:
+        else:
             for playitem in playitems:
-                if "runner" in playitem and playitem["runner"] == "py.test":
-                    command = ["py.test", "--ansible-inventory", inventory]
-                    if options["limit"]:
-                        command.append("--hosts='ansible://")
-                        command.append(options["limit"]+"'")
-                    else:
-                        command.append("--hosts=ansible://all")
-                    command.append("--junit-xml=junit_"+options['task']+'.xml')
-                    command.append("./"+playitem["file"])
-                else:
-                    command = ["ansible-playbook", "-i", inventory, playitem["file"]]
-                    if options["limit"]:
-                        command.append("-l")
-                        command.append(options["limit"])
-                    if tags:
-                        command.append("-t")
-                        command.append(",".join(tags))
+                command = self.construct_command(playitem, inventory, config, options)
                 self.logger.debug("Running '%s'.", command)
                 try:
                     with subprocess.Popen(command, stdout=subprocess.PIPE,
@@ -167,10 +148,6 @@ class Runners:
                     self.logger.critical("\"%s\" failed due to:")
                     self.logger.critical(exc)
                     sys.exit(72)
-        else:
-            self.logger.error("No playitems defined for action")
-            self.lock_obj.unlock_inventory(lockpath)
-            sys.exit(errno.ENOENT)
 
     @staticmethod
     def get_tags_for_task(config: dict, options: dict):
@@ -181,3 +158,28 @@ class Runners:
                 tags = task.get("tags", [])
 
         return tags
+
+    @staticmethod
+    def construct_command(playitem: str, inventory: str, config: dict, options: dict):
+        """Create final ansible command from available variables"""
+        tags = Runners.get_tags_for_task(config, options)
+
+        if "runner" in playitem and playitem["runner"] == "py.test":
+            command = ["py.test", "--ansible-inventory", inventory]
+            if options["limit"]:
+                command.append("--hosts='ansible://")
+                command.append(options["limit"]+"'")
+            else:
+                command.append("--hosts=ansible://all")
+            command.append("--junit-xml=junit_"+options['task']+'.xml')
+            command.append("./"+playitem["file"])
+        else:
+            command = ["ansible-playbook", "-i", inventory, playitem["file"]]
+            if options["limit"]:
+                command.append("-l")
+                command.append(options["limit"])
+            if tags:
+                command.append("-t")
+                command.append(",".join(tags))
+
+        return command
