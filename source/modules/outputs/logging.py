@@ -17,7 +17,7 @@ class Loggers:
         logger = logging.getLogger("ansible-deployer_log")
         logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter("%(asctime)s [%(levelname)s]: %(message)s")
-        console_formatter = logging.Formatter("\n%(asctime)s [%(levelname)s]: %(message)s\n")
+        console_formatter = "\n%(asctime)s [%(levelname)s]: %(message)s\n"
 
         if options["syslog"]:
             rsys_handler = log_han.SysLogHandler(address="/dev/log")
@@ -31,7 +31,8 @@ class Loggers:
         logger.addHandler(memory_handler)
 
         console_handler = logging.StreamHandler()
-        console_handler.setFormatter(console_formatter)
+        console_handler.setFormatter(logging.Formatter(console_formatter) if options["no_color"] \
+                                     else CustomFormatter(console_formatter))
         console_handler.setLevel(logging.DEBUG if options["debug"] else logging.INFO)
         logger.addHandler(console_handler)
 
@@ -46,3 +47,29 @@ class Loggers:
         file_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s]: %(message)s"))
         file_handler.setLevel(logging.DEBUG)
         self.logger.addHandler(file_handler)
+
+
+class CustomFormatter(logging.Formatter):
+    """Class adding colours to console logger"""
+
+    def __init__(self, formatter):
+        super().__init__()
+        grey = "\x1b[0;38m"
+        light_green = "\x1b[1;32m"
+        yellow = "\x1b[0;33m"
+        red = "\x1b[0;31m"
+        light_red = "\x1b[1;31m"
+        reset = "\x1b[0m"
+
+        self.FORMATS = {
+            logging.DEBUG: light_green + formatter + reset,
+            logging.INFO: grey + formatter + reset,
+            logging.WARNING: yellow + formatter + reset,
+            logging.ERROR: red + formatter + reset,
+            logging.CRITICAL: light_red + formatter + reset
+        }
+
+    def format(self, record):
+        log_fmt = self.FORMATS.get(record.levelno)
+        formatter = logging.Formatter(log_fmt)
+        return formatter.format(record)
