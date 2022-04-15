@@ -29,7 +29,7 @@ def parse_options(argv):
                         help='Provide commit ID.')
     parser.add_argument("--task", "-t", nargs=1, default=[None], metavar='TASK_NAME',
                         help='Provide task_name.')
-    parser.add_argument("--dry", "-C", default=False, action='store_true', help='Perform dry run.')
+    parser.add_argument("--dry", "-D", default=False, action='store_true', help='Perform dry run.')
     parser.add_argument("--keep-locked", "-k", default=False, action='store_true', help='Keep'
                         ' infrastructure locked after task execution.')
     parser.add_argument("--debug", "-d", default=False, action="store_true",
@@ -38,7 +38,7 @@ def parse_options(argv):
                         ' errors to syslog. --debug doesn\'t affect this option!')
     parser.add_argument("--limit", "-l", nargs=1, default=[None], metavar="[LIMIT]",
                         help='Limit task execution to specified host.')
-    parser.add_argument("--conf-dir", nargs=1, default=[None], metavar="conf_dir",
+    parser.add_argument("--conf-dir", "-C", nargs=1, default=[None], metavar="conf_dir",
                         help='Use non-default configuration directory, only allowed for \
                               non-binarized exec')
     parser.add_argument("--version", "-v", default=False, action="store_true", help='Display'
