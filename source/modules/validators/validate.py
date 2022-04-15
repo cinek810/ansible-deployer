@@ -3,7 +3,7 @@
 import sys
 import os
 import re
-from ansible_deployer.modules.globalvars import SUBCOMMANDS
+from ansible_deployer.modules import globalvars
 
 
 class Validators:
@@ -13,26 +13,39 @@ class Validators:
         self.logger = logger
 
     @staticmethod
-    def verify_subcommand(command: str):
+    def verify_subcommand(command: str, color_flag: bool):
         """Function to check the first arguments for a valid subcommand"""
-        if command not in SUBCOMMANDS:
-            print("[CRITICAL]: Unknown subcommand :%s", (command), file=sys.stderr)
+        if color_flag:
+            PRINT_FAIL = PRINT_END = ""
+        else:
+            PRINT_FAIL = globalvars.PRINT_FAIL
+            PRINT_END = globalvars.PRINT_END
+
+        if command not in globalvars.SUBCOMMANDS:
+            print(f"{PRINT_FAIL}[CRITICAL]: Unknown subcommand :%s {PRINT_END}", (command),
+                  file=sys.stderr)
             sys.exit("55")
 
     @staticmethod
-    def verify_switches(switches: list):
+    def verify_switches(switches: list, color_flag: bool):
         """
         Check if 2nd and following positional arguments are valid
         """
+        if color_flag:
+            PRINT_FAIL = PRINT_END = ""
+        else:
+            PRINT_FAIL = globalvars.PRINT_FAIL
+            PRINT_END = globalvars.PRINT_END
+
         if switches[0] != "show" and len(switches[1:]) > 0:
-            print("[CRITICAL]: Too many positional arguments! Only subcommand \"show\" can accept"
-                  " following arguments: all, task, infra.")
+            print(f"{PRINT_FAIL}[CRITICAL]: Too many positional arguments! Only subcommand \"show\""
+                  f" can accept following arguments: all, task, infra.{PRINT_END}")
             sys.exit("56")
 
         for switch in switches[1:]:
             if switch not in ("all", "task", "infra"):
-                print(f"[CRITICAL]: Invalid argument {switch}! Subcommand \"show\" can accept only"
-                      " following arguments: all, task, infra.")
+                print(f"{PRINT_FAIL}[CRITICAL]: Invalid argument {switch}! Subcommand \"show\" can"
+                      f" accept only following arguments: all, task, infra.{PRINT_END}")
                 sys.exit("57")
 
     def validate_options(self, options: dict):
