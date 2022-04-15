@@ -90,18 +90,18 @@ class Config:
             sys.exit(42)
 
         if not infra_cfg:
-            self.logger.critical("Infrastructure configuration file does not exist in %s!",
-                            self.conf_dir)
+            self.logger.critical("Infrastructure configuration file infra.yaml does not exist in"
+                                 " %s!", self.conf_dir)
             sys.exit(43)
 
         if not tasks_cfg:
-            self.logger.critical("Tasks configuration file does not exist in %s!",
-                            self.conf_dir)
+            self.logger.critical("Tasks configuration file tasks.yaml does not exist in %s!",
+                                 self.conf_dir)
             sys.exit(44)
 
         if not acl_cfg:
-            self.logger.critical("Permission configuration file does not exist in %s!",
-                            self.conf_dir)
+            self.logger.critical("Permission configuration file acl.yaml does not exist in %s!",
+                                 self.conf_dir)
             sys.exit(45)
 
         return infra_cfg, tasks_cfg, acl_cfg
