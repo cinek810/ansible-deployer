@@ -1,6 +1,7 @@
 acl_lists:
   - name: root_on_all_in_all
-    group: root
+    groups:
+      - root
     infra:
       - name: testInfra
         stages:
@@ -19,7 +20,8 @@ acl_lists:
           - locked
 
   - name: root_on_all_in_testInfra
-    group: root
+    groups:
+      - root
     infra:
       - name: testInfra
         stages:
@@ -28,21 +30,24 @@ acl_lists:
           - locked
 
   - name: test_on_testing_in_testInfra
-    group: test_group
+    groups:
+      - test_group
     infra:
       - name: testInfra
         stages:
           - testing
 
   - name: root_on_testing_in_testInfra
-    group: root
+    groups:
+      - root
     infra:
       - name: testInfra
         stages:
           - testing
 
   - name: root_on_testing_in_testInfra_testInfra2
-    group: root
+    groups:
+      - root
     infra:
       - name: testInfra
         stages:
@@ -52,7 +57,8 @@ acl_lists:
           - testing
 
   - name: root_mixed_0001 
-    group: root
+    groups:
+      - root
     infra:
       - name: testInfra
         stages:
@@ -65,4 +71,22 @@ acl_lists:
         stages:
           - testing
           - prod
+
+  - name: groups_mixed_0001
+    groups:
+      - root
+      - test_group_non_exist
+    infra:
+      - name: testInfra
+        stages:
+          - testing
+
+  - name: groups_mixed_0002
+    groups:
+      - test_group_non_exist1
+      - test_group_non_exist2
+    infra:
+      - name: testInfra
+        stages:
+          - testing
 
