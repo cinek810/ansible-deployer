@@ -135,10 +135,19 @@ class Config:
         main_config_file = os.path.join(self.conf_dir, "ansible-deploy.yaml")
         if self.conf_dir == APP_CONF:
             self.check_cfg_permissions_and_owner(main_config_file)
-        with open(main_config_file, "r", encoding="utf8") as config_stream:
-            try:
-                config = yaml.safe_load(config_stream)
-                return config
-            except yaml.YAMLError as e:
-                self.logger.critical(e, file=sys.stderr)
-                sys.exit(51)
+        try:
+            with open(main_config_file, "r", encoding="utf8") as config_stream:
+                try:
+                    config = yaml.safe_load(config_stream)
+                    return config
+                except yaml.YAMLError as e:
+                    self.logger.critical(e, file=sys.stderr)
+                    sys.exit(51)
+        except FileNotFoundError:
+            self.logger.critical("Main configuration file ansible-deploy.yaml does not exist in"
+                                 " %s!", self.conf_dir)
+            sys.exit(58)
+        except Exception as exc:
+            self.logger.critical("Main configuration file %s could not be opened due to: %s",
+                                 main_config_file, exc)
+            sys.exit(59)
