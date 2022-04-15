@@ -135,16 +135,34 @@ class Runners:
                 try:
                     with subprocess.Popen(command, stdout=subprocess.PIPE,
                                           stderr=subprocess.PIPE) as proc:
-                        output, warning, error = Formatters.format_ansible_output(
-                                                 proc.communicate())
+                        returned = proc.communicate()
                         format_obj = Formatters(self.logger)
-                    if proc.returncode == 0:
-                        format_obj.positive_ansible_output(warning, output, command)
-                    else:
-                        format_obj.negative_ansible_output(warning, error, command)
-                        self.lock_obj.unlock_inventory(lockpath)
-                        self.logger.critical("Program will exit now.")
-                        sys.exit(71)
+                        if options["raw_output"]:
+                            if proc.returncode != 0:
+                                if options["debug"]:
+                                    format_obj.debug_std_out(returned[0])
+                                self.logger.error("'%s' failed due to:", command)
+                                format_obj.format_std_err(returned[1])
+                                self.lock_obj.unlock_inventory(lockpath)
+                                self.logger.critical("Program will exit now.")
+                                sys.exit(71)
+                            else:
+                                if options["debug"]:
+                                    format_obj.debug_std_err(returned[1])
+                                format_obj.format_std_out(returned[0])
+                                self.logger.info("'%s' ran succesfully", command)
+                        else:
+                            output, warning, error = Formatters.format_ansible_output(returned)
+                            if options["debug"]:
+                                format_obj.debug_std_out(returned[0])
+                                format_obj.format_std_err(returned[1])
+                            if proc.returncode == 0:
+                                format_obj.positive_ansible_output(warning, output, command)
+                            else:
+                                format_obj.negative_ansible_output(warning, error, command)
+                                self.lock_obj.unlock_inventory(lockpath)
+                                self.logger.critical("Program will exit now.")
+                                sys.exit(71)
                 except Exception as exc:
                     self.logger.critical("\"%s\" failed due to:")
                     self.logger.critical(exc)
