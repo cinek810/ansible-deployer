@@ -69,6 +69,10 @@ check_message_in_output 'ansible-deployer show' 'Available tasks:'
 check_message_in_output 'ansible-deployer show infra' 'Available infrastructures:'
 check_message_in_output 'ansible-deployer show task' 'Available tasks:'
 
+# Check multiple system groups in acl_group
+check_run_ok "ansible-deployer run -t task_with_multi_groups -s testing -i testInfra"
+check_message_in_output "ansible-deployer run -t task_with_multi_groups_fail -s testing -i testInfra" "\[CRITICAL\]: Task forbidden"
+
 #Try execution of task without permissions
 if [ $UID -ne 0 ]
 then

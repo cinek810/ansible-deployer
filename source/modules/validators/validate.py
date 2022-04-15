@@ -183,14 +183,14 @@ class Validators:
                               user_groups)
             self.logger.debug("\tPermission group %s content: %s", acl_group,
                               str(config["acl"][acl_group]))
-            if config["acl"][acl_group]["group"] in user_groups:
+            if any(group in user_groups for group in config["acl"][acl_group]["groups"]):
                 for infra in config["acl"][acl_group]["infra"]:
                     self.logger.debug("\t\tChecking infra: %s for infra: %s", infra,
                                  selected_items["infra"]["name"])
                     if infra["name"] == selected_items["infra"]["name"]:
                         for stage in infra["stages"]:
                             self.logger.debug("\t\t\tChecking stage: %s for stage: %s", stage,
-                                        o_stage["name"])
+                                              o_stage["name"])
                             if stage == o_stage["name"]:
                                 self.logger.debug("Task allowed, based on %s", acl_group)
                                 return True
