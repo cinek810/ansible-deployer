@@ -35,7 +35,6 @@ def create_workdir(timestamp: str, conf: dict, logger):
 
     try:
         os.mkdir(seq_path)
-        os.chdir(seq_path)
     except Exception as e:
         logger.critical("Failed to create work dir: %s error was: %s", seq_path, e, file=sys.stderr)
         sys.exit(91)

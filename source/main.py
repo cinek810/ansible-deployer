@@ -113,15 +113,12 @@ def main():
     validators.validate_options(options)
     selected_items = validators.validate_option_values_against_config(config, options)
 
-<<<<<<< HEAD
-=======
     if options["subcommand"] in ("run", "verify"):
         if options["self_setup"]:
             os.chdir(options["self_setup"])
         else:
             os.chdir(workdir)
 
->>>>>>> ac1a0a0 (fixx)
     user_groups = misc.get_all_user_groups(logger.logger)
 
     if options["dry"]:

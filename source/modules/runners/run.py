@@ -30,8 +30,8 @@ class Runners:
         checkout the default repo.
         """
         failed = False
-
         workdir, commit = Runners.reassign_commit_and_workdir(commit, workdir)
+
         for hook in setup_hooks:
             if hook["module"] == "script":
                 try:
@@ -63,7 +63,7 @@ class Runners:
                         self.logger.critical("Setup hook %s failed, cannot continue", hook["name"])
                         sys.exit(40)
                     else:
-                        self.logger.info("Setup completed in %s", os.getcwd())
+                        self.logger.info("Setup completed in %s", workdir)
 
             else:
                 self.logger.error("Not supported")

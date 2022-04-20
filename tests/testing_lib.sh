@@ -56,3 +56,19 @@ check_file_permissions() {
 		echo "FAILED: $1 has incorrect permissions $2"
 	fi
 }
+
+find_latest_sequence() {
+	last_seq="$(ls /tmp/$(date +%Y%m%d) | tail -n 1)"
+	echo "/tmp/$(date +%Y%m%d)/${last_seq}"
+}
+
+check_file_startingwith_in_dir() {
+	eval "find $1 -name "${2}*" 1>/dev/null"
+	if [ $? -eq 0 ]
+	then
+		echo "OK: $1 has file starting with pattern $2"
+	else
+		echo "FAILED: $1 does not contain file starting with pattern $2"
+		exit 1
+	fi
+}
