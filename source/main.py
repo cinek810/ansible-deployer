@@ -45,6 +45,10 @@ def parse_options(argv):
                             'app version and exit.')
     parser.add_argument("--raw-runner-output", default=False, action="store_true", help='Print'
                         ' original messages during runner execution instead of formatted ones.')
+    parser.add_argument("--self-setup", nargs=1, default=[None], metavar="LOCAL_SETUP_PATH",
+                        help='Setup repo outside of workdir in requested path. This option applies'
+                        ' only to infrastructures with allow_user_checkout enabled in infra'
+                        ' config!')
 
     arguments = parser.parse_args(argv)
 
@@ -75,6 +79,10 @@ def parse_options(argv):
     options["syslog"] = arguments.syslog
     options["limit"] = arguments.limit[0]
     options["raw_output"] = arguments.raw_runner_output
+    if arguments.self_setup[0]:
+        options["self_setup"] = os.path.abspath(arguments.self_setup[0])
+    else:
+        options["self_setup"] = None
     if arguments.conf_dir[0]:
         options["conf_dir"] = os.path.abspath(arguments.conf_dir[0])
     else:
@@ -105,6 +113,15 @@ def main():
     validators.validate_options(options)
     selected_items = validators.validate_option_values_against_config(config, options)
 
+<<<<<<< HEAD
+=======
+    if options["subcommand"] in ("run", "verify"):
+        if options["self_setup"]:
+            os.chdir(options["self_setup"])
+        else:
+            os.chdir(workdir)
+
+>>>>>>> ac1a0a0 (fixx)
     user_groups = misc.get_all_user_groups(logger.logger)
 
     if options["dry"]:
@@ -125,7 +142,7 @@ def main():
                 logger.logger.critical("Task forbidden")
                 sys.exit(errno.EPERM)
             runner = Runners(logger.logger, lock)
-            runner.setup_ansible(config["tasks"]["setup_hooks"], options["commit"], workdir)
+            runner.setup_ansible(config["tasks"]["setup_hooks"], selected_items["commit"], workdir)
             lock.lock_inventory(lockdir, lockpath)
             runner.run_playitem(config, options, inv_file, lockpath)
             lock.unlock_inventory(lockpath)

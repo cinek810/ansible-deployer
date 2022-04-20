@@ -63,6 +63,10 @@ SCHEMAS = {
                                     "inventory": {
                                         "type": "string",
                                         "required": True
+                                    },
+                                    "allow_user_checkout": {
+                                        "type": "boolean",
+                                        "required": False
                                     }
                                 }
                             }

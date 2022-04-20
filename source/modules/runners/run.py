@@ -12,6 +12,17 @@ class Runners:
         self.logger = logger
         self.lock_obj = lock_obj
 
+    @staticmethod
+    def reassign_commit_and_workdir(commit: str, workdir: str):
+        """Change workdir if commit is a path (option --self-setup enabled in main)"""
+        if not commit:
+            commit = ""
+        elif os.sep in commit:
+            workdir = commit
+            commit = ""
+
+        return workdir, commit
+
     def setup_ansible(self, setup_hooks: list, commit: str, workdir: str):
         """
         Function responsible for execution of setup_hooks
@@ -20,8 +31,7 @@ class Runners:
         """
         failed = False
 
-        if not commit:
-            commit = ""
+        workdir, commit = Runners.reassign_commit_and_workdir(commit, workdir)
         for hook in setup_hooks:
             if hook["module"] == "script":
                 try:
