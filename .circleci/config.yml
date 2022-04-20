@@ -35,6 +35,9 @@ jobs:
           command: |
             ./tests/01-test_argument_parsing.sh
             ./tests/02-checkrun.sh
+            mkdir -p /etc/alt-workdir
+            ./tests/02a-checkrun_with_self_setup.sh
+            rm -rf /etc/alt-workdir
             mv /etc/ansible-deployer /etc/alternate-deployer-dir
             mkdir -p /etc/ansible-deployer/hooks
             cp ./etc/hooks/setup_work_dir.sh /etc/ansible-deployer/hooks/
