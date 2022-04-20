@@ -11,9 +11,12 @@ SCHEMAS = {
                             "type": "string",
                             "required": True
                         },
-                        "group": {
-                            "type": "string",
-                            "required": True
+                        "groups": {
+                            "type": "list",
+                            "schema": {
+                                "type": "string",
+                                "required": True
+                            }
                         },
                         "infra": {
                             "type": "list",
