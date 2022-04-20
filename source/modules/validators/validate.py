@@ -1,6 +1,7 @@
 """Module for validating input data, configuration files and data structures"""
 
 import sys
+import os
 import re
 from ansible_deployer.modules.globalvars import SUBCOMMANDS
 
@@ -44,14 +45,14 @@ class Validators:
             required = ["task", "infra", "stage"]
         elif options["subcommand"] == "verify":
             required = ["task", "infra", "stage"]
-            notsupported = ["commit"]
+            notsupported = ["commit", "local_checkout"]
         elif options["subcommand"] in ("lock", "unlock"):
             required = ["infra", "stage"]
-            notsupported = ["task", "commit", "limit"]
+            notsupported = ["task", "commit", "limit", "self_setup"]
         elif options["subcommand"] == "list":
-            notsupported = ["commit", "limit"]
+            notsupported = ["commit", "limit", "self_setup"]
         elif options["subcommand"] == "show":
-            notsupported = ["commit", "limit"]
+            notsupported = ["commit", "limit", "self_setup"]
 
         failed = False
         for req in required:
@@ -99,6 +100,39 @@ class Validators:
         Rquired for: run"""
 
         return True
+
+    def validate_checkout(self, options: dict, config: dict):
+        """Validate --commit or --self-setup options and return commit/path value"""
+        if options["commit"] and options["self_setup"]:
+            self.logger.critical("Options --commit and --self-setup are mutually exlcusive!")
+            sys.exit(58)
+        elif options["self_setup"]:
+            commit = self.validate_self_setup(options, config)
+        else:
+            commit = self.validate_commit(options, config)
+
+        return commit
+
+    def validate_self_setup(self, options: dict, config: dict):
+        """Validate if --self-setup is allowed and if requested path exists"""
+        if os.path.exists(options["self_setup"]):
+            for infra in config["infra"]:
+                if infra["name"] == options["infra"]:
+                    for stage in infra["stages"]:
+                        if stage["name"] == options["stage"]:
+                            allow = stage.get("allow_user_checkout", None)
+                            if not allow:
+                                self.logger.critical("Self setup is not allowed for infra %s!",
+                                                     infra["name"])
+                                sys.exit(59)
+                            else:
+                                ret = options["self_setup"]
+        else:
+            self.logger.critical("Provided --self-setup path %s does not exist!",
+                                 options["self_setup"])
+            sys.exit(59)
+
+        return ret
 
     def validate_commit(self, options: dict, config: dict):
         """Function to validate commit value against config and assign final value"""
@@ -157,7 +191,7 @@ class Validators:
                                              options["limit"], options["task"])
                         sys.exit(54)
 
-        selected_items["commit"] = self.validate_commit(options, config)
+        selected_items["commit"] = self.validate_checkout(options, config)
         self.logger.debug("Completed validate_option_values_with_config")
 
                 #TODO: validate if user is allowed to use --commit
