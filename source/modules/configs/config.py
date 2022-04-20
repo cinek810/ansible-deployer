@@ -6,6 +6,7 @@ import stat
 import yaml
 from cerberus import Validator
 from ansible_deployer.modules.globalvars import APP_CONF, CFG_PERMISSIONS
+from ansible_deployer.modules.configs.schema import SCHEMAS
 
 
 class Config:
@@ -32,16 +33,9 @@ class Config:
                 self.logger.critical("Yaml loading failed for %s due to %s.", config_path, e)
                 sys.exit(51)
 
-        schema_path = os.path.join(self.conf_dir, "schema", config_file)
-        with open(schema_path, "r", encoding="utf8") as schema_stream:
-            try:
-                schema = yaml.safe_load(schema_stream)
-            except yaml.YAMLError as e:
-                self.logger.critical("Yaml loading failed for %s due to %s.", config_path, e)
-                sys.exit(52)
-
-        validator = Validator(schema)
-        if not validator.validate(config, schema):
+        schema_name = config_file.split(".")[0]
+        validator = Validator(SCHEMAS[schema_name])
+        if not validator.validate(config, SCHEMAS[schema_name]):
             self.logger.critical("Yaml validation failed for %s due to %s.", config_path,
                                  validator.errors)
             sys.exit(53)

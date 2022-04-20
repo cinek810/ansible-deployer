@@ -37,7 +37,6 @@ jobs:
             ./tests/02-checkrun.sh
             mv /etc/ansible-deployer /etc/alternate-deployer-dir
             mkdir -p /etc/ansible-deployer/hooks
-            cp -r ./etc/schema /etc/ansible-deployer/
             cp ./etc/hooks/setup_work_dir.sh /etc/ansible-deployer/hooks/
             ./tests/02b-checkrun_with_conf_dir.sh
             rm -rf /etc/ansible-deployer
