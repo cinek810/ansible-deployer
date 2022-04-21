@@ -43,16 +43,17 @@ class Validators:
 
         if options["subcommand"] == "run":
             required = ["task", "infra", "stage"]
+            notsupported = ["switches"]
         elif options["subcommand"] == "verify":
             required = ["task", "infra", "stage"]
-            notsupported = ["commit"]
+            notsupported = ["switches", "commit"]
         elif options["subcommand"] in ("lock", "unlock"):
             required = ["infra", "stage"]
-            notsupported = ["task", "commit", "limit", "self_setup"]
+            notsupported = ["switches", "task", "commit", "limit", "raw_output"]
         elif options["subcommand"] == "list":
-            notsupported = ["commit", "limit", "self_setup"]
+            notsupported = ["switches", "commit", "keep_locked", "limit", "raw_output"]
         elif options["subcommand"] == "show":
-            notsupported = ["commit", "limit", "self_setup"]
+            notsupported = ["commit", "keep_locked", "limit", "raw_output"]
 
         failed = False
         for req in required:
