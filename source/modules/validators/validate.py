@@ -57,12 +57,12 @@ class Validators:
 
         failed = False
         for req in required:
-            if options[req] is None:
+            if not options[req]:
                 self.logger.error("%s is required for %s", req, options["subcommand"])
                 failed = True
 
         for notsup in notsupported:
-            if options[notsup] is not None:
+            if options[notsup]:
                 self.logger.error("%s is not supported by %s", notsup, options["subcommand"])
                 failed = True
 
