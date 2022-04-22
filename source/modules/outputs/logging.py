@@ -25,6 +25,11 @@ class Loggers:
             rsys_handler.setLevel(logging.WARNING)
             logger.addHandler(rsys_handler)
 
+        memory_handler = log_han.MemoryHandler(15, flushLevel=logging.DEBUG, flushOnClose=False)
+        memory_handler.setFormatter(formatter)
+        memory_handler.setLevel(logging.DEBUG)
+        logger.addHandler(memory_handler)
+
         console_handler = logging.StreamHandler()
         console_handler.setFormatter(console_formatter)
         console_handler.setLevel(logging.DEBUG if options["debug"] else logging.INFO)
