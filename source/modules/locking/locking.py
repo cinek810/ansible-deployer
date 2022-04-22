@@ -13,7 +13,7 @@ class Locking:
         self.keep_lock = keep_lock
         self.infra = infra
 
-    def lock_inventory(self, lockdir: str, lockpath: str):
+    def lock_inventory(self, lockpath: str):
         """
         Function responsible for locking inventory file.
         The goal is to prevent two parallel ansible-deploy's running on the same inventory
@@ -24,6 +24,7 @@ class Locking:
         The file should match inventory file name.
         """
 
+        lockdir = os.path.dirname(lockpath)
         self.logger.debug("Started lock_inventory for lockdir: %s and lockpath %s.", lockdir,
                           lockpath)
         os.makedirs(lockdir, exist_ok=True)
