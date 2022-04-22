@@ -102,7 +102,6 @@ def main():
     logger = Loggers(options)
 
     configuration = Config(logger.logger, options["conf_dir"])
-    conf = configuration.conf
     config = configuration.load_configuration()
 
     if options["subcommand"] in ("run", "verify"):
@@ -123,10 +122,7 @@ def main():
     selected_items = validators.validate_option_values_against_config(config, options)
 
     if options["subcommand"] in ("run", "verify"):
-        if options["self_setup"]:
-            os.chdir(options["self_setup"])
-        else:
-            os.chdir(workdir)
+        os.chdir(options["self_setup"] if options["self_setup"] else workdir)
 
     user_groups = misc.get_all_user_groups(logger.logger)
 
@@ -137,9 +133,9 @@ def main():
     if options["subcommand"] == "show":
         misc.show_deployer(config, options)
     else:
-        lockdir = os.path.join(conf["global_paths"]["work_dir"], "locks")
         inv_file = misc.get_inventory_file(config, options)
-        lockpath = os.path.join(lockdir, inv_file.lstrip(f".{os.sep}").replace(os.sep, "_"))
+        lockpath = os.path.join(os.path.join(configuration.conf["global_paths"]["work_dir"],
+                                "locks") , inv_file.lstrip(f".{os.sep}").replace(os.sep, "_"))
         lock = Locking(logger.logger, options["keep_locked"], (options["infra"], options["stage"]))
         if options["subcommand"] in ("run", "verify"):
             if not validators.verify_task_permissions(selected_items, user_groups, config):
@@ -147,11 +143,11 @@ def main():
                 sys.exit(errno.EPERM)
             runner = Runners(logger.logger, lock)
             runner.setup_ansible(config["tasks"]["setup_hooks"], selected_items["commit"], workdir)
-            lock.lock_inventory(lockdir, lockpath)
+            lock.lock_inventory(lockpath)
             runner.run_playitem(config, options, inv_file, lockpath)
             lock.unlock_inventory(lockpath)
         elif options["subcommand"] == "lock":
-            lock.lock_inventory(lockdir, lockpath)
+            lock.lock_inventory(lockpath)
         elif options["subcommand"] == "unlock":
             lock.unlock_inventory(lockpath)
 
