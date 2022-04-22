@@ -27,7 +27,6 @@ class Loggers:
 
         console_handler = logging.StreamHandler()
         console_handler.setFormatter(console_formatter)
-        console_handler.setLevel(logging.INFO)
         console_handler.setLevel(logging.DEBUG if options["debug"] else logging.INFO)
         logger.addHandler(console_handler)
 
