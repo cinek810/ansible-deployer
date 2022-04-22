@@ -30,47 +30,15 @@ jobs:
             gpasswd -a root test_group
             groups
             /bin/bash -lc 'groups'
+  run_test_01:
+    docker:
+      - image: almalinux
+    resource_class: small
+    steps:
       - run:
           name: "Run shell script for argument parsing"
           command: |
             ./tests/01-test_argument_parsing.sh
-            ./tests/02-checkrun.sh
-            mkdir -p /etc/alt-workdir
-            ./tests/02a-checkrun_with_self_setup.sh
-            rm -rf /etc/alt-workdir
-            mv /etc/ansible-deployer /etc/alternate-deployer-dir
-            mkdir -p /etc/ansible-deployer/hooks
-            cp ./etc/hooks/setup_work_dir.sh /etc/ansible-deployer/hooks/
-            ./tests/02b-checkrun_with_conf_dir.sh
-            rm -rf /etc/ansible-deployer
-            rm -rf /etc/alternate-deployer-dir
-            cp -r ./etc /etc/ansible-deployer
-            ./tests/05-permission_checks.sh
-      - run:
-          name: "Copy failing hooks"
-          command: cp ./tests/files/etc/hooks/* /etc/ansible-deployer/hooks
-      - run:
-          name: "Run shell script for error returning hook"
-          command: |
-            cp ./tests/files/etc/tasks_error_hook.yaml /etc/ansible-deployer/tasks.yaml
-            ./tests/04-error_hook.sh
-      - run:
-          name: "Run shell script for error returning hook with exit"
-          command: |
-            cp ./tests/files/etc/tasks_exit_hook.yaml /etc/ansible-deployer/tasks.yaml
-            ./tests/04-exit_hook.sh
-      - run:
-          name: "Run shell script for critical returning hook"
-          command: |
-            chmod 0644 /etc/ansible-deployer/hooks/exit_hook.sh
-            ./tests/04-critical_hook.sh
-      - run:
-          name: "Create incompatible config file"
-          command: cp ./tests/files/incompatible_config.yml /etc/ansible-deployer
-      - run:
-          name: "Run shell script for invalid config tests"
-          command: |
-            ./tests/03-invalid_configs.sh
 
   install_and_exec:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
@@ -97,6 +65,9 @@ workflows:
   tests-without-ansible-playbook:
     jobs:
       - prepare_env
+      - run_test_01:
+          requires:
+            - prepare_env
         #      - install_and_exec:
         #          requires:
         #            - prepare_env
