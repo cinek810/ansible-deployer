@@ -41,16 +41,6 @@ def create_workdir(timestamp: str, conf: dict, logger):
     logger.debug("Successfully created workdir: %s", seq_path)
     return seq_path
 
-def list_tasks(config: dict, options: dict):
-    """
-    Function listing tasks available to the user limited to given infra/stage/task
-    """
-    task_list = []
-    for item in config["tasks"]["tasks"]:
-        task_list.append(item["name"])
-
-    print("  ".join(task_list))
-
 # TODO: At least infra level should be returned from validate options since we do similar check
 # (existence) there.
 def get_inventory_file(config: dict, options: dict):
