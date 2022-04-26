@@ -34,11 +34,11 @@ check_message_in_output 'ansible-deployer unlock -t task_exec_bin_true -s test' 
 check_message_in_output 'ansible-deployer unlock -t task_exec_bin_true -s prod -c X' '\[ERROR\]: commit is not supported by unlock'
 check_message_in_output 'ansible-deployer unlock -t task_exec_bin_true -l test_hosts_1' '\[ERROR\]: limit is not supported by unlock'
 
-check_message_in_output "ansible-deployer run test" "\[CRITICAL\]: Too many positional arguments! Only subcommand \"show\" can accept following arguments: task, infra."
-check_message_in_output "ansible-deployer verify test" "\[CRITICAL\]: Too many positional arguments! Only subcommand \"show\" can accept following arguments: task, infra."
-check_message_in_output "ansible-deployer lock test" "\[CRITICAL\]: Too many positional arguments! Only subcommand \"show\" can accept following arguments: task, infra."
-check_message_in_output "ansible-deployer unlock test" "\[CRITICAL\]: Too many positional arguments! Only subcommand \"show\" can accept following arguments: task, infra."
-check_message_in_output "ansible-deployer show test" "\[CRITICAL\]: Invalid argument test! Subcommand \"show\" can accept only following arguments: task, infra."
+check_message_in_output "ansible-deployer run test" "\[CRITICAL\]: Too many positional arguments! Only subcommand \"show\" can accept following arguments: all, task, infra."
+check_message_in_output "ansible-deployer verify test" "\[CRITICAL\]: Too many positional arguments! Only subcommand \"show\" can accept following arguments: all, task, infra."
+check_message_in_output "ansible-deployer lock test" "\[CRITICAL\]: Too many positional arguments! Only subcommand \"show\" can accept following arguments: all, task, infra."
+check_message_in_output "ansible-deployer unlock test" "\[CRITICAL\]: Too many positional arguments! Only subcommand \"show\" can accept following arguments: all, task, infra."
+check_message_in_output "ansible-deployer show test" "\[CRITICAL\]: Invalid argument test! Subcommand \"show\" can accept only following arguments: all, task, infra."
 check_message_in_output 'ansible-deployer show --commit task_exec_bin_true'  '\[ERROR\]: commit is not supported by show'
 check_message_in_output 'ansible-deployer show -l test_hosts_1'  '\[ERROR\]: limit is not supported by show'
 

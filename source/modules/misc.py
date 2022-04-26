@@ -78,7 +78,7 @@ def show_deployer(config: dict, options: dict):
     """
     content = {}
 
-    if not options["switches"]:
+    if not options["switches"] or "all" in options["switches"]:
         options["switches"] = ["task", "infra"]
 
     if "task" in options["switches"]:

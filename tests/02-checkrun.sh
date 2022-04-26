@@ -72,6 +72,8 @@ check_run_ok "ansible-deployer unlock -s testing -i testInfra"
 # Check show subcommand
 check_message_in_output 'ansible-deployer show' 'Available infrastructures:'
 check_message_in_output 'ansible-deployer show' 'Available tasks:'
+check_message_in_output 'ansible-deployer show all' 'Available infrastructures:'
+check_message_in_output 'ansible-deployer show all' 'Available tasks:'
 check_message_in_output 'ansible-deployer show infra' 'Available infrastructures:'
 check_message_in_output 'ansible-deployer show task' 'Available tasks:'
 
