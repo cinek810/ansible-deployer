@@ -48,7 +48,7 @@ check_run_ok "ansible-deployer lock -s locked -i testInfra"
 check_message_in_output 'ansible-deployer run -t task_exec_bin_true -s locked -i testInfra' "is using this infrastructure, please try again later."
 
 #Check --debug option
-check_run_ok "ansible-deployer list --debug" "\[DEBUG\]: load_configuration called"
+check_run_ok "ansible-deployer show --debug" "\[DEBUG\]: load_configuration called"
 
 # Check different output options
 check_message_in_output 'ansible-deployer run -t task_with_ansible_fail -s testing -i testInfra' "\[ERROR\]: TASK \[Run ll\]"
