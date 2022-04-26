@@ -26,13 +26,13 @@ class Validators:
         """
         if switches[0] != "show" and len(switches[1:]) > 0:
             print("[CRITICAL]: Too many positional arguments! Only subcommand \"show\" can accept"
-                  " following arguments: task, infra.")
+                  " following arguments: all, task, infra.")
             sys.exit("56")
 
         for switch in switches[1:]:
-            if switch not in ("task", "infra"):
+            if switch not in ("all", "task", "infra"):
                 print(f"[CRITICAL]: Invalid argument {switch}! Subcommand \"show\" can accept only"
-                      " following arguments: task, infra.")
+                      " following arguments: all, task, infra.")
                 sys.exit("57")
 
     def validate_options(self, options: dict):
