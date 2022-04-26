@@ -17,7 +17,7 @@ class Runners:
         """Change workdir if commit is a path (option --self-setup enabled in main)"""
         if not commit:
             commit = ""
-        elif os.sep in commit:
+        elif os.path.exists(os.path.abspath(commit)):
             workdir = commit
             commit = ""
 
