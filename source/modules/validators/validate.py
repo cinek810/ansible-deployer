@@ -50,8 +50,6 @@ class Validators:
         elif options["subcommand"] in ("lock", "unlock"):
             required = ["infra", "stage"]
             notsupported = ["switches", "task", "commit", "limit", "raw_output"]
-        elif options["subcommand"] == "list":
-            notsupported = ["switches", "commit", "keep_locked", "limit", "raw_output"]
         elif options["subcommand"] == "show":
             notsupported = ["commit", "keep_locked", "limit", "raw_output"]
 

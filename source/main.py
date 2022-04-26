@@ -125,9 +125,7 @@ def main():
         logger.logger.info("Skipping execution because of --dry-run option")
         sys.exit(0)
 
-    if options["subcommand"] == "list":
-        misc.list_tasks(config, options)
-    elif options["subcommand"] == "show":
+    if options["subcommand"] == "show":
         misc.show_deployer(config, options)
     else:
         lockdir = os.path.join(conf["global_paths"]["work_dir"], "locks")
