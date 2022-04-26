@@ -35,13 +35,10 @@ class Runners:
         for hook in setup_hooks:
             if hook["module"] == "script":
                 try:
-                    hook_env = os.environ.copy()
-                    hook_env["ANSIBLE_DEPLOY_WORKDIR"] = workdir
                     with subprocess.Popen([hook["opts"]["file"], commit],
                                           stdout=subprocess.PIPE,
                                           stderr=subprocess.PIPE,
-                                          stdin=subprocess.PIPE,
-                                          env=hook_env) as proc:
+                                          stdin=subprocess.PIPE) as proc:
                         std_out, std_err = proc.communicate()
                         if proc.returncode != 0:
                             failed = True
