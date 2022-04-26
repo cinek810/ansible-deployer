@@ -49,7 +49,7 @@ check_run_ok "ansible-deployer lock -s locked -i testInfra --conf-dir=/etc/alter
 check_message_in_output 'ansible-deployer run -t task_exec_bin_true -s locked -i testInfra --conf-dir=/etc/alternate-deployer-dir' "is using this infrastructure, please try again later."
 
 #Check --debug option
-check_run_ok "ansible-deployer list --debug --conf-dir=/etc/alternate-deployer-dir" "\[DEBUG\]: load_configuration called"
+check_run_ok "ansible-deployer show --debug --conf-dir=/etc/alternate-deployer-dir" "\[DEBUG\]: load_configuration called"
 
 # Check --limit option
 check_message_in_output 'ansible-deployer run -t task_with_limit -s testing -i testInfra2 -l xyzHost4 --conf-dir=/etc/alternate-deployer-dir' 'ERROR\! Specified hosts and/or --limit does not match any hosts'
