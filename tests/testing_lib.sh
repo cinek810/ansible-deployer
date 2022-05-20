@@ -72,3 +72,14 @@ check_file_startingwith_in_dir() {
 		exit 1
 	fi
 }
+
+check_file_startingwith_not_in_dir() {
+        eval "find $1 -name "${2}*" 1>/dev/null"
+        if [ $? -eq 0 ]
+        then
+                echo "FAILED: $1 has file starting with pattern $2"
+        else
+                echo "OK: $1 does not contain file starting with pattern $2"
+                exit 1
+        fi
+}

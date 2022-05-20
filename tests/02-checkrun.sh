@@ -79,6 +79,11 @@ check_message_in_output 'ansible-deployer show task' 'Available tasks:'
 check_run_ok "ansible-deployer run -t task_with_multi_groups -s testing -i testInfra"
 check_message_in_output "ansible-deployer run -t task_with_multi_groups_fail -s testing -i testInfra" "\[CRITICAL\]: Task forbidden"
 
+# Check --no-preserve option
+check_run_ok "ansible-deployer run -t task_exec_bin_true -s prod -i testInfra --no-preserve"
+search_path=$(find_latest_sequence)
+check_file_startingwith_not_in_dir "$search_path" "ansible-deploy_execution_"
+
 #Try execution of task without permissions
 if [ $UID -ne 0 ]
 then
