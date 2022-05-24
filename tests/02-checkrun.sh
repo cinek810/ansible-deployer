@@ -46,6 +46,7 @@ check_message_in_output 'ansible-deployer run --task task_exec_bin_true --stage 
 #Artificially generate lock
 check_run_ok "ansible-deployer lock --stage locked --infrastructure testInfra"
 check_message_in_output 'ansible-deployer run --task task_exec_bin_true --stage locked --infrastructure testInfra' "is using this infrastructure, please try again later."
+check_run_ok "ansible-deployer unlock --stage locked --infrastructure testInfra"
 
 #Check --debug option
 check_run_ok "ansible-deployer show --debug" "\[DEBUG\]: load_configuration called"
