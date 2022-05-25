@@ -12,7 +12,7 @@ check_run_ok 'ansible-deployer verify --task task_exec_bin_true --stage prod --i
 # # multiple hosts in limit
 check_run_ok "ansible-deployer run --task task_with_limit --stage testing --infrastructure testInfra2 --limit xyzHosts"
 
-echo -e "   ___ ____                                     _   _\n  / _ \___ \            _____  _____  ___ _   _| |_(_) ___  _ __\n | | | |__) |  _____   / _ \ \/ / _ \/ __| | | | __| |/ _ \| '_ \ \n | |_| / __/  |_____| |  __/>  <  __/ (__| |_| | |_| | (_) | | | |\n  \___/_____|          \___/_/\_\___|\___|\__,_|\__|_|\___/|_| |_|\n \n  _                 _ _     _               _   _\n (_)_ ____   ____ _| (_) __| |   ___  _ __ | |_(_) ___  _ __  ___\n | | '_ \ \ / / _\` | | |/ _\` |  / _ \| '_ \| __| |/ _ \| '_ \/ __|\n | | | | \ V / (_| | | | (_| | | (_) | |_) | |_| | (_) | | | \__ \\n |_|_| |_|\_/ \__,_|_|_|\__,_|  \___/| .__/ \__|_|\___/|_| |_|___/\n                                     |_|\n \n"
+echo -e "   ___ ____                                     _   _\n  / _ \___ \            _____  _____  ___ _   _| |_(_) ___  _ __\n | | | |__) |  _____   / _ \ \/ / _ \/ __| | | | __| |/ _ \| '_ \ \n | |_| / __/  |_____| |  __/>  <  __/ (__| |_| | |_| | (_) | | | |\n  \___/_____|          \___/_/\_\___|\___|\__,_|\__|_|\___/|_| |_|\n \n  _                 _ _     _               _   _\n (_)_ ____   ____ _| (_) __| |   ___  _ __ | |_(_) ___  _ __  ___\n | | '_ \ \ / / _\` | | |/ _\` |  / _ \| '_ \| __| |/ _ \| '_ \/ __|\n | | | | \ V / (_| | | | (_| | | (_) | |_) | |_| | (_) | | | \__ \ \n |_|_| |_|\_/ \__,_|_|_|\__,_|  \___/| .__/ \__|_|\___/|_| |_|___/\n                                     |_|\n \n"
 # Non-existent option values
 check_message_in_output 'ansible-deployer run --task task_exec_bin_ERR --stage prod --infrastructure testInfra' '\[CRITICAL\]: task_exec_bin_ERR not found in configuration file.'
 check_message_in_output 'ansible-deployer run --task task_exec_bin_true --stage prod --infrastructure testInfra_ERR' '\[CRITICAL\]: testInfra_ERR not found in configuration file.'
@@ -48,6 +48,7 @@ check_run_ok "ansible-deployer lock --stage locked --infrastructure testInfra"
 check_message_in_output 'ansible-deployer run --task task_exec_bin_true --stage locked --infrastructure testInfra' "is using this infrastructure, please try again later."
 check_run_ok "ansible-deployer unlock --stage locked --infrastructure testInfra"
 
+echo -e "   ___ ____                                     _   _\n  / _ \___ \            _____  _____  ___ _   _| |_(_) ___  _ __\n | | | |__) |  _____   / _ \ \/ / _ \/ __| | | | __| |/ _ \| '_ \ \n | |_| / __/  |_____| |  __/>  <  __/ (__| |_| | |_| | (_) | | | |\n  \___/_____|          \___/_/\_\___|\___|\__,_|\__|_|\___/|_| |_|\n \n              _               _                         _ _  __ _\n   ___  _   _| |_ _ __  _   _| |_   _ __ ___   ___   __| (_)/ _(_) ___ _ __ ___\n  / _ \| | | | __| '_ \| | | | __| | '_ \` _ \ / _ \ / _\` | | |_| |/ _ \ '__/ __|\n | (_) | |_| | |_| |_) | |_| | |_  | | | | | | (_) | (_| | |  _| |  __/ |  \__ \ \n  \___/ \__,_|\__| .__/ \__,_|\__| |_| |_| |_|\___/ \__,_|_|_| |_|\___|_|  |___/\n                 |_|\n"
 #Check --debug option
 check_run_ok "ansible-deployer show --debug" "\[DEBUG\]: load_configuration called"
 
@@ -57,6 +58,7 @@ check_message_in_output 'ansible-deployer run --task task_with_ansible_fail --st
 check_message_not_in_output 'ansible-deployer run --task task_with_ansible_fail --stage testing --infrastructure testInfra --raw-runner-output' "\[ERROR\]: TASK \[Run ll\]"
 check_message_in_output 'ansible-deployer run --task task_with_ansible_fail --stage testing --infrastructure testInfra --raw-runner-output --debug' "\[DEBUG\]: TASK \[Run ll\]"
 
+echo -e "   ___ ____                                     _   _\n  / _ \___ \            _____  _____  ___ _   _| |_(_) ___  _ __\n | | | |__) |  _____   / _ \ \/ / _ \/ __| | | | __| |/ _ \| '_ \ \n | |_| / __/  |_____| |  __/>  <  __/ (__| |_| | |_| | (_) | | | |\n  \___/_____|          \___/_/\_\___|\___|\__,_|\__|_|\___/|_| |_|\n \n  _ _           _ _                 _   _\n | (_)_ __ ___ (_) |_    ___  _ __ | |_(_) ___  _ __\n | | | '_ \` _ \| | __|  / _ \| '_ \| __| |/ _ \| '_ \ \n | | | | | | | | | |_  | (_) | |_) | |_| | (_) | | | |\n |_|_|_| |_| |_|_|\__|  \___/| .__/ \__|_|\___/|_| |_|\n                             |_|\n \n"
 # Check --limit option
 check_message_in_output 'ansible-deployer run --task task_with_limit --stage testing --infrastructure testInfra2 --limit xyzHost4' 'ERROR\! Specified hosts and/or --limit does not match any hosts'
 check_message_in_output 'ansible-deployer run --task task_without_limit --stage testing --infrastructure testInfra --limit testHost1' '\[CRITICAL\]: Limit testHost1 is not available for task task_without_limit.'
@@ -70,6 +72,7 @@ check_message_not_in_output 'ansible-deployer run --task task_with_ansible_fail 
 check_message_in_output "ansible-deployer run --task task_exec_bin_true --stage testing --infrastructure testInfra --keep-locked --debug" "\[DEBUG\]: Keep locked infra testInfra:testing ."
 check_run_ok "ansible-deployer unlock --stage testing --infrastructure testInfra"
 
+echo -e "   ___ ____                                     _   _\n  / _ \___ \            _____  _____  ___ _   _| |_(_) ___  _ __\n | | | |__) |  _____   / _ \ \/ / _ \/ __| | | | __| |/ _ \| '_ \ \n | |_| / __/  |_____| |  __/>  <  __/ (__| |_| | |_| | (_) | | | |\n  \___/_____|          \___/_/\_\___|\___|\__,_|\__|_|\___/|_| |_|\n \n      _                               _                                                   _\n  ___| |__   _____      __  ___ _   _| |__   ___ ___  _ __ ___  _ __ ___   __ _ _ __   __| |\n / __| '_ \ / _ \ \ /\ / / / __| | | | '_ \ / __/ _ \| '_ \` _ \| '_ \` _ \ / _\` | '_ \ / _\` |\n \__ \ | | | (_) \ V  V /  \__ \ |_| | |_) | (_| (_) | | | | | | | | | | | (_| | | | | (_| |\n |___/_| |_|\___/ \_/\_/   |___/\__,_|_.__/ \___\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|\n"
 # Check show subcommand
 check_message_in_output 'ansible-deployer show' 'Available infrastructures:'
 check_message_in_output 'ansible-deployer show' 'Available tasks:'
@@ -78,6 +81,7 @@ check_message_in_output 'ansible-deployer show all' 'Available tasks:'
 check_message_in_output 'ansible-deployer show infra' 'Available infrastructures:'
 check_message_in_output 'ansible-deployer show task' 'Available tasks:'
 
+echo -e "   ___ ____                                     _   _\n  / _ \___ \            _____  _____  ___ _   _| |_(_) ___  _ __\n | | | |__) |  _____   / _ \ \/ / _ \/ __| | | | __| |/ _ \| '_ \ \n | |_| / __/  |_____| |  __/>  <  __/ (__| |_| | |_| | (_) | | | |\n  \___/_____|          \___/_/\_\___|\___|\__,_|\__|_|\___/|_| |_|\n \n                            _         _\n  _ __   ___ _ __ _ __ ___ (_)___ ___(_) ___  _ __  ___\n | '_ \ / _ \ '__| '_ \` _ \| / __/ __| |/ _ \| '_ \/ __|\n | |_) |  __/ |  | | | | | | \__ \__ \ | (_) | | | \__ \ \n | .__/ \___|_|  |_| |_| |_|_|___/___/_|\___/|_| |_|___/\n |_|\n"
 # Check multiple system groups in acl_group
 check_run_ok "ansible-deployer run --task task_with_multi_groups --stage testing --infrastructure testInfra"
 check_message_in_output "ansible-deployer run --task task_with_multi_groups_fail --stage testing --infrastructure testInfra" "\[CRITICAL\]: Task forbidden"
