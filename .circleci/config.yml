@@ -33,21 +33,21 @@ jobs:
       - run:
           name: "Run shell script for argument parsing"
           command: |
-            ./tests/01-test_argument_parsing.sh
-            ./tests/01-test_argument_parsing_short.sh
+            ./tests/01-argument_parsing.sh
+            ./tests/01-argument_parsing_short.sh
       - run:
           name: "Run shell script for execution checks"
           command: |
-            ./tests/02-checkrun.sh
-            ./tests/02-checkrun_short.sh
+            ./tests/02a-checkrun.sh
+            ./tests/02a-checkrun_short.sh
       - run:
           name: "Run shell script for execution checks with self setup"
           command: |
             mkdir -p /etc/alt-workdir
             pushd /etc/alt-workdir && /etc/ansible-deployer/hooks/setup_work_dir.sh
             popd
-            ./tests/02a-checkrun_with_self_setup.sh
-            ./tests/02a-checkrun_with_self_setup_short.sh
+            ./tests/02c-checkrun_with_self_setup.sh
+            ./tests/02c-checkrun_with_self_setup_short.sh
             rm -rf /etc/alt-workdir
       - run:
           name: "Run shell script for execution checks with alternative conf dir"
@@ -72,20 +72,20 @@ jobs:
           name: "Run shell script for error returning hook"
           command: |
             cp ./tests/files/etc/tasks_error_hook.yaml /etc/ansible-deployer/tasks.yaml
-            ./tests/04-error_hook.sh
-            ./tests/04-error_hook_short.sh
+            ./tests/04a-hook_error.sh
+            ./tests/04a-hook_error_short.sh
       - run:
           name: "Run shell script for error returning hook with exit"
           command: |
             cp ./tests/files/etc/tasks_exit_hook.yaml /etc/ansible-deployer/tasks.yaml
-            ./tests/04-exit_hook.sh
-            ./tests/04-exit_hook_short.sh
+            ./tests/04b-hook_exit.sh
+            ./tests/04b-hook_exit_short.sh
       - run:
           name: "Run shell script for critical returning hook"
           command: |
             chmod 0644 /etc/ansible-deployer/hooks/exit_hook.sh
-            ./tests/04-critical_hook.sh
-            ./tests/04-critical_hook_short.sh
+            ./tests/04c-hook_critical.sh
+            ./tests/04c-hook_critical_short.sh
       - run:
           name: "Create incompatible config file"
           command: cp ./tests/files/incompatible_config.yml /etc/ansible-deployer
