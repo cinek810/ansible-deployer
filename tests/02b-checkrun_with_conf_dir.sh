@@ -3,6 +3,7 @@
 
 source ./tests/testing_lib.sh
 
+echo -e "   ___ ____                                     _   _\n  / _ \___ \            _____  _____  ___ _   _| |_(_) ___  _ __\n | | | |__) |  _____   / _ \ \/ / _ \/ __| | | | __| |/ _ \| '_ \ \n | |_| / __/  |_____| |  __/>  <  __/ (__| |_| | |_| | (_) | | | |\n  \___/_____|          \___/_/\_\___|\___|\__,_|\__|_|\___/|_| |_|\n \n           _ _   _                        __       _ _\n __      _(_) |_| |__     ___ ___  _ __  / _|   __| (_)_ __\n \ \ /\ / / | __| '_ \   / __/ _ \| '_ \| |_   / _\` | | '__|\n  \ V  V /| | |_| | | | | (_| (_) | | | |  _| | (_| | | |\n   \_/\_/ |_|\__|_| |_|  \___\___/|_| |_|_|    \__,_|_|_|\n"
 echo -e "   ___ ____                                     _   _\n  / _ \___ \            _____  _____  ___ _   _| |_(_) ___  _ __\n | | | |__) |  _____   / _ \ \/ / _ \/ __| | | | __| |/ _ \| '_ \ \n | |_| / __/  |_____| |  __/>  <  __/ (__| |_| | |_| | (_) | | | |\n  \___/_____|          \___/_/\_\___|\___|\__,_|\__|_|\___/|_| |_|\n \n                               _\n   ___ ___  _ __ _ __ ___  ___| |_    _____  _____  ___\n  / __/ _ \| '__| '__/ _ \/ __| __|  / _ \ \/ / _ \/ __|\n | (_| (_) | |  | | |  __/ (__| |_  |  __/>  <  __/ (__\n  \___\___/|_|  |_|  \___|\___|\__|  \___/_/\_\___|\___|\n \n"
 # Correct execution.
 check_run_ok "ansible-deployer run --task task_exec_bin_true --stage prod --infrastructure testInfra --conf-dir=/etc/alternate-deployer-dir"
@@ -48,9 +49,11 @@ check_run_ok "ansible-deployer unlock --stage locked --infrastructure testInfra 
 check_run_ok "ansible-deployer lock --stage locked --infrastructure testInfra --conf-dir=/etc/alternate-deployer-dir"
 check_message_in_output 'ansible-deployer run --task task_exec_bin_true --stage locked --infrastructure testInfra --conf-dir=/etc/alternate-deployer-dir' "is using this infrastructure, please try again later."
 
+echo -e "   ___ ____                                     _   _\n  / _ \___ \            _____  _____  ___ _   _| |_(_) ___  _ __\n | | | |__) |  _____   / _ \ \/ / _ \/ __| | | | __| |/ _ \| '_ \ \n | |_| / __/  |_____| |  __/>  <  __/ (__| |_| | |_| | (_) | | | |\n  \___/_____|          \___/_/\_\___|\___|\__,_|\__|_|\___/|_| |_|\n \n              _               _                         _ _  __ _\n   ___  _   _| |_ _ __  _   _| |_   _ __ ___   ___   __| (_)/ _(_) ___ _ __ ___\n  / _ \| | | | __| '_ \| | | | __| | '_ \` _ \ / _ \ / _\` | | |_| |/ _ \ '__/ __|\n | (_) | |_| | |_| |_) | |_| | |_  | | | | | | (_) | (_| | |  _| |  __/ |  \__ \ \n  \___/ \__,_|\__| .__/ \__,_|\__| |_| |_| |_|\___/ \__,_|_|_| |_|\___|_|  |___/\n                 |_|\n"
 #Check --debug option
 check_run_ok "ansible-deployer show --debug --conf-dir=/etc/alternate-deployer-dir" "\[DEBUG\]: load_configuration called"
 
+echo -e "   ___ ____                                     _   _\n  / _ \___ \            _____  _____  ___ _   _| |_(_) ___  _ __\n | | | |__) |  _____   / _ \ \/ / _ \/ __| | | | __| |/ _ \| '_ \ \n | |_| / __/  |_____| |  __/>  <  __/ (__| |_| | |_| | (_) | | | |\n  \___/_____|          \___/_/\_\___|\___|\__,_|\__|_|\___/|_| |_|\n \n  _ _           _ _                 _   _\n | (_)_ __ ___ (_) |_    ___  _ __ | |_(_) ___  _ __\n | | | '_ \` _ \| | __|  / _ \| '_ \| __| |/ _ \| '_ \ \n | | | | | | | | | |_  | (_) | |_) | |_| | (_) | | | |\n |_|_|_| |_| |_|_|\__|  \___/| .__/ \__|_|\___/|_| |_|\n                             |_|\n \n"
 # Check --limit option
 check_message_in_output 'ansible-deployer run --task task_with_limit --stage testing --infrastructure testInfra2 --limit xyzHost4 --conf-dir=/etc/alternate-deployer-dir' 'ERROR\! Specified hosts and/or --limit does not match any hosts'
 check_message_in_output 'ansible-deployer run --task task_without_limit --stage testing --infrastructure testInfra --limit testHost1 --conf-dir=/etc/alternate-deployer-dir' '\[CRITICAL\]: Limit testHost1 is not available for task task_without_limit.'
@@ -60,6 +63,7 @@ check_message_in_output 'ansible-deployer run --task task_exec_bin_true --stage 
 check_message_in_output 'ansible-deployer run --task task_with_ansible_fail --stage testing --infrastructure testInfra --conf-dir=/etc/alternate-deployer-dir' "\[ERROR\]: \"ansible-playbook -v -i ./test_infra1_inv.yaml runll.yaml\" failed due to"
 check_message_not_in_output 'ansible-deployer run --task task_with_ansible_fail --stage testing --infrastructure testInfra --conf-dir=/etc/alternate-deployer-dir' "\[INFO\]: \"ansible-playbook -v -i ./test_infra1_inv.yaml runBinTrue.yaml\" ran succesfully"
 
+echo -e "   ___ ____                                     _   _\n  / _ \___ \            _____  _____  ___ _   _| |_(_) ___  _ __\n | | | |__) |  _____   / _ \ \/ / _ \/ __| | | | __| |/ _ \| '_ \ \n | |_| / __/  |_____| |  __/>  <  __/ (__| |_| | |_| | (_) | | | |\n  \___/_____|          \___/_/\_\___|\___|\__,_|\__|_|\___/|_| |_|\n \n                            _         _\n  _ __   ___ _ __ _ __ ___ (_)___ ___(_) ___  _ __  ___\n | '_ \ / _ \ '__| '_ \` _ \| / __/ __| |/ _ \| '_ \/ __|\n | |_) |  __/ |  | | | | | | \__ \__ \ | (_) | | | \__ \ \n | .__/ \___|_|  |_| |_| |_|_|___/___/_|\___/|_| |_|___/\n |_|\n"
 #Try execution of task without permissions
 if [ $UID -ne 0 ]
 then
