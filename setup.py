@@ -20,7 +20,7 @@ README = read(str(HERE)+"/README.md")
 # This call to setup() does all the work
 setup(
     name="ansible-deployer",
-    version="0.0.32",
+    version="0.0.33",
     description="Wrapper around ansible-playbook allowing configurable tasks and permissions",
     long_description=README,
     long_description_content_type="text/markdown",
