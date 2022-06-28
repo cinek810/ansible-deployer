@@ -5,6 +5,7 @@ import sys
 import argparse
 import datetime
 import errno
+from shutil import rmtree
 import pkg_resources
 from ansible_deployer.modules.globalvars import SUBCOMMANDS
 from ansible_deployer.modules.configs.config import Config
@@ -49,6 +50,8 @@ def parse_options(argv):
                         help='Setup repo outside of workdir in requested path. This option applies'
                         ' only to infrastructures with allow_user_checkout enabled in infra'
                         ' config!')
+    parser.add_argument("--no-preserve", default=False, action="store_true", help='Remove workdir '
+                        ' after succesful execution.')
 
     arguments = parser.parse_args(argv)
 
@@ -87,6 +90,7 @@ def parse_options(argv):
         options["conf_dir"] = os.path.abspath(arguments.conf_dir[0])
     else:
         options["conf_dir"] = None
+    options["no_preserve"] = arguments.no_preserve
 
     return options
 
@@ -146,6 +150,12 @@ def main():
             lock.lock_inventory(lockpath)
             runner.run_playitem(config, options, inv_file, lockpath)
             lock.unlock_inventory(lockpath)
+            if options["no_preserve"]:
+                try:
+                    rmtree(workdir)
+                    logger.logger.info("Working directory succesfully removed.")
+                except Exception as exc:
+                    logger.logger.critical("Failed to remove working directory due to: %s.", exc)
         elif options["subcommand"] == "lock":
             lock.lock_inventory(lockpath)
         elif options["subcommand"] == "unlock":
