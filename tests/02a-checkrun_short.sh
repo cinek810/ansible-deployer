@@ -49,7 +49,7 @@ check_message_in_output 'ansible-deployer run -t task_exec_bin_true -s locked -i
 
 echo -e "   ___ ____                      _               _                           _                _\n  / _ \___ \ __ _            ___| |__   ___  ___| | ___ __ _   _ _ __    ___| |__   ___  _ __| |_\n | | | |__) / _\` |  _____   / __| '_ \ / _ \/ __| |/ / '__| | | | '_ \  / __| '_ \ / _ \| '__| __|\n | |_| / __/ (_| | |_____| | (__| | | |  __/ (__|   <| |  | |_| | | | | \__ \ | | | (_) | |  | |_\n  \___/_____\__,_|          \___|_| |_|\___|\___|_|\_\_|   \__,_|_| |_| |___/_| |_|\___/|_|   \__|\n \n              _               _                         _ _  __ _\n   ___  _   _| |_ _ __  _   _| |_   _ __ ___   ___   __| (_)/ _(_) ___ _ __ ___\n  / _ \| | | | __| '_ \| | | | __| | '_ \` _ \ / _ \ / _\` | | |_| |/ _ \ '__/ __|\n | (_) | |_| | |_| |_) | |_| | |_  | | | | | | (_) | (_| | |  _| |  __/ |  \__ \ \n  \___/ \__,_|\__| .__/ \__,_|\__| |_| |_| |_|\___/ \__,_|_|_| |_|\___|_|  |___/\n                 |_|\n"
 #Check --debug option
-check_run_ok "ansible-deployer list -d" "\[DEBUG\]: load_configuration called"
+check_run_ok "ansible-deployer show -d" "\[DEBUG\]: load_configuration called"
 
 # Check different output options
 check_message_in_output 'ansible-deployer run -t task_with_ansible_fail -s testing -i testInfra' "\[ERROR\]: TASK \[Run ll\]"
