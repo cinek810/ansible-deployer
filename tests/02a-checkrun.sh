@@ -4,12 +4,12 @@
 source ./tests/testing_lib.sh
 
 echo -e "   ___ ____                      _               _\n  / _ \___ \ __ _            ___| |__   ___  ___| | ___ __ _   _ _ __\n | | | |__) / _\` |  _____   / __| '_ \ / _ \/ __| |/ / '__| | | | '_ \ \n | |_| / __/ (_| | |_____| | (__| | | |  __/ (__|   <| |  | |_| | | | |\n  \___/_____\__,_|          \___|_| |_|\___|\___|_|\_\_|   \__,_|_| |_|\n \n                               _\n   ___ ___  _ __ _ __ ___  ___| |_    _____  _____  ___\n  / __/ _ \| '__| '__/ _ \/ __| __|  / _ \ \/ / _ \/ __|\n | (_| (_) | |  | | |  __/ (__| |_  |  __/>  <  __/ (__\n  \___\___/|_|  |_|  \___|\___|\__|  \___/_/\_\___|\___|\n"
-# Correct execution.
+# Correct execution
 check_run_ok "ansible-deployer run --task task_exec_bin_true --stage prod --infrastructure testInfra"
 check_run_ok "ansible-deployer run --task task_with_limit --stage testing --infrastructure testInfra --limit testHost1"
 check_run_ok "ansible-deployer run --task tagged_task_true --stage testing --infrastructure testInfra"
-check_run_ok 'ansible-deployer verify --task task_exec_bin_true --stage prod --infrastructure testInfra'
-# # multiple hosts in limit
+check_run_ok "ansible-deployer verify --task task_exec_bin_true --stage prod --infrastructure testInfra"
+## Multiple hosts in limit
 check_run_ok "ansible-deployer run --task task_with_limit --stage testing --infrastructure testInfra2 --limit xyzHosts"
 
 echo -e "   ___ ____                      _               _\n  / _ \___ \ __ _            ___| |__   ___  ___| | ___ __ _   _ _ __\n | | | |__) / _\` |  _____   / __| '_ \ / _ \/ __| |/ / '__| | | | '_ \ \n | |_| / __/ (_| | |_____| | (__| | | |  __/ (__|   <| |  | |_| | | | |\n  \___/_____\__,_|          \___|_| |_|\___|\___|_|\_\_|   \__,_|_| |_|\n \n  _                 _ _     _               _   _\n (_)_ ____   ____ _| (_) __| |   ___  _ __ | |_(_) ___  _ __  ___\n | | '_ \ \ / / _\` | | |/ _\` |  / _ \| '_ \| __| |/ _ \| '_ \/ __|\n | | | | \ V / (_| | | | (_| | | (_) | |_) | |_| | (_) | | | \__ \ \n |_|_| |_|\_/ \__,_|_|_|\__,_|  \___/| .__/ \__|_|\___/|_| |_|___/\n                                     |_|\n"
@@ -20,11 +20,12 @@ check_message_in_output 'ansible-deployer run --task task_exec_bin_true --stage 
 
 echo -e "   ___ ____                      _               _\n  / _ \___ \ __ _            ___| |__   ___  ___| | ___ __ _   _ _ __\n | | | |__) / _\` |  _____   / __| '_ \ / _ \/ __| |/ / '__| | | | '_ \ \n | |_| / __/ (_| | |_____| | (__| | | |  __/ (__|   <| |  | |_| | | | |\n  \___/_____\__,_|          \___|_| |_|\___|\___|_|\_\_|   \__,_|_| |_|\n \n      _    _             _\n  ___| | _(_)_ __  _ __ (_)_ __   __ _\n / __| |/ / | '_ \| '_ \| | '_ \ / _\` |\n \__ \   <| | |_) | |_) | | | | | (_| |\n |___/_|\_\_| .__/| .__/|_|_| |_|\__, |\n            |_|   |_|            |___/\n"
 # Check infra/stage skipping
-# # Sometimes skip (depending on stage)
+## Sometimes skip (depending on stage)
 check_message_in_output "ansible-deployer run --task task_skipping --stage testing --infrastructure testInfra" "\[INFO\]: Skipping playitem"
 check_message_in_output "ansible-deployer run --task task_skipping --stage prod --infrastructure testInfra" "ran succesfully"
-# # Always skip
-check_message_not_in_output "ansible-deployer run --task task_skipping --stage testing --infrastructure testInfra2" "ran succesfully"# # Never skip
+## Always skip
+check_message_not_in_output "ansible-deployer run --task task_skipping --stage testing --infrastructure testInfra2" "ran succesfully"
+## Never skip
 check_message_not_in_output "ansible-deployer run --task task_skipping --stage prod --infrastructure testInfra3" "\[INFO\]: Skipping playitem"
 
 echo -e "   ___ ____                      _               _\n  / _ \___ \ __ _            ___| |__   ___  ___| | ___ __ _   _ _ __\n | | | |__) / _\` |  _____   / __| '_ \ / _ \/ __| |/ / '__| | | | '_ \ \n | |_| / __/ (_| | |_____| | (__| | | |  __/ (__|   <| |  | |_| | | | |\n  \___/_____\__,_|          \___|_| |_|\___|\___|_|\_\_|   \__,_|_| |_|\n \n                                _ _\n   ___ ___  _ __ ___  _ __ ___ (_) |_ ___\n  / __/ _ \| '_ \` _ \| '_ \` _ \| | __/ __|\n | (_| (_) | | | | | | | | | | | | |_\__ \ \n  \___\___/|_| |_| |_|_| |_| |_|_|\__|___/\n"
@@ -33,27 +34,27 @@ check_run_ok "ansible-deployer run --task task_with_commit --stage testing --inf
 check_run_ok "ansible-deployer run --task task_with_commit --stage testing --infrastructure testInfra --commit tags/v2.4"
 check_run_ok "ansible-deployer run --task task_with_commit --stage testing --infrastructure testInfra --commit tags/v2.5.1"
 check_run_ok "ansible-deployer run --task task_with_commit --stage testing --infrastructure testInfra --commit tags/v3.6.5"
-check_message_in_output "ansible-deployer run --task task_with_commit --stage testing --infrastructure testInfra --commit tags/v1.0.1" '\[ERROR\]: Requested commit tags/v1.0.1 is not valid for task task_with_commit.'
-check_message_in_output "ansible-deployer run --task task_with_commit --stage testing --infrastructure testInfra --commit tags/v2.1" '\[ERROR\]: Requested commit tags/v2.1 is not valid for task task_with_commit.'
-check_message_in_output "ansible-deployer run --task task_with_commit --stage testing --infrastructure testInfra --commit tags/v3.6.6" '\[ERROR\]: Requested commit tags/v3.6.6 is not valid for task task_with_commit.'
-check_message_in_output 'ansible-deployer verify --task task_exec_bin_true --stage prod --infrastructure testInfra' '1 passed'
+check_message_in_output "ansible-deployer run --task task_with_commit --stage testing --infrastructure testInfra --commit tags/v1.0.1" "\[ERROR\]: Requested commit tags/v1.0.1 is not valid for task task_with_commit."
+check_message_in_output "ansible-deployer run --task task_with_commit --stage testing --infrastructure testInfra --commit tags/v2.1" "\[ERROR\]: Requested commit tags/v2.1 is not valid for task task_with_commit."
+check_message_in_output "ansible-deployer run --task task_with_commit --stage testing --infrastructure testInfra --commit tags/v3.6.6" "\[ERROR\]: Requested commit tags/v3.6.6 is not valid for task task_with_commit."
+check_message_in_output "ansible-deployer verify --task task_exec_bin_true --stage prod --infrastructure testInfra" "1 passed"
 
 echo -e "   ___ ____                      _               _\n  / _ \___ \ __ _            ___| |__   ___  ___| | ___ __ _   _ _ __\n | | | |__) / _\` |  _____   / __| '_ \ / _ \/ __| |/ / '__| | | | '_ \ \n | |_| / __/ (_| | |_____| | (__| | | |  __/ (__|   <| |  | |_| | | | |\n  \___/_____\__,_|          \___|_| |_|\___|\___|_|\_\_|   \__,_|_| |_|\n \n        _   _\n   ___ | |_| |__   ___ _ __ ___\n  / _ \| __| '_ \ / _ \ '__/ __|\n | (_) | |_| | | |  __/ |  \__ \ \n  \___/ \__|_| |_|\___|_|  |___/\n"
-# misc
+# Miscellaneous
 check_message_in_output 'ansible-deployer run --task task_empty --stage testing --infrastructure testInfra' '\[CRITICAL\]: No playitems found for requested task'
 check_message_in_output 'ansible-deployer run --task task_exec_bin_true --stage prod --infrastructure testInfra' '\[INFO\]: setup_work_dir finished succesfully'
 
-# check dry run
+# Check dry run
 check_message_in_output "ansible-deployer run --dry --debug --task task_exec_bin_true --stage prod --infrastructure testInfra" "\[INFO\]: Skipping execution because of --dry-run option"
 check_message_not_in_output "ansible-deployer run --dry --debug --task task_exec_bin_true --stage prod --infrastructure testInfra" "\[DEBUG\]: Started lock_inventory for lockdir"
 
-#Artificially generate lock
+# Artificially generate lock
 check_run_ok "ansible-deployer lock --stage locked --infrastructure testInfra"
 check_message_in_output 'ansible-deployer run --task task_exec_bin_true --stage locked --infrastructure testInfra' "is using this infrastructure, please try again later."
 check_run_ok "ansible-deployer unlock --stage locked --infrastructure testInfra"
 
 echo -e "   ___ ____                      _               _\n  / _ \___ \ __ _            ___| |__   ___  ___| | ___ __ _   _ _ __\n | | | |__) / _\` |  _____   / __| '_ \ / _ \/ __| |/ / '__| | | | '_ \ \n | |_| / __/ (_| | |_____| | (__| | | |  __/ (__|   <| |  | |_| | | | |\n  \___/_____\__,_|          \___|_| |_|\___|\___|_|\_\_|   \__,_|_| |_|\n \n              _               _                         _ _  __ _\n   ___  _   _| |_ _ __  _   _| |_   _ __ ___   ___   __| (_)/ _(_) ___ _ __ ___\n  / _ \| | | | __| '_ \| | | | __| | '_ \` _ \ / _ \ / _\` | | |_| |/ _ \ '__/ __|\n | (_) | |_| | |_| |_) | |_| | |_  | | | | | | (_) | (_| | |  _| |  __/ |  \__ \ \n  \___/ \__,_|\__| .__/ \__,_|\__| |_| |_| |_|\___/ \__,_|_|_| |_|\___|_|  |___/\n                 |_|\n"
-#Check --debug option
+# Check --debug option
 check_run_ok "ansible-deployer show --debug" "\[DEBUG\]: load_configuration called"
 
 # Check different output options
@@ -90,7 +91,7 @@ echo -e "   ___ ____                      _               _\n  / _ \___ \ __ _  
 check_run_ok "ansible-deployer run --task task_with_multi_groups --stage testing --infrastructure testInfra"
 check_message_in_output "ansible-deployer run --task task_with_multi_groups_fail --stage testing --infrastructure testInfra" "\[CRITICAL\]: Task forbidden"
 
-#Try execution of task without permissions
+# Try execution of task without permissions
 if [ $UID -ne 0 ]
 then
 	check_message_in_output "ansible-deployer run --task root_only_task --infrastructure testInfra --stage testing" "\[CRITICAL\]: Task forbidden"
