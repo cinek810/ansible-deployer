@@ -19,7 +19,7 @@ check_message_in_output 'ansible-deployer verify  --task task_exec_bin_true' '\[
 check_message_in_output 'ansible-deployer run  --task task_exec_bin_true --infrastructure testInfra' 'stage is required for run'
 check_message_in_output 'ansible-deployer verify  --task task_exec_bin_true --infrastructure testInfra' 'stage is required for verify'
 
-check_message_in_output 'ansible-deployer --task task_exec_bin_true --infrastructure testInfra' '\[CRITICAL\]: First positional argument (subcommand) is required! Available commands are: run, list, lock, unlock, verify, show.'
+check_message_in_output 'ansible-deployer --task task_exec_bin_true --infrastructure testInfra' '\[CRITICAL\]: First positional argument (subcommand) is required! Available commands are: run, lock, unlock, verify, show.'
 
 check_message_in_output 'ansible-deployer verify  --task task_exec_bin_true --infrastructure testInfra --stage prod --commit testCommit' 'commit is not supported by verify'
 check_message_in_output 'ansible-deployer lock --task task_exec_bin_true --infrastructure testInfra' '\[ERROR\]: task is not supported by lock'
