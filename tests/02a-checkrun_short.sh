@@ -9,7 +9,7 @@ check_run_ok "ansible-deployer run -t task_exec_bin_true -s prod -i testInfra"
 check_run_ok "ansible-deployer run -t task_with_limit -s testing -i testInfra -l testHost1"
 check_run_ok "ansible-deployer run -t tagged_task_true -s testing -i testInfra"
 check_run_ok 'ansible-deployer verify -t task_exec_bin_true -s prod -i testInfra'
-# # multiple hosts in limit
+## Multiple hosts in limit
 check_run_ok "ansible-deployer run -t task_with_limit -s testing -i testInfra2 -l xyzHosts"
 
 echo -e "   ___ ____                      _               _                           _                _\n  / _ \___ \ __ _            ___| |__   ___  ___| | ___ __ _   _ _ __    ___| |__   ___  _ __| |_\n | | | |__) / _\` |  _____   / __| '_ \ / _ \/ __| |/ / '__| | | | '_ \  / __| '_ \ / _ \| '__| __|\n | |_| / __/ (_| | |_____| | (__| | | |  __/ (__|   <| |  | |_| | | | | \__ \ | | | (_) | |  | |_\n  \___/_____\__,_|          \___|_| |_|\___|\___|_|\_\_|   \__,_|_| |_| |___/_| |_|\___/|_|   \__|\n \n  _                 _ _     _               _   _\n (_)_ ____   ____ _| (_) __| |   ___  _ __ | |_(_) ___  _ __  ___\n | | '_ \ \ / / _\` | | |/ _\` |  / _ \| '_ \| __| |/ _ \| '_ \/ __|\n | | | | \ V / (_| | | | (_| | | (_) | |_) | |_| | (_) | | | \__ \ \n |_|_| |_|\_/ \__,_|_|_|\__,_|  \___/| .__/ \__|_|\___/|_| |_|___/\n                                     |_|\n"
@@ -20,11 +20,12 @@ check_message_in_output 'ansible-deployer run -t task_exec_bin_true -s prod_ERR 
 
 echo -e "   ___ ____                      _               _                           _                _\n  / _ \___ \ __ _            ___| |__   ___  ___| | ___ __ _   _ _ __    ___| |__   ___  _ __| |_\n | | | |__) / _\` |  _____   / __| '_ \ / _ \/ __| |/ / '__| | | | '_ \  / __| '_ \ / _ \| '__| __|\n | |_| / __/ (_| | |_____| | (__| | | |  __/ (__|   <| |  | |_| | | | | \__ \ | | | (_) | |  | |_\n  \___/_____\__,_|          \___|_| |_|\___|\___|_|\_\_|   \__,_|_| |_| |___/_| |_|\___/|_|   \__|\n \n      _    _             _\n  ___| | _(_)_ __  _ __ (_)_ __   __ _\n / __| |/ / | '_ \| '_ \| | '_ \ / _\` |\n \__ \   <| | |_) | |_) | | | | | (_| |\n |___/_|\_\_| .__/| .__/|_|_| |_|\__, |\n            |_|   |_|            |___/\n"
 # Check infra/stage skipping
-# # Sometimes skip (depending on stage)
+## Sometimes skip (depending on stage)
 check_message_in_output "ansible-deployer run -t task_skipping -s testing -i testInfra" "\[INFO\]: Skipping playitem"
 check_message_in_output "ansible-deployer run -t task_skipping -s prod -i testInfra" "ran succesfully"
-# # Always skip
-check_message_not_in_output "ansible-deployer run -t task_skipping -s testing -i testInfra2" "ran succesfully"# # Never skip
+## Always skip
+check_message_not_in_output "ansible-deployer run -t task_skipping -s testing -i testInfra2" "ran succesfully"
+## Never skip
 check_message_not_in_output "ansible-deployer run -t task_skipping -s prod -i testInfra3" "\[INFO\]: Skipping playitem"
 
 echo -e "   ___ ____                      _               _                           _                _\n  / _ \___ \ __ _            ___| |__   ___  ___| | ___ __ _   _ _ __    ___| |__   ___  _ __| |_\n | | | |__) / _\` |  _____   / __| '_ \ / _ \/ __| |/ / '__| | | | '_ \  / __| '_ \ / _ \| '__| __|\n | |_| / __/ (_| | |_____| | (__| | | |  __/ (__|   <| |  | |_| | | | | \__ \ | | | (_) | |  | |_\n  \___/_____\__,_|          \___|_| |_|\___|\___|_|\_\_|   \__,_|_| |_| |___/_| |_|\___/|_|   \__|\n \n                                _ _\n   ___ ___  _ __ ___  _ __ ___ (_) |_ ___\n  / __/ _ \| '_ \` _ \| '_ \` _ \| | __/ __|\n | (_| (_) | | | | | | | | | | | | |_\__ \ \n  \___\___/|_| |_| |_|_| |_| |_|_|\__|___/\n"
@@ -39,16 +40,20 @@ check_message_in_output "ansible-deployer run -t task_with_commit -s testing -i 
 check_message_in_output 'ansible-deployer verify -t task_exec_bin_true -s prod -i testInfra' '1 passed'
 
 echo -e "   ___ ____                      _               _                           _                _\n  / _ \___ \ __ _            ___| |__   ___  ___| | ___ __ _   _ _ __    ___| |__   ___  _ __| |_\n | | | |__) / _\` |  _____   / __| '_ \ / _ \/ __| |/ / '__| | | | '_ \  / __| '_ \ / _ \| '__| __|\n | |_| / __/ (_| | |_____| | (__| | | |  __/ (__|   <| |  | |_| | | | | \__ \ | | | (_) | |  | |_\n  \___/_____\__,_|          \___|_| |_|\___|\___|_|\_\_|   \__,_|_| |_| |___/_| |_|\___/|_|   \__|\n \n        _   _\n   ___ | |_| |__   ___ _ __ ___\n  / _ \| __| '_ \ / _ \ '__/ __|\n | (_) | |_| | | |  __/ |  \__ \ \n  \___/ \__|_| |_|\___|_|  |___/\n"
-# misc
+# Miscellaneous
 check_message_in_output 'ansible-deployer run -t task_empty -s testing -i testInfra' '\[CRITICAL\]: No playitems found for requested task'
 check_message_in_output 'ansible-deployer run -t task_exec_bin_true -s prod -i testInfra' '\[INFO\]: setup_work_dir finished succesfully'
 
-#Artificially generate lock
+# Check dry run
+check_message_in_output "ansible-deployer run -D -d -t task_exec_bin_true -s prod -i testInfra" "\[INFO\]: Skipping execution because of --dry-run option"
+check_message_not_in_output "ansible-deployer run -D -d -t task_exec_bin_true -s prod -i testInfra" "\[DEBUG\]: Started lock_inventory for lockdir"
+
+# Artificially generate lock
 check_run_ok "ansible-deployer lock -s locked -i testInfra"
 check_message_in_output 'ansible-deployer run -t task_exec_bin_true -s locked -i testInfra' "is using this infrastructure, please try again later."
 
 echo -e "   ___ ____                      _               _                           _                _\n  / _ \___ \ __ _            ___| |__   ___  ___| | ___ __ _   _ _ __    ___| |__   ___  _ __| |_\n | | | |__) / _\` |  _____   / __| '_ \ / _ \/ __| |/ / '__| | | | '_ \  / __| '_ \ / _ \| '__| __|\n | |_| / __/ (_| | |_____| | (__| | | |  __/ (__|   <| |  | |_| | | | | \__ \ | | | (_) | |  | |_\n  \___/_____\__,_|          \___|_| |_|\___|\___|_|\_\_|   \__,_|_| |_| |___/_| |_|\___/|_|   \__|\n \n              _               _                         _ _  __ _\n   ___  _   _| |_ _ __  _   _| |_   _ __ ___   ___   __| (_)/ _(_) ___ _ __ ___\n  / _ \| | | | __| '_ \| | | | __| | '_ \` _ \ / _ \ / _\` | | |_| |/ _ \ '__/ __|\n | (_) | |_| | |_| |_) | |_| | |_  | | | | | | (_) | (_| | |  _| |  __/ |  \__ \ \n  \___/ \__,_|\__| .__/ \__,_|\__| |_| |_| |_|\___/ \__,_|_|_| |_|\___|_|  |___/\n                 |_|\n"
-#Check --debug option
+# Check --debug option
 check_run_ok "ansible-deployer show -d" "\[DEBUG\]: load_configuration called"
 
 # Check different output options
@@ -83,7 +88,7 @@ echo -e "   ___ ____                      _               _                     
 check_run_ok "ansible-deployer run -t task_with_multi_groups -s testing -i testInfra"
 check_message_in_output "ansible-deployer run -t task_with_multi_groups_fail -s testing -i testInfra" "\[CRITICAL\]: Task forbidden"
 
-#Try execution of task without permissions
+# Try execution of task without permissions
 if [ $UID -ne 0 ]
 then
 	check_message_in_output "ansible-deployer run -t root_only_task -i testInfra -s testing" "\[CRITICAL\]: Task forbidden"
