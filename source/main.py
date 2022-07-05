@@ -148,7 +148,9 @@ def main():
                 logger.logger.critical("Task forbidden")
                 sys.exit(errno.EPERM)
             runner = Runners(logger.logger, lock)
-            runner.setup_ansible(config["tasks"]["setup_hooks"], selected_items["commit"], workdir)
+            if not options["self_setup"]:
+                runner.setup_ansible(config["tasks"]["setup_hooks"], selected_items["commit"],
+                                     workdir)
             lock.lock_inventory(lockpath)
             runner.run_playitem(config, options, inv_file, lockpath)
             lock.unlock_inventory(lockpath)
