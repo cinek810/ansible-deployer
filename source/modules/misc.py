@@ -5,6 +5,22 @@ import sys
 import grp
 
 
+def create_parent_workdir(short_ts: str, date_dir: str, conf: dict, logger):
+    """Function to create parent working directory"""
+    if short_ts not in os.listdir(conf["global_paths"]["work_dir"]):
+        try:
+            os.mkdir(date_dir)
+            try:
+                os.chmod(date_dir, int(conf["permissions"]["parent_workdir"], 8))
+                logger.debug("Successfully created parent work dir: %s", date_dir)
+            except Exception as exc:
+                logger.critical("Failed to change permissions of parent work dir: %s error was: %s",
+                                date_dir, exc)
+                sys.exit(90)
+        except Exception as exc:
+            logger.critical("Failed to create parent work dir: %s error was: %s", date_dir, exc)
+            sys.exit(90)
+
 def create_workdir(timestamp: str, conf: dict, logger):
     """
     Function to create working directory on file system, we expect it to change
@@ -12,25 +28,30 @@ def create_workdir(timestamp: str, conf: dict, logger):
     """
     short_ts = timestamp.split("_")[0]
     date_dir = os.path.join(conf["global_paths"]["work_dir"], short_ts)
+    base_dir = os.path.join(date_dir, conf["global_paths"]["sequences_subdir"])
+    create_parent_workdir(short_ts, date_dir, conf, logger)
 
     #
     #TODO: Add locking of the directory
-
-    if short_ts not in os.listdir(conf["global_paths"]["work_dir"]):
-        seq_path = os.path.join(date_dir, f"{conf['file_naming']['sequence_prefix']}0000")
+    if conf["global_paths"]["sequences_subdir"] not in os.listdir(date_dir):
+        seq_path = os.path.join(base_dir, f"{conf['file_naming']['sequence_prefix']}0000")
         try:
-            os.mkdir(date_dir)
-            os.chmod(date_dir, int(conf["permissions"]["parent_workdir"], 8))
-            logger.debug("Successfully created parent work dir: %s", seq_path)
-        except Exception as e:
-            logger.critical("Failed to create parent work dir: %s error was: %s", seq_path, e,
-                            file=sys.stderr)
+            os.mkdir(base_dir)
+            try:
+                os.chmod(base_dir, int(conf["permissions"]["parent_workdir"], 8))
+                logger.debug("Successfully created parent work dir: %s", base_dir)
+            except Exception as exc:
+                logger.critical("Failed to change permissions of parent work dir: %s error was: %s",
+                                base_dir, exc)
+                sys.exit(90)
+        except Exception as exc:
+            logger.critical("Failed to create parent work dir: %s error was: %s", base_dir, exc)
             sys.exit(90)
     else:
-        sequence_list = os.listdir(date_dir)
+        sequence_list = os.listdir(base_dir)
         sequence_list.sort()
         new_sequence = int(sequence_list[-1].split(conf['file_naming']['sequence_prefix'])[1]) + 1
-        seq_path = os.path.join(date_dir, f"{conf['file_naming']['sequence_prefix']}"
+        seq_path = os.path.join(base_dir, f"{conf['file_naming']['sequence_prefix']}"
                                           f"{new_sequence:04d}")
 
     try:
