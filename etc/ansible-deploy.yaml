@@ -1,5 +1,7 @@
 global_paths:
   work_dir: "/tmp"
+  database_subdir: "databases"
+  sequences_subdir: "sequences"
 
 file_naming:
   log_file_name_frmt: "ansible-deploy_execution_{}.log"

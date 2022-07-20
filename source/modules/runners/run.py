@@ -8,9 +8,10 @@ from ansible_deployer.modules.outputs.formatting import Formatters
 class Runners:
     """Class handling ansible hooks and ansible plays execution"""
 
-    def __init__(self, logger, lock_obj):
+    def __init__(self, logger, lock_obj, workdir):
         self.logger = logger
         self.lock_obj = lock_obj
+        self.workdir = workdir
 
     @staticmethod
     def reassign_commit_and_workdir(commit: str, workdir: str):
@@ -23,14 +24,14 @@ class Runners:
 
         return workdir, commit
 
-    def setup_ansible(self, setup_hooks: list, commit: str, workdir: str):
+    def setup_ansible(self, setup_hooks: list, commit: str):
         """
         Function responsible for execution of setup_hooks
         It passes the "commit" to the hook if one given, if not the hook should
         checkout the default repo.
         """
         failed = False
-        workdir, commit = Runners.reassign_commit_and_workdir(commit, workdir)
+        workdir, commit = Runners.reassign_commit_and_workdir(commit, self.workdir)
 
         for hook in setup_hooks:
             if hook["module"] == "script":
@@ -125,6 +126,7 @@ class Runners:
                                           stderr=subprocess.PIPE) as proc:
                         returned = proc.communicate()
                         format_obj = Formatters(self.logger)
+                        output, warning, error = Formatters.format_ansible_output(returned)
                         if options["raw_output"]:
                             if proc.returncode != 0:
                                 if options["debug"]:
@@ -140,7 +142,6 @@ class Runners:
                                 format_obj.format_std_out(returned[0])
                                 self.logger.info("'%s' ran succesfully", command)
                         else:
-                            output, warning, error = Formatters.format_ansible_output(returned)
                             if options["debug"]:
                                 format_obj.debug_std_out(returned[0])
                                 format_obj.format_std_err(returned[1])
@@ -181,7 +182,7 @@ class Runners:
             command.append("--junit-xml=junit_"+options['task']+'.xml')
             command.append("./"+playitem["file"])
         else:
-            command = ["ansible-playbook", "-i", inventory, playitem["file"]]
+            command = ["ansible-playbook", "-v", "-i", inventory, playitem["file"]]
             if options["limit"]:
                 command.append("-l")
                 command.append(options["limit"])
