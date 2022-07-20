@@ -125,6 +125,7 @@ class Runners:
                                           stderr=subprocess.PIPE) as proc:
                         returned = proc.communicate()
                         format_obj = Formatters(self.logger)
+                        output, warning, error = Formatters.format_ansible_output(returned)
                         if options["raw_output"]:
                             if proc.returncode != 0:
                                 if options["debug"]:
@@ -140,7 +141,6 @@ class Runners:
                                 format_obj.format_std_out(returned[0])
                                 self.logger.info("'%s' ran succesfully", command)
                         else:
-                            output, warning, error = Formatters.format_ansible_output(returned)
                             if options["debug"]:
                                 format_obj.debug_std_out(returned[0])
                                 format_obj.format_std_err(returned[1])
@@ -181,7 +181,7 @@ class Runners:
             command.append("--junit-xml=junit_"+options['task']+'.xml')
             command.append("./"+playitem["file"])
         else:
-            command = ["ansible-playbook", "-i", inventory, playitem["file"]]
+            command = ["ansible-playbook", "-v", "-i", inventory, playitem["file"]]
             if options["limit"]:
                 command.append("-l")
                 command.append(options["limit"])
