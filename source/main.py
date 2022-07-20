@@ -148,8 +148,8 @@ def main():
             if not validators.verify_task_permissions(selected_items, user_groups, config):
                 logger.logger.critical("Task forbidden")
                 sys.exit(errno.EPERM)
-            runner = Runners(logger.logger, lock)
-            runner.setup_ansible(config["tasks"]["setup_hooks"], selected_items["commit"], workdir)
+            runner = Runners(logger.logger, lock, workdir)
+            runner.setup_ansible(config["tasks"]["setup_hooks"], selected_items["commit"])
             lock.lock_inventory(lockpath)
             runner.run_playitem(config, options, inv_file, lockpath)
             lock.unlock_inventory(lockpath)
