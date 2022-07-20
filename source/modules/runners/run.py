@@ -8,9 +8,10 @@ from ansible_deployer.modules.outputs.formatting import Formatters
 class Runners:
     """Class handling ansible hooks and ansible plays execution"""
 
-    def __init__(self, logger, lock_obj):
+    def __init__(self, logger, lock_obj, workdir):
         self.logger = logger
         self.lock_obj = lock_obj
+        self.workdir = workdir
 
     @staticmethod
     def reassign_commit_and_workdir(commit: str, workdir: str):
@@ -23,14 +24,14 @@ class Runners:
 
         return workdir, commit
 
-    def setup_ansible(self, setup_hooks: list, commit: str, workdir: str):
+    def setup_ansible(self, setup_hooks: list, commit: str):
         """
         Function responsible for execution of setup_hooks
         It passes the "commit" to the hook if one given, if not the hook should
         checkout the default repo.
         """
         failed = False
-        workdir, commit = Runners.reassign_commit_and_workdir(commit, workdir)
+        workdir, commit = Runners.reassign_commit_and_workdir(commit, self.workdir)
 
         for hook in setup_hooks:
             if hook["module"] == "script":
