@@ -6,4 +6,4 @@ file_naming:
   sequence_prefix: "SEQ"
 
 permissions:
-  parent_workdir: "0o1750"
+  parent_workdir: "0o1755"

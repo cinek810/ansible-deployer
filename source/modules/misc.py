@@ -20,7 +20,7 @@ def create_workdir(timestamp: str, conf: dict, logger):
         seq_path = os.path.join(date_dir, f"{conf['file_naming']['sequence_prefix']}0000")
         try:
             os.mkdir(date_dir)
-            os.chmod(date_dir, int(conf["permissions"]["parent_workdir"].split("o")[1], 8))
+            os.chmod(date_dir, int(conf["permissions"]["parent_workdir"], 8))
             logger.debug("Successfully created parent work dir: %s", seq_path)
         except Exception as e:
             logger.critical("Failed to create parent work dir: %s error was: %s", seq_path, e,
