@@ -8,10 +8,13 @@ from ansible_deployer.modules.outputs.formatting import Formatters
 class Runners:
     """Class handling ansible hooks and ansible plays execution"""
 
-    def __init__(self, logger, lock_obj, workdir):
+    def __init__(self, logger, lock_obj, workdir, start_ts_raw, setup_hooks):
         self.logger = logger
         self.lock_obj = lock_obj
         self.workdir = workdir
+        self.start_ts_raw = start_ts_raw
+        self.setup_hooks = setup_hooks
+        self.sequence_id = os.path.basename(self.workdir)
 
     @staticmethod
     def reassign_commit_and_workdir(commit: str, workdir: str):
@@ -24,7 +27,7 @@ class Runners:
 
         return workdir, commit
 
-    def setup_ansible(self, setup_hooks: list, commit: str):
+    def setup_ansible(self, commit: str):
         """
         Function responsible for execution of setup_hooks
         It passes the "commit" to the hook if one given, if not the hook should
@@ -33,7 +36,7 @@ class Runners:
         failed = False
         workdir, commit = Runners.reassign_commit_and_workdir(commit, self.workdir)
 
-        for hook in setup_hooks:
+        for hook in self.setup_hooks:
             if hook["module"] == "script":
                 try:
                     with subprocess.Popen([hook["opts"]["file"], commit],
@@ -107,15 +110,19 @@ class Runners:
         # TODO add check if everything was skipped
         return playitems
 
-    def run_playitem(self, config: dict, options: dict, inventory: str, lockpath: str):
+    def run_playitem(self, config: dict, options: dict, inventory: str, lockpath: str, db_writer):
         """
         Function implementing actual execution of runner [ansible-playbook or py.test]
         """
         playitems = self.get_playitems(config, options)
+        host_list = []
         if not playitems:
             self.logger.critical("No playitems found for requested task %s. Nothing to do.",
                                  options['task'])
             self.lock_obj.unlock_inventory(lockpath)
+            sequence_records = db_writer.start_sequence_dict([""], self.setup_hooks, options,
+                                                             self.start_ts_raw, self.sequence_id)
+            db_writer.finalize_db_write(sequence_records, False)
             sys.exit(70)
         else:
             for playitem in playitems:
@@ -127,6 +134,14 @@ class Runners:
                         returned = proc.communicate()
                         format_obj = Formatters(self.logger)
                         output, warning, error = Formatters.format_ansible_output(returned)
+                        play_host_list = db_writer.write_records(db_writer.parse_yaml_output(error,
+                                                                 self.sequence_id))
+                        for host in play_host_list:
+                            host_list.append(host)
+                        sequence_records = db_writer.start_sequence_dict(host_list,
+                                                                         self.setup_hooks, options,
+                                                                         self.start_ts_raw,
+                                                                         self.sequence_id)
                         if options["raw_output"]:
                             if proc.returncode != 0:
                                 if options["debug"]:
@@ -134,6 +149,7 @@ class Runners:
                                 self.logger.error("'%s' failed due to:", command)
                                 format_obj.format_std_err(returned[1])
                                 self.lock_obj.unlock_inventory(lockpath)
+                                db_writer.finalize_db_write(sequence_records, False)
                                 self.logger.critical("Program will exit now.")
                                 sys.exit(71)
                             else:
@@ -150,12 +166,18 @@ class Runners:
                             else:
                                 format_obj.negative_ansible_output(warning, error, command)
                                 self.lock_obj.unlock_inventory(lockpath)
+                                db_writer.finalize_db_write(sequence_records, False)
                                 self.logger.critical("Program will exit now.")
                                 sys.exit(71)
                 except Exception as exc:
                     self.logger.critical("\"%s\" failed due to:")
                     self.logger.critical(exc)
+                    sequence_records = db_writer.start_sequence_dict(host_list, self.setup_hooks,
+                                                                     options, self.start_ts_raw,
+                                                                     self.sequence_id)
+                    db_writer.finalize_db_write(sequence_records, True)
                     sys.exit(72)
+            return sequence_records
 
     @staticmethod
     def get_tags_for_task(config: dict, options: dict):

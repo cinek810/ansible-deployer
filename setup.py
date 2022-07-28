@@ -34,6 +34,7 @@ setup(
     "ansible_deployer",
     "ansible_deployer.modules",
     "ansible_deployer.modules.configs",
+    "ansible_deployer.modules.database",
     "ansible_deployer.modules.outputs",
     "ansible_deployer.modules.locking",
     "ansible_deployer.modules.runners",
