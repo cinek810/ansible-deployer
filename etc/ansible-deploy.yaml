@@ -7,3 +7,5 @@ file_naming:
 
 permissions:
   parent_workdir: "0o1755"
+  workdir: "0o1755"
+  lock: "0o0644"
