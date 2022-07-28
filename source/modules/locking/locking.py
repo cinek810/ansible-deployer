@@ -8,10 +8,11 @@ import pwd
 class Locking:
     """Class handling infrastructure locks"""
 
-    def __init__(self, logger, keep_lock, infra):
+    def __init__(self, logger, keep_lock, infra, conf):
         self.logger = logger
         self.keep_lock = keep_lock
         self.infra = infra
+        self.conf = conf
 
     def lock_inventory(self, lockpath: str):
         """
@@ -34,6 +35,7 @@ class Locking:
                 fh.write(str(os.getpid()))
                 fh.write(str("\n"))
                 fh.write(str(pwd.getpwuid(os.getuid()).pw_name))
+            os.chmod(lockpath, int(self.conf["permissions"]["lock"], 8))
             self.logger.info("Infra locked.")
         except FileExistsError:
             with open(lockpath, "r", encoding="utf8") as fh:

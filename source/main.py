@@ -142,7 +142,8 @@ def main():
         inv_file = misc.get_inventory_file(config, options)
         lockpath = os.path.join(os.path.join(configuration.conf["global_paths"]["work_dir"],
                                 "locks") , inv_file.lstrip(f".{os.sep}").replace(os.sep, "_"))
-        lock = Locking(logger.logger, options["keep_locked"], (options["infra"], options["stage"]))
+        lock = Locking(logger.logger, options["keep_locked"], (options["infra"], options["stage"]),
+                       configuration.conf)
         if options["subcommand"] in ("run", "verify"):
             if not validators.verify_task_permissions(selected_items, user_groups, config):
                 logger.logger.critical("Task forbidden")
