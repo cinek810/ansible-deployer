@@ -11,6 +11,8 @@ from ansible_deployer.modules.locking.locking import Locking
 from ansible_deployer.modules.outputs.logging import Loggers
 from ansible_deployer.modules.validators.validate import Validators
 from ansible_deployer.modules.runners.run import Runners
+from ansible_deployer.modules.database.creator import DbSetup
+from ansible_deployer.modules.database.writer import DbWriter
 from ansible_deployer.modules import misc
 from ansible_deployer.modules import globalvars
 
@@ -97,7 +99,8 @@ def parse_options(argv):
 
 def main():
     """ansible-deploy endpoint function"""
-    start_ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    start_ts_raw = datetime.datetime.now()
+    start_ts = start_ts_raw.strftime("%Y%m%d_%H%M%S")
 
     if len(sys.argv) < 2:
         print(f"{globalvars.PRINT_FAIL}[CRITICAL]: Too few arguments{globalvars.PRINT_END}",
@@ -148,12 +151,18 @@ def main():
             if not validators.verify_task_permissions(selected_items, user_groups, config):
                 logger.logger.critical("Task forbidden")
                 sys.exit(errno.EPERM)
-            runner = Runners(logger.logger, lock, workdir)
+            runner = Runners(logger.logger, lock, workdir, start_ts_raw,
+                             config["tasks"]["setup_hooks"])
             if not options["self_setup"]:
-                runner.setup_ansible(config["tasks"]["setup_hooks"], selected_items["commit"])
+                runner.setup_ansible(selected_items["commit"])
             lock.lock_inventory(lockpath)
-            runner.run_playitem(config, options, inv_file, lockpath)
+            db_connector, db_path = DbSetup.connect_to_db(DbSetup(logger.logger, start_ts,
+                                                          configuration.conf, options))
+            db_writer = DbWriter(logger.logger, db_connector, db_path)
+            sequence_record_dict = runner.run_playitem(config, options, inv_file, lockpath,
+                                                       db_writer)
             lock.unlock_inventory(lockpath)
+            db_writer.finalize_db_write(sequence_record_dict, False)
         elif options["subcommand"] == "lock":
             lock.lock_inventory(lockpath)
         elif options["subcommand"] == "unlock":
