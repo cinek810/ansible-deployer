@@ -126,11 +126,11 @@ class Runners:
             sys.exit(70)
         else:
             for playitem in playitems:
-                command = self.construct_command(playitem, inventory, config, options)
+                command, command_env = self.construct_command(playitem, inventory, config, options)
                 self.logger.debug("Running '%s'.", command)
                 try:
                     with subprocess.Popen(command, stdout=subprocess.PIPE,
-                                          stderr=subprocess.PIPE) as proc:
+                                          stderr=subprocess.PIPE, env=command_env) as proc:
                         returned = proc.communicate()
                         format_obj = Formatters(self.logger)
                         output, warning, error = Formatters.format_ansible_output(returned)
@@ -203,6 +203,7 @@ class Runners:
                 command.append("--hosts=ansible://all")
             command.append("--junit-xml=junit_"+options['task']+'.xml')
             command.append("./"+playitem["file"])
+            command_env = os.environ
         else:
             command = ["ansible-playbook", "-v", "-i", inventory, playitem["file"]]
             if options["limit"]:
@@ -211,5 +212,7 @@ class Runners:
             if tags:
                 command.append("-t")
                 command.append(",".join(tags))
+            command_env=dict(os.environ, ANSIBLE_STDOUT_CALLBACK="yaml", ANSIBLE_NOCOWS="1",
+                             ANSIBLE_LOAD_CALLBACK_PLUGINS="1")
 
-        return command
+        return command, command_env
