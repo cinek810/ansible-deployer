@@ -71,12 +71,14 @@ class Validators:
         failed = False
         for req in required:
             if not options[req]:
-                self.logger.error("%s is required for %s", req, options["subcommand"])
+                self.logger.error("Option %s is required for %s", self.expand_option_name(req),
+                                  options["subcommand"])
                 failed = True
 
         for notsup in notsupported:
             if options[notsup]:
-                self.logger.error("%s is not supported by %s", notsup, options["subcommand"])
+                self.logger.error("Option %s is not supported by %s",
+                                  self.expand_option_name(notsup), options["subcommand"])
                 failed = True
 
         if failed:
@@ -244,3 +246,14 @@ class Validators:
                                 return True
         self.logger.debug("Task forbidden")
         return False
+
+    @staticmethod
+    def expand_option_name(option: str):
+        """Expand name of option variable name to option argument name"""
+        if option == "infra":
+            option = "infrastructure"
+        elif option == "raw_output":
+            option = "raw_runner_output"
+
+        formatted_option = "--" + option.replace("_", "-")
+        return formatted_option
