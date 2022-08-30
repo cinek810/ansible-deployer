@@ -48,6 +48,20 @@ class Loggers:
         file_handler.setLevel(logging.DEBUG)
         self.logger.addHandler(file_handler)
 
+    def flush_memory_handler(self, subcommand_flag: bool, syslog: bool):
+        """Flush initial log messages from memory handler to logfile"""
+        if syslog:
+            # handler[1] - MemoryHandler, handler[3] - FileHandler
+            if subcommand_flag:
+                self.logger.handlers[1].setTarget(self.logger.handlers[3])
+                self.logger.handlers[1].flush()
+            self.logger.handlers[1].close()
+        else:
+            # handler[0] - MemoryHandler, handler[2] - FileHandler
+            if subcommand_flag:
+                self.logger.handlers[0].setTarget(self.logger.handlers[2])
+                self.logger.handlers[0].flush()
+            self.logger.handlers[0].close()
 
 class CustomFormatter(logging.Formatter):
     """Class adding colours to console logger"""

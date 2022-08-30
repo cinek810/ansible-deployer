@@ -116,15 +116,9 @@ def main():
     if options["subcommand"] in ("run", "verify"):
         workdir = misc.create_workdir(start_ts, configuration.conf, logger.logger)
         Loggers.set_logging_to_file(logger, workdir, start_ts, configuration.conf)
-        if options["syslog"]:
-            # handler[1] - MemoryHandler, handler[3] - FileHandler
-            logger.logger.handlers[1].setTarget(logger.logger.handlers[3])
-        else:
-            # handler[0] - MemoryHandler, handler[2] - FileHandler
-            logger.logger.handlers[0].setTarget(logger.logger.handlers[2])
-        logger.logger.handlers[0].flush()
+        logger.flush_memory_handler(True, options["syslog"])
     else:
-        logger.logger.handlers[0].close()
+        logger.flush_memory_handler(False, options["syslog"])
 
     validators = Validators(logger.logger)
     validators.validate_options(options)
