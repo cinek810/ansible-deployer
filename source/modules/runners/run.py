@@ -196,8 +196,7 @@ class Runners:
         if "runner" in playitem and playitem["runner"] == "py.test":
             command = ["py.test", "--ansible-inventory", inventory]
             if options["limit"]:
-                command.append("--hosts='ansible://")
-                command.append(options["limit"]+"'")
+                command.append(f"--hosts='ansible://{options['limit']}'")
             else:
                 command.append("--hosts=ansible://all")
             command.append("--junit-xml=junit_"+options['task']+'.xml')
