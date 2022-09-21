@@ -2,7 +2,7 @@ setup_hooks:
   - name: setup_ansible
     module: script
     opts:
-      file: /etc/ansible-deployer/hooks/setup_work_dir.sh
+      file: hooks/setup_work_dir.sh
 
 play_items:
   - name: run_bin_true

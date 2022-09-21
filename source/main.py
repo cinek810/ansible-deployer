@@ -154,7 +154,7 @@ def main():
             runner = Runners(logger.logger, lock, workdir, start_ts_raw,
                              config["tasks"]["setup_hooks"])
             if not options["self_setup"]:
-                runner.setup_ansible(selected_items["commit"])
+                runner.setup_ansible(selected_items["commit"], configuration.conf_dir)
             lock.lock_inventory(lockpath)
             db_connector, db_path = DbSetup.connect_to_db(DbSetup(logger.logger, start_ts,
                                                           configuration.conf, options))
