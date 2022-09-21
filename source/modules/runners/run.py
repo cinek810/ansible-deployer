@@ -27,7 +27,7 @@ class Runners:
 
         return workdir, commit
 
-    def setup_ansible(self, commit: str):
+    def setup_ansible(self, commit: str, conf_dir: str):
         """
         Function responsible for execution of setup_hooks
         It passes the "commit" to the hook if one given, if not the hook should
@@ -39,10 +39,9 @@ class Runners:
         for hook in self.setup_hooks:
             if hook["module"] == "script":
                 try:
-                    with subprocess.Popen([hook["opts"]["file"], commit],
-                                          stdout=subprocess.PIPE,
-                                          stderr=subprocess.PIPE,
-                                          stdin=subprocess.PIPE) as proc:
+                    with subprocess.Popen([os.path.join(conf_dir, hook["opts"]["file"]), commit],
+                                          stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                          stdin=subprocess.PIPE, cwd=workdir) as proc:
                         std_out, std_err = proc.communicate()
                         if proc.returncode != 0:
                             failed = True
