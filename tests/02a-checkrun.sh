@@ -46,6 +46,9 @@ check_message_in_output "ansible-deployer run --task task_exec_bin_true --stage 
 check_message_in_output "ansible-deployer run --conf-validation --debug --task task_exec_bin_true --stage prod --infrastructure testInfra" "\[INFO\]: Validation of configuration files was successful, program will exit now."
 check_message_not_in_output "ansible-deployer run --conf-validation --debug --task task_exec_bin_true --stage prod --infrastructure testInfra" "\[DEBUG\]: Started lock_inventory for lockdir"
 
+# Check --check-mode option
+check_message_in_output "ansible-deployer run --check-mode --debug --task task_exec_bin_true --stage prod --infrastructure testInfra" "msg: Command would have run if not in check mode"
+
 # Artificially generate lock
 check_run_ok "ansible-deployer lock --stage locked --infrastructure testInfra"
 check_message_in_output "ansible-deployer run --task task_exec_bin_true --stage locked --infrastructure testInfra" "is using this infrastructure, please try again later."
