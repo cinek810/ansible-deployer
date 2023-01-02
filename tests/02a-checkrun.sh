@@ -42,9 +42,9 @@ echo -e "   ___ ____                      _               _\n  / _ \___ \ __ _  
 check_message_in_output "ansible-deployer run --task task_empty --stage testing --infrastructure testInfra" "\[CRITICAL\]: No playitems found for requested task"
 check_message_in_output "ansible-deployer run --task task_exec_bin_true --stage prod --infrastructure testInfra" "\[INFO\]: setup_work_dir finished succesfully"
 
-# Check dry run
-check_message_in_output "ansible-deployer run --dry --debug --task task_exec_bin_true --stage prod --infrastructure testInfra" "\[INFO\]: Skipping execution because of --dry-run option"
-check_message_not_in_output "ansible-deployer run --dry --debug --task task_exec_bin_true --stage prod --infrastructure testInfra" "\[DEBUG\]: Started lock_inventory for lockdir"
+# Check --conf-validation run
+check_message_in_output "ansible-deployer run --conf-validation --debug --task task_exec_bin_true --stage prod --infrastructure testInfra" "\[INFO\]: Validation of configuration files was successful, program will exit now."
+check_message_not_in_output "ansible-deployer run --conf-validation --debug --task task_exec_bin_true --stage prod --infrastructure testInfra" "\[DEBUG\]: Started lock_inventory for lockdir"
 
 # Artificially generate lock
 check_run_ok "ansible-deployer lock --stage locked --infrastructure testInfra"
