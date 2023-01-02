@@ -42,6 +42,10 @@ echo -e "   ___ ____  _                    _               _                    
 check_message_in_output "ansible-deployer run --task task_empty --stage testing --infrastructure testInfra --conf-dir=/etc/alternate-deployer-dir" "\[CRITICAL\]: No playitems found for requested task"
 check_message_in_output "ansible-deployer run --task task_exec_bin_true --stage prod --infrastructure testInfra --conf-dir=/etc/alternate-deployer-dir" "\[INFO\]: setup_work_dir finished succesfully"
 
+# Check --dry-mode option
+check_message_in_output "ansible-deployer run --dry-mode --debug --task task_with_pretask --stage testing --infrastructure testInfra --conf-dir=/etc/alternate-deployer-dir" "TASK \[Run dummy pre_task\]"
+check_message_not_in_output "ansible-deployer run --dry-mode --debug --task task_with_pretask --stage testing --infrastructure testInfra --conf-dir=/etc/alternate-deployer-dir" "TASK \[Run /bin/false\]"
+
 # Artificially generate lock
 check_run_ok "ansible-deployer unlock --stage locked --infrastructure testInfra --conf-dir=/etc/alternate-deployer-dir"
 check_run_ok "ansible-deployer lock --stage locked --infrastructure testInfra --conf-dir=/etc/alternate-deployer-dir"

@@ -23,6 +23,8 @@ play_items:
         stage: testing
   - name: run_ll_to_fail
     file: runll.yaml
+  - name: run_with_pretask
+    file: run_with_pretask.yaml
 
 tasks:
   - name: task_exec_bin_true
@@ -135,4 +137,11 @@ tasks:
       - acl_group: groups_mixed_0002
         commit:
           - test_version
+    allow_limit: False
+
+  - name: task_with_pretask
+    play_items:
+      - run_with_pretask
+    allowed_for:
+      - acl_group: root_on_all_in_testInfra
     allow_limit: False

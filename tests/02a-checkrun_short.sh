@@ -49,6 +49,10 @@ check_message_not_in_output "ansible-deployer run --conf-validation -d -t task_e
 # Check --check-mode option
 check_message_in_output "ansible-deployer run -C -d -t task_exec_bin_true -s prod -i testInfra" "msg: Command would have run if not in check mode"
 
+# Check --dry-mode option
+check_message_in_output "ansible-deployer run -D -d -t task_with_pretask -s testing -i testInfra" "TASK \[Run dummy pre_task\]"
+check_message_not_in_output "ansible-deployer run -D -d -t task_with_pretask -s testing -i testInfra" "TASK \[Run /bin/false\]"
+
 # Artificially generate lock
 check_run_ok "ansible-deployer lock -s locked -i testInfra"
 check_message_in_output "ansible-deployer run -t task_exec_bin_true -s locked -i testInfra" "is using this infrastructure, please try again later."
