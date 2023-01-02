@@ -50,7 +50,7 @@ check_message_in_output "ansible-deployer show --limit test_hosts_1" "\[ERROR\]:
 check_message_in_output "ansible-deployer show --task task_exec_bin_true" "\[ERROR\]: Option --task is not supported by show"
 check_message_in_output "ansible-deployer show --infra testInfra" "\[ERROR\]: Option --infrastructure is not supported by show"
 check_message_in_output "ansible-deployer show --stage prod" "\[ERROR\]: Option --stage is not supported by show"
-check_message_in_output "ansible-deployer show --dry" "\[ERROR\]: Option --dry is not supported by show"
+check_message_in_output "ansible-deployer show --conf-validation" "\[ERROR\]: Option --conf-validation is not supported by show"
 check_message_in_output "ansible-deployer show --keep-locked" "\[ERROR\]: Option --keep-locked is not supported by show"
 check_message_in_output "ansible-deployer show --syslog" "\[ERROR\]: Option --syslog is not supported by show"
 check_message_in_output "ansible-deployer show --raw-runner-output" "\[ERROR\]: Option --raw-runner-output is not supported by show"
@@ -58,16 +58,16 @@ check_message_in_output "ansible-deployer show --self-setup ." "\[ERROR\]: Optio
 
 echo -e "   ___  _                                                      _                          _\n  / _ \/ |           __ _ _ __ __ _ _   _ _ __ ___   ___ _ __ | |_   _ __   __ _ _ __ ___(_)_ __   __ _\n | | | | |  _____   / _\` | '__/ _\` | | | | '_ \` _ \ / _ \ '_ \| __| | '_ \ / _\` | '__/ __| | '_ \ / _\` |\n | |_| | | |_____| | (_| | | | (_| | |_| | | | | | |  __/ | | | |_  | |_) | (_| | |  \__ \ | | | | (_| |\n  \___/|_|          \__,_|_|  \__, |\__,_|_| |_| |_|\___|_| |_|\__| | .__/ \__,_|_|  |___/_|_| |_|\__, |\n                              |___/                                 |_|                           |___/\n                               _                         _     _             _   _\n   ___ ___  _ __ _ __ ___  ___| |_    ___ ___  _ __ ___ | |__ (_)_ __   __ _| |_(_) ___  _ __  ___\n  / __/ _ \| '__| '__/ _ \/ __| __|  / __/ _ \| '_ \` _ \| '_ \| | '_ \ / _\` | __| |/ _ \| '_ \/ __|\n | (_| (_) | |  | | |  __/ (__| |_  | (_| (_) | | | | | | |_) | | | | | (_| | |_| | (_) | | | \__ \ \n  \___\___/|_|  |_|  \___|\___|\__|  \___\___/|_| |_| |_|_.__/|_|_| |_|\__,_|\__|_|\___/|_| |_|___/\n"
 # Check if correct combinations are accepted
-check_run_ok "ansible-deployer run --dry --task task_exec_bin_true --stage prod --infrastructure testInfra"
-check_run_ok "ansible-deployer verify --dry --task task_exec_bin_true --stage prod --infrastructure testInfra"
-check_run_ok "ansible-deployer run --dry --task task_with_limit --stage testing --infrastructure testInfra --limit testHost1"
-check_run_ok "ansible-deployer verify --dry --task task_with_limit --stage testing --infrastructure testInfra --limit testHost1"
-check_run_ok "ansible-deployer run --dry --task task_exec_bin_true --stage prod --infrastructure testInfra --commit test_version"
-check_run_ok "ansible-deployer lock --dry --stage prod --infrastructure testInfra"
-check_run_ok "ansible-deployer unlock --dry --stage prod --infrastructure testInfra"
+check_run_ok "ansible-deployer run --conf-validation --task task_exec_bin_true --stage prod --infrastructure testInfra"
+check_run_ok "ansible-deployer verify --conf-validation --task task_exec_bin_true --stage prod --infrastructure testInfra"
+check_run_ok "ansible-deployer run --conf-validation --task task_with_limit --stage testing --infrastructure testInfra --limit testHost1"
+check_run_ok "ansible-deployer verify --conf-validation --task task_with_limit --stage testing --infrastructure testInfra --limit testHost1"
+check_run_ok "ansible-deployer run --conf-validation --task task_exec_bin_true --stage prod --infrastructure testInfra --commit test_version"
+check_run_ok "ansible-deployer lock --conf-validation --stage prod --infrastructure testInfra"
+check_run_ok "ansible-deployer unlock --conf-validation --stage prod --infrastructure testInfra"
 check_run_ok "ansible-deployer show"
 check_run_ok "ansible-deployer show infra"
 
 echo -e "   ___  _                                                      _                          _\n  / _ \/ |           __ _ _ __ __ _ _   _ _ __ ___   ___ _ __ | |_   _ __   __ _ _ __ ___(_)_ __   __ _\n | | | | |  _____   / _\` | '__/ _\` | | | | '_ \` _ \ / _ \ '_ \| __| | '_ \ / _\` | '__/ __| | '_ \ / _\` |\n | |_| | | |_____| | (_| | | | (_| | |_| | | | | | |  __/ | | | |_  | |_) | (_| | |  \__ \ | | | | (_| |\n  \___/|_|          \__,_|_|  \__, |\__,_|_| |_| |_|\___|_| |_|\__| | .__/ \__,_|_|  |___/_|_| |_|\__, |\n                              |___/                                 |_|                           |___/\n                                                    __ _\n __      ___ __ ___  _ __   __ _    ___ ___  _ __  / _(_) __ _\n \ \ /\ / / '__/ _ \| '_ \ / _\` |  / __/ _ \| '_ \| |_| |/ _\` |\n  \ V  V /| | | (_) | | | | (_| | | (_| (_) | | | |  _| | (_| |\n   \_/\_/ |_|  \___/|_| |_|\__, |  \___\___/|_| |_|_| |_|\__, |\n                           |___/                         |___/\n"
 # Check if wrong config is rejected
-check_message_in_output "ansible-deployer run --dry --task task_exec_bin_true --infrastructure nonExistingInfra --stage prod" "\[CRITICAL\]: nonExistingInfra not found in configuration file"
+check_message_in_output "ansible-deployer run --conf-validation --task task_exec_bin_true --infrastructure nonExistingInfra --stage prod" "\[CRITICAL\]: nonExistingInfra not found in configuration file"
