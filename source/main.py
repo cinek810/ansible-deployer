@@ -32,8 +32,8 @@ def parse_options(argv):
                         help='Provide commit ID.')
     parser.add_argument("--task", "-t", nargs=1, default=[None], metavar='TASK_NAME',
                         help='Provide task_name.')
-    parser.add_argument("--conf-validation", "-D", default=False, action='store_true',
-                        help='Execute configuration files validation and exit program.')
+    parser.add_argument("--conf-validation", default=False, action='store_true', help='Execute '
+                        'configuration files validation and exit program.')
     parser.add_argument("--keep-locked", "-k", default=False, action='store_true', help='Keep'
                         ' infrastructure locked after task execution.')
     parser.add_argument("--debug", "-d", default=False, action="store_true",
