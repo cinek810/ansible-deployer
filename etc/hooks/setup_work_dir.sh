@@ -28,6 +28,18 @@ cat << END > ./runll.yaml
         shell: "ll"
 END
 
+cat << END > ./run_with_pretask.yaml
+- hosts: all
+  connection: "local"
+  pre_tasks:
+      - name: "Run dummy pre_task"
+        shell: "/bin/true"
+        tags: ansible_deployer_dry_mode
+  tasks:
+      - name: "Run /bin/false"
+        shell: "/bin/false"
+END
+
 cat << END > ./test_infra1_inv.yaml
 [testHosts]
 testHost1
