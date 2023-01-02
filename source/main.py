@@ -131,7 +131,8 @@ def main():
     user_groups = misc.get_all_user_groups(logger.logger)
 
     if options["conf_val"]:
-        logger.logger.info("Skipping execution because of --conf-validation option")
+        logger.logger.info("Validation of configuration files was successful, program will exit now"
+                           ".")
         sys.exit(0)
 
     if options["subcommand"] == "show":
