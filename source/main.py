@@ -42,9 +42,8 @@ def parse_options(argv):
                         ' errors to syslog. --debug doesn\'t affect this option!')
     parser.add_argument("--limit", "-l", nargs=1, default=[None], metavar="[LIMIT]",
                         help='Limit task execution to specified host.')
-    parser.add_argument("--conf-dir", "-C", nargs=1, default=[None], metavar="conf_dir",
-                        help='Use non-default configuration directory, only allowed for \
-                              non-binarized exec')
+    parser.add_argument("--conf-dir", nargs=1, default=[None], metavar="conf_dir", help='Use '
+                        'non-default configuration directory, only allowed for non-binarized exec')
     parser.add_argument("--version", "-v", default=False, action="store_true", help='Display'
                             'app version and exit.')
     parser.add_argument("--raw-runner-output", default=False, action="store_true", help='Print'
