@@ -56,6 +56,9 @@ def parse_options(argv):
                         'of console messages.')
     parser.add_argument("--check-mode", "-C", action="store_true", help='Enable --check-mode/-C'
                         ' when using default runner (ansible-playbook).')
+    parser.add_argument("--dry-mode", "-D", action="store_true", help='Execute default runner'
+                        ' (ansible-playbook) with "ansible_deployer_dry_mode" tag, triggering only'
+                        ' required variable validation in pre_tasks. This tag is not predefined!')
 
     arguments = parser.parse_args(argv)
 
@@ -97,6 +100,7 @@ def parse_options(argv):
     options["conf_dir"] = os.path.abspath(arguments.conf_dir[0]) if arguments.conf_dir[0] else None
     options["no_color"] = arguments.no_color
     options["check_mode"] = arguments.check_mode
+    options["dry_mode"] = arguments.dry_mode
 
     return options
 

@@ -186,6 +186,9 @@ class Runners:
             if task["name"] == options["task"]:
                 tags = task.get("tags", [])
 
+        if options["dry_mode"]:
+            tags.append("ansible_deployer_dry_mode")
+
         return tags
 
     @staticmethod
