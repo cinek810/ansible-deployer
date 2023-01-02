@@ -65,7 +65,7 @@ class Validators:
             notsupported = ["switches", "task", "commit", "keep_locked", "limit", "raw_output",
                             "self_setup"]
         elif options["subcommand"] == "show":
-            notsupported = ["task", "infra", "stage", "commit", "dry", "keep_locked", "syslog",
+            notsupported = ["task", "infra", "stage", "commit", "conf_val", "keep_locked", "syslog",
                             "limit", "raw_output", "self_setup"]
 
         failed = False
@@ -254,6 +254,8 @@ class Validators:
             option = "infrastructure"
         elif option == "raw_output":
             option = "raw_runner_output"
+        elif option == "conf_val":
+            option = "conf_validation"
 
         formatted_option = "--" + option.replace("_", "-")
         return formatted_option

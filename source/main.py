@@ -32,7 +32,8 @@ def parse_options(argv):
                         help='Provide commit ID.')
     parser.add_argument("--task", "-t", nargs=1, default=[None], metavar='TASK_NAME',
                         help='Provide task_name.')
-    parser.add_argument("--dry", "-D", default=False, action='store_true', help='Perform dry run.')
+    parser.add_argument("--conf-validation", "-D", default=False, action='store_true',
+                        help='Execute configuration files validation and exit program.')
     parser.add_argument("--keep-locked", "-k", default=False, action='store_true', help='Keep'
                         ' infrastructure locked after task execution.')
     parser.add_argument("--debug", "-d", default=False, action="store_true",
@@ -84,7 +85,7 @@ def parse_options(argv):
     options["stage"] = arguments.stage[0]
     options["commit"] = arguments.commit[0]
     options["task"] = arguments.task[0]
-    options["dry"] = arguments.dry
+    options["conf_val"] = arguments.conf_validation
     options["keep_locked"] = arguments.keep_locked
     options["debug"] = arguments.debug
     options["syslog"] = arguments.syslog
@@ -129,8 +130,8 @@ def main():
 
     user_groups = misc.get_all_user_groups(logger.logger)
 
-    if options["dry"]:
-        logger.logger.info("Skipping execution because of --dry-run option")
+    if options["conf_val"]:
+        logger.logger.info("Skipping execution because of --conf-validation option")
         sys.exit(0)
 
     if options["subcommand"] == "show":
