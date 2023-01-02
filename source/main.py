@@ -54,6 +54,8 @@ def parse_options(argv):
                         ' config!')
     parser.add_argument("--no-color", default=False, action="store_true", help='Disable coloring'
                         'of console messages.')
+    parser.add_argument("--check-mode", "-C", action="store_true", help='Enable --check-mode/-C'
+                        ' when using default runner (ansible-playbook).')
 
     arguments = parser.parse_args(argv)
 
@@ -94,6 +96,7 @@ def parse_options(argv):
                             else None
     options["conf_dir"] = os.path.abspath(arguments.conf_dir[0]) if arguments.conf_dir[0] else None
     options["no_color"] = arguments.no_color
+    options["check_mode"] = arguments.check_mode
 
     return options
 

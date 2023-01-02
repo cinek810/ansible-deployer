@@ -210,6 +210,8 @@ class Runners:
             if tags:
                 command.append("-t")
                 command.append(",".join(tags))
+            if options["check_mode"]:
+                command.append("-C")
             command_env=dict(os.environ, ANSIBLE_STDOUT_CALLBACK="yaml", ANSIBLE_NOCOWS="1",
                              ANSIBLE_LOAD_CALLBACK_PLUGINS="1")
 
