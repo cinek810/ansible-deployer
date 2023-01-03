@@ -47,34 +47,22 @@ class Formatters:
             self.logger.debug(line.decode("utf-8"))
 
     @staticmethod
-    def format_ansible_output(proces_output):
+    def format_ansible_output(process_output: list):
         """Group and format output from ansible execution"""
-        std_out, std_err = proces_output
         std_output = []
         std_warning = []
         std_error = []
         std_complete = []
-        for line in std_out.split(b"\n\n"):
-            dec_line = line.decode("utf-8")
-            if "fatal" in dec_line.lower() or "error" in dec_line.lower():
-                std_error.append(dec_line)
-                std_complete.append(dec_line)
-            elif "warn" in dec_line.lower():
-                std_warning.append(dec_line)
-            else:
-                std_output.append(dec_line)
-                std_complete.append(dec_line)
 
-        for line in std_err.split(b"\n\n"):
-            dec_line = line.decode("utf-8")
-            if "fatal" in dec_line.lower() or "error" in dec_line.lower():
-                std_error.append(dec_line)
-                std_complete.append(dec_line)
-            elif "warn" in dec_line.lower():
-                std_warning.append(dec_line)
+        for line in process_output:
+            if "fatal" in line.lower() or "error" in line.lower():
+                std_error.append(line)
+                std_complete.append(line)
+            elif "warn" in line.lower():
+                std_warning.append(line)
             else:
-                std_output.append(dec_line)
-                std_complete.append(dec_line)
+                std_output.append(line)
+                std_complete.append(line)
 
         return {
             "output": std_output,
