@@ -12,22 +12,18 @@ class Formatters:
     def positive_ansible_output(self, warning: list, output: list, command: str):
         """Log output for a positive case in ansible execution"""
         if warning:
-            for line in warning:
-                self.logger.warning(line)
+            self.logger.warning("\n".join(warning))
         if output:
-            for line in output:
-                self.logger.info(line)
+            self.logger.info("\n".join(output))
         self.logger.info("\"%s\" ran succesfully", " ".join(command))
 
     def negative_ansible_output(self, warning: list, error: list, command: str):
         """Log output for a negative case in ansible execution"""
         if warning:
-            for line in warning:
-                self.logger.warning(line)
+            self.logger.warning("\n".join(warning))
         self.logger.error("\"%s\" failed due to:", " ".join(command))
         if error:
-            for line in error:
-                self.logger.error(line)
+            self.logger.error("\n".join(error))
 
     def format_std_out(self, std_out):
         """Decode standard output to logger.info"""
