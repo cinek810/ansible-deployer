@@ -115,6 +115,7 @@ class Runners:
         """
         playitems = self.get_playitems(config, options)
         host_list = []
+        returned = []
         if not playitems:
             self.logger.critical("No playitems found for requested task %s. Nothing to do.",
                                  options['task'])
@@ -128,9 +129,16 @@ class Runners:
                 command, command_env = self.construct_command(playitem, inventory, config, options)
                 self.logger.debug("Running '%s'.", command)
                 try:
-                    with subprocess.Popen(command, stdout=subprocess.PIPE,
-                                          stderr=subprocess.PIPE, env=command_env) as proc:
-                        returned = proc.communicate()
+                    with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                          env=command_env) as proc:
+
+                        for msg in proc.stdout:
+                            dec_msg = msg.split(b"\n")[0].decode("utf-8")
+                            returned.append(dec_msg)
+                            if options["raw_output"]:
+                                print(dec_msg)
+
+                        proc.communicate()
                         format_obj = Formatters(self.logger)
                         parsed_std = Formatters.format_ansible_output(returned)
                         play_host_list = db_writer.write_records(db_writer.parse_yaml_output(
@@ -141,35 +149,17 @@ class Runners:
                                                                          self.setup_hooks, options,
                                                                          self.start_ts_raw,
                                                                          self.sequence_id)
-                        if options["raw_output"]:
-                            if proc.returncode != 0:
-                                if options["debug"]:
-                                    format_obj.debug_std_out(returned[0])
-                                self.logger.error("'%s' failed due to:", command)
-                                format_obj.format_std_err(returned[1])
-                                self.lock_obj.unlock_inventory(lockpath)
-                                db_writer.finalize_db_write(sequence_records, False)
-                                self.logger.critical("Program will exit now.")
-                                sys.exit(71)
-                            else:
-                                if options["debug"]:
-                                    format_obj.debug_std_err(returned[1])
-                                format_obj.format_std_out(returned[0])
-                                self.logger.info("'%s' ran succesfully", command)
+
+                        if proc.returncode == 0:
+                            format_obj.positive_ansible_output(parsed_std["warning"],
+                                                               parsed_std["output"], command)
                         else:
-                            if options["debug"]:
-                                format_obj.debug_std_out(returned[0])
-                                format_obj.format_std_err(returned[1])
-                            if proc.returncode == 0:
-                                format_obj.positive_ansible_output(parsed_std["warning"],
-                                                                   parsed_std["output"], command)
-                            else:
-                                format_obj.negative_ansible_output(parsed_std["warning"],
-                                                                   parsed_std["error"], command)
-                                self.lock_obj.unlock_inventory(lockpath)
-                                db_writer.finalize_db_write(sequence_records, False)
-                                self.logger.critical("Program will exit now.")
-                                sys.exit(71)
+                            format_obj.negative_ansible_output(parsed_std["warning"],
+                                                               parsed_std["error"], command)
+                            self.lock_obj.unlock_inventory(lockpath)
+                            db_writer.finalize_db_write(sequence_records, False)
+                            self.logger.critical("Program will exit now.")
+                            sys.exit(71)
                 except Exception as exc:
                     self.logger.critical("\"%s\" failed due to:")
                     self.logger.critical(exc)
