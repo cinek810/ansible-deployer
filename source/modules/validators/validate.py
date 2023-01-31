@@ -250,12 +250,8 @@ class Validators:
     @staticmethod
     def expand_option_name(option: str):
         """Expand name of option variable name to option argument name"""
-        if option == "infra":
-            option = "infrastructure"
-        elif option == "raw_output":
-            option = "raw_runner_output"
-        elif option == "conf_val":
-            option = "conf_validation"
+        if option in ["conf_val", "infra", "raw_output"]:
+            option = globalvars.OPTION_EXPANSION[option]
 
         formatted_option = "--" + option.replace("_", "-")
         return formatted_option
