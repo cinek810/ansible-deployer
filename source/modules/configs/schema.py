@@ -194,6 +194,10 @@ SCHEMAS = {
                         "tags": {
                             "type": "list",
                             "required": False
+                        },
+                        "skip_tags": {
+                                "type": "list",
+                                "required": False
                         }
                     }
                 }

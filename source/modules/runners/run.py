@@ -182,6 +182,7 @@ class Runners:
     def get_tags_for_task(config: dict, options: dict):
         """Function to get task's tags"""
         tags = []
+        skip_tags = []
         for task in config["tasks"]["tasks"]:
             if task["name"] == options["task"]:
                 tags = task.get("tags", [])
@@ -189,12 +190,16 @@ class Runners:
         if options["dry_mode"]:
             tags.append("ansible_deployer_dry_mode")
 
-        return tags
+        for task in config["tasks"]["tasks"]:
+            if task["name"] == options["task"]:
+                skip_tags = task.get("skip_tags", [])
+
+        return tags, skip_tags
 
     @staticmethod
     def construct_command(playitem: str, inventory: str, config: dict, options: dict):
         """Create final ansible command from available variables"""
-        tags = Runners.get_tags_for_task(config, options)
+        tags, skip_tags = Runners.get_tags_for_task(config, options)
 
         if "runner" in playitem and playitem["runner"] == "py.test":
             command = ["py.test", "--ansible-inventory", inventory]
@@ -213,6 +218,9 @@ class Runners:
             if tags:
                 command.append("-t")
                 command.append(",".join(tags))
+            if skip_tags:
+                command.append("--skip-tags")
+                command.append(",".join(skip_tags))
             if options["check_mode"]:
                 command.append("-C")
             command_env=dict(os.environ, ANSIBLE_STDOUT_CALLBACK="yaml", ANSIBLE_NOCOWS="1",
