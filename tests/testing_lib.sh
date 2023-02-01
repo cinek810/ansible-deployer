@@ -15,6 +15,22 @@ check_run_ok() {
         fi
 }
 
+check_run_fail() {
+        CMD=$1
+        echo "Check: $CMD"
+        $CMD
+        if [ $? -eq 0 ]
+        then
+		echo "FAILED(Expected failure got return code of 0): ${CMD}"
+		echo "$CMD"
+		eval "$CMD"
+                exit 1
+        else
+                echo "OK - failed as expected"
+        fi
+}
+
+
 check_message_in_output() {
         CMD=$1
         EXPTEXT=$2
