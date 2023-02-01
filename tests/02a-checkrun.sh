@@ -10,6 +10,7 @@ check_run_ok "ansible-deployer run --task task_with_limit --stage testing --infr
 check_run_ok "ansible-deployer run --task tagged_task_true --stage testing --infrastructure testInfra"
 check_run_ok "ansible-deployer verify --task task_exec_bin_true --stage prod --infrastructure testInfra"
 check_run_ok "ansible-deployer run --task skip_task_tagged_task_false --stage testing --infrastructure testInfra"
+check_run_fail "ansible-deployer run --task tagged_task_false --stage testing --infrastructure testInfra"
 
 echo -e "   ___ ____                      _               _\n  / _ \___ \ __ _            ___| |__   ___  ___| | ___ __ _   _ _ __\n | | | |__) / _\` |  _____   / __| '_ \ / _ \/ __| |/ / '__| | | | '_ \ \n | |_| / __/ (_| | |_____| | (__| | | |  __/ (__|   <| |  | |_| | | | |\n  \___/_____\__,_|          \___|_| |_|\___|\___|_|\_\_|   \__,_|_| |_|\n \n  _                 _ _     _               _   _\n (_)_ ____   ____ _| (_) __| |   ___  _ __ | |_(_) ___  _ __  ___\n | | '_ \ \ / / _\` | | |/ _\` |  / _ \| '_ \| __| |/ _ \| '_ \/ __|\n | | | | \ V / (_| | | | (_| | | (_) | |_) | |_| | (_) | | | \__ \ \n |_|_| |_|\_/ \__,_|_|_|\__,_|  \___/| .__/ \__|_|\___/|_| |_|___/\n                                     |_|\n"
 # Non-existent option values
