@@ -94,6 +94,15 @@ tasks:
     tags:
       - tag_false
 
+  - name: skip_task_tagged_task_false
+    play_items:
+      - run_bin
+    allowed_for:
+      - acl_group: root_on_testing_in_testInfra_testInfra2
+    allow_limit: False
+    skip_tags:
+      - tag_false
+
   - name: task_skipping
     play_items:
       - run_skippable
