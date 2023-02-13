@@ -36,29 +36,32 @@ class DbWriter:
                                  table_name, self.db_path, exc)
             sys.exit(104)
 
-    @staticmethod
-    def parse_yaml_output(stream: list, sequence_id: str):
+    def parse_yaml_output(self, stream: list, sequence_id: str):
         """Parse ansible output in yaml format"""
         record_dict = {}
-        for task in stream:
-            splitted = task.split("\n")
-            for no, line in enumerate(splitted):
-                if "TASK" in line:
-                    task_name = line.split("[")[1].split("]")[0]
-                    record_dict[task_name] = {}
-                if "changed" in line:
-                    host_name = line.split("[")[1].split("]")[0]
-                    yaml_string = "\n".join(splitted[no+1:no+11])
-                    record_dict[task_name][host_name] = dict(SCHEMAS["play_item_tasks"])
-                    record_dict[task_name][host_name]["task_name"] = task_name
-                    record_dict[task_name][host_name]["sequence_id"] = sequence_id
-                    record_dict[task_name][host_name]["hostname"] = host_name
-                    for key, value in yaml.safe_load(yaml_string).items():
-                        for schema_key in record_dict[task_name][host_name].keys():
-                            if key == schema_key:
-                                record_dict[task_name][host_name][schema_key] = value
+        try:
+            for task in stream:
+                splitted = task.split("\n")
+                for no, line in enumerate(splitted):
+                    if "TASK" in line:
+                        task_name = line.split("[")[1].split("]")[0]
+                        record_dict[task_name] = {}
+                    if "changed" in line:
+                        host_name = line.split("[")[1].split("]")[0]
+                        yaml_string = "\n".join(splitted[no+1:no+11])
+                        record_dict[task_name][host_name] = dict(SCHEMAS["play_item_tasks"])
+                        record_dict[task_name][host_name]["task_name"] = task_name
+                        record_dict[task_name][host_name]["sequence_id"] = sequence_id
+                        record_dict[task_name][host_name]["hostname"] = host_name
+                        for key, value in yaml.safe_load(yaml_string).items():
+                            for schema_key in record_dict[task_name][host_name].keys():
+                                if key == schema_key:
+                                    record_dict[task_name][host_name][schema_key] = value
+            return record_dict
 
-        return record_dict
+        except Exception as exc:
+            self.logger.critical("Failed parsing output stream to yaml, error was %s", exc)
+            sys.exit(102)
 
     def write_records(self, record_dict: dict):
         """Write multiple records to "play_item_tasks" table"""
