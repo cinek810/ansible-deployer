@@ -46,7 +46,7 @@ class DbWriter:
                     if "TASK" in line:
                         task_name = line.split("[")[1].split("]")[0]
                         record_dict[task_name] = {}
-                    if "changed" in line:
+                    if "changed=true" in line or "changed=false" in line:
                         host_name = line.split("[")[1].split("]")[0]
                         yaml_string = "\n".join(splitted[no+1:no+11])
                         record_dict[task_name][host_name] = dict(SCHEMAS["play_item_tasks"])
