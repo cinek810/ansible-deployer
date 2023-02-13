@@ -48,7 +48,8 @@ class DbWriter:
                         record_dict[task_name] = {}
                     if "changed=true" in line or "changed=false" in line:
                         host_name = line.split("[")[1].split("]")[0]
-                        yaml_string = "\n".join(splitted[no+1:no+11])
+                        yaml_string = "\n".join(splitted[no+1:self.find_end_of_task(
+                                                                        splitted[no+1:], no + 1)])
                         record_dict[task_name][host_name] = dict(SCHEMAS["play_item_tasks"])
                         record_dict[task_name][host_name]["task_name"] = task_name
                         record_dict[task_name][host_name]["sequence_id"] = sequence_id
@@ -62,6 +63,14 @@ class DbWriter:
         except Exception as exc:
             self.logger.critical("Failed parsing output stream to yaml, error was %s", exc)
             sys.exit(102)
+
+    @staticmethod
+    def find_end_of_task(stream_fragment: list, parent_index: int):
+        """Parse list of output elements to find beginning of next task and end of current task."""
+        for no, line in enumerate(stream_fragment):
+            if "changed=true" in line or "changed=false" in line:
+                return parent_index + no
+        return None
 
     def write_records(self, record_dict: dict):
         """Write multiple records to "play_item_tasks" table"""
