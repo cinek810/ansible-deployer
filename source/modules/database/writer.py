@@ -43,8 +43,8 @@ class DbWriter:
             for task in stream:
                 splitted = task.split("\n")
                 for no, line in enumerate(splitted):
-                    if "TASK" in line:
-                        task_name = line.split("[")[1].split("]")[0]
+                    if "TASK" in line or "RUNNING HANDLER" in line:
+                        task_name = line.split("]")[-2].split("[")[-1]
                         record_dict[task_name] = {}
                     if "changed=true" in line or "changed=false" in line:
                         host_name = line.split("[")[1].split("]")[0]
