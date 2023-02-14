@@ -53,22 +53,32 @@ class Formatters:
         std_output = []
         std_warning = []
         std_error = []
+        std_complete = []
         for line in std_out.split(b"\n\n"):
             dec_line = line.decode("utf-8")
             if "fatal" in dec_line.lower() or "error" in dec_line.lower():
                 std_error.append(dec_line)
+                std_complete.append(dec_line)
             elif "warn" in dec_line.lower():
                 std_warning.append(dec_line)
             else:
                 std_output.append(dec_line)
+                std_complete.append(dec_line)
 
         for line in std_err.split(b"\n\n"):
             dec_line = line.decode("utf-8")
             if "fatal" in dec_line.lower() or "error" in dec_line.lower():
                 std_error.append(dec_line)
+                std_complete.append(dec_line)
             elif "warn" in dec_line.lower():
                 std_warning.append(dec_line)
             else:
                 std_output.append(dec_line)
+                std_complete.append(dec_line)
 
-        return std_output, std_warning, std_error
+        return {
+            "output": std_output,
+            "warning": std_warning,
+            "error": std_error,
+            "complete": std_complete
+        }

@@ -132,9 +132,9 @@ class Runners:
                                           stderr=subprocess.PIPE, env=command_env) as proc:
                         returned = proc.communicate()
                         format_obj = Formatters(self.logger)
-                        output, warning, error = Formatters.format_ansible_output(returned)
-                        play_host_list = db_writer.write_records(db_writer.parse_yaml_output(error,
-                                                                 self.sequence_id))
+                        parsed_std = Formatters.format_ansible_output(returned)
+                        play_host_list = db_writer.write_records(db_writer.parse_yaml_output(
+                            parsed_std["complete"], self.sequence_id))
                         for host in play_host_list:
                             host_list.append(host)
                         sequence_records = db_writer.start_sequence_dict(host_list,
@@ -161,9 +161,11 @@ class Runners:
                                 format_obj.debug_std_out(returned[0])
                                 format_obj.format_std_err(returned[1])
                             if proc.returncode == 0:
-                                format_obj.positive_ansible_output(warning, output, command)
+                                format_obj.positive_ansible_output(parsed_std["warning"],
+                                                                   parsed_std["output"], command)
                             else:
-                                format_obj.negative_ansible_output(warning, error, command)
+                                format_obj.negative_ansible_output(parsed_std["warning"],
+                                                                   parsed_std["error"], command)
                                 self.lock_obj.unlock_inventory(lockpath)
                                 db_writer.finalize_db_write(sequence_records, False)
                                 self.logger.critical("Program will exit now.")
