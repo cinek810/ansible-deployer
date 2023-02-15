@@ -2,22 +2,22 @@
 
 SCHEMAS = {
     "sequences": {
-        "sequence_id": "",
-        "hostname": "",
-        "user_id": "",
-        "hooks": "",
-        "task": "",
-        "start": "",
-        "end": "",
-        "host_locked": "",
-        "keep_locked_on": "",
-        "self_setup_on": "",
-        "conf_dir_on": ""
+        "sequence_id": "text",
+        "hostname": "text",
+        "user_id": "text",
+        "hooks": "text",
+        "task": "text",
+        "start": "text",
+        "end": "text",
+        "host_locked": "text",
+        "keep_locked_on": "text",
+        "self_setup_on": "text",
+        "conf_dir_on": "text"
     },
     "play_item_tasks": {
-        "sequence_id": "",
-        "task_name": "",
-        "hostname": "",
-        "task_details": ""
+        "sequence_id": "text",
+        "task_name": "text",
+        "hostname": "text",
+        "task_details": "text"
     }
 }
