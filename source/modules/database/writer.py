@@ -131,9 +131,9 @@ class DbWriter:
         sub_sequence_dict["hooks"] = ", ".join(hook_names)
         sub_sequence_dict["task"] = options["task"]
         sub_sequence_dict["start"] = start_ts_raw
-        sub_sequence_dict["keep_locked_on"] = bool(options["keep_locked"])
-        sub_sequence_dict["self_setup_on"] = bool(options["self_setup"])
-        sub_sequence_dict["conf_dir_on"] = bool(options["conf_dir"])
+        sub_sequence_dict["keep_locked_on"] = str(bool(options["keep_locked"]))
+        sub_sequence_dict["self_setup_on"] = str(bool(options["self_setup"]))
+        sub_sequence_dict["conf_dir_on"] = str(bool(options["conf_dir"]))
 
         return sub_sequence_dict
 
@@ -144,7 +144,7 @@ class DbWriter:
         for params in sequence_dict.values():
             record_list = []
             params["end"] = end_ts
-            params["host_locked"] = host_locked
+            params["host_locked"] = str(bool(host_locked))
             for params2 in params.values():
                 record_list.append(params2)
             self.write_record("sequences", record_list)
