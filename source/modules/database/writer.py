@@ -42,22 +42,20 @@ class DbWriter:
         """Parse ansible output in yaml format"""
         record_dict = {}
         try:
-            for task in stream:
-                splitted = task.split("\n")
-                for no, line in enumerate(splitted):
-                    if "TASK" in line or "RUNNING HANDLER" in line:
-                        task_name = line.split("]")[-2].split("[")[-1]
-                        record_dict[task_name] = {}
-                    if "changed=true" in line or "changed=false" in line:
-                        host_name = line.split("[")[1].split("]")[0]
-                        yaml_string = "\n".join(splitted[no+1:self.find_end_of_task(
-                                                                        splitted[no+1:], no + 1)])
-                        record_dict[task_name][host_name] = dict(SCHEMAS["play_item_tasks"])
-                        record_dict[task_name][host_name]["task_name"] = task_name
-                        record_dict[task_name][host_name]["sequence_id"] = sequence_id
-                        record_dict[task_name][host_name]["hostname"] = host_name
-                        record_dict[task_name][host_name]["task_details"] = \
-                            yaml.safe_load(yaml_string)
+            for no, line in enumerate(stream):
+                if "TASK" in line or "RUNNING HANDLER" in line:
+                    task_name = line.split("]")[-2].split("[")[-1]
+                    record_dict[task_name] = {}
+                if "changed=true" in line or "changed=false" in line:
+                    host_name = line.split("[")[1].split("]")[0]
+                    yaml_string = "\n".join(stream[no+1:self.find_end_of_task(
+                                                                    stream[no+1:], no + 1)])
+                    record_dict[task_name][host_name] = dict(SCHEMAS["play_item_tasks"])
+                    record_dict[task_name][host_name]["task_name"] = task_name
+                    record_dict[task_name][host_name]["sequence_id"] = sequence_id
+                    record_dict[task_name][host_name]["hostname"] = host_name
+                    record_dict[task_name][host_name]["task_details"] = \
+                        yaml.safe_load(yaml_string)
             return record_dict
         except Exception as exc:
             self.logger.critical("Failed parsing output stream to yaml, error was %s", exc)
@@ -67,7 +65,7 @@ class DbWriter:
     def find_end_of_task(stream_fragment: list, parent_index: int):
         """Parse list of output elements to find beginning of next task and end of current task."""
         for no, line in enumerate(stream_fragment):
-            if "changed=true" in line or "changed=false" in line:
+            if "changed=true" in line or "changed=false" in line or not line:
                 return parent_index + no
         return None
 
