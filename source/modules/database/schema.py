@@ -18,15 +18,6 @@ SCHEMAS = {
         "sequence_id": "",
         "task_name": "",
         "hostname": "",
-        "cmd": "",
-        "start": "",
-        "end": "",
-        "delta": "",
-        "rc": "",
-        "msg": "",
-        "stderr": "",
-        "stderr_lines": "",
-        "stdout": "",
-        "stdout_lines": ""
+        "task_details": ""
     }
 }
