@@ -1,5 +1,6 @@
 """Module for writing data to existing database"""
 from itertools import chain
+import json
 import sys
 import os
 import datetime
@@ -76,19 +77,23 @@ class DbWriter:
         for hosts in record_dict.values():
             for host, records in hosts.items():
                 host_list.append(host)
-                record_list = []
-                for param in records.values():
-                    record_list.append(param)
-                self.write_record("play_item_tasks", record_list)
+                self.write_record("play_item_tasks", self.record_with_json([*records.values()]))
 
         return host_list
 
+    @staticmethod
+    def record_with_json(record: list):
+        """Replace dict with json in record list"""
+        new_record = record[:-1]
+        new_record.append(json.dumps(record[-1]))
+        return new_record
+
     def write_record(self, table_name, record):
         """Write single record to any table"""
-        base_format = str(len(record) * "'{}', ").strip(", ")
+        base_format = str(len(record) * "?, ").strip(", ")
         insert_string = f"INSERT INTO {table_name} VALUES ({base_format})"
         try:
-            self.cursor.execute(insert_string.format(*record))
+            self.cursor.execute(insert_string, record)
         except Exception as exc:
             self.logger.critical("Failed writing record to database %s, error was %s",
                                  self.db_path, exc)
