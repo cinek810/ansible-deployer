@@ -55,12 +55,9 @@ class DbWriter:
                         record_dict[task_name][host_name]["task_name"] = task_name
                         record_dict[task_name][host_name]["sequence_id"] = sequence_id
                         record_dict[task_name][host_name]["hostname"] = host_name
-                        for key, value in yaml.safe_load(yaml_string).items():
-                            for schema_key in record_dict[task_name][host_name].keys():
-                                if key == schema_key:
-                                    record_dict[task_name][host_name][schema_key] = value
+                        record_dict[task_name][host_name]["task_details"] = \
+                            yaml.safe_load(yaml_string)
             return record_dict
-
         except Exception as exc:
             self.logger.critical("Failed parsing output stream to yaml, error was %s", exc)
             sys.exit(102)
