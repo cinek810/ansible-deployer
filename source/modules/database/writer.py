@@ -1,4 +1,5 @@
 """Module for writing data to existing database"""
+from itertools import chain
 import sys
 import os
 import datetime
@@ -19,15 +20,15 @@ class DbWriter:
 
     def create_tables(self):
         """Create database tables for all keys in schema"""
-        for key in SCHEMAS:
-            self.create_table(key)
+        for table, columns in SCHEMAS.items():
+            self.create_table(table, columns)
 
-    def create_table(self, table_name: str):
+    def create_table(self, table_name: str, columns: dict):
         """Create single database table"""
-        base_format = str(len(SCHEMAS[table_name]) * "'{}', ").strip(", ")
+        base_format = str(len(columns) * "'{}' '{}', ").strip(", ")
         table_string = f'''CREATE TABLE {table_name} ({base_format})'''
         try:
-            self.cursor.execute(table_string.format(*SCHEMAS[table_name].keys()))
+            self.cursor.execute(table_string.format(*list(chain(*columns.items()))))
             self.logger.debug("Created table %s in database %s .", table_name, self.db_path)
         except sqlite3.OperationalError:
             self.logger.debug("Table %s already exists in database %s .", table_name, self.db_path)
