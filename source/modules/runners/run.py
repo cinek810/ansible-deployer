@@ -140,7 +140,7 @@ class Runners:
 
                         proc.communicate()
                         format_obj = Formatters(self.logger)
-                        parsed_std = Formatters.format_ansible_output(returned)
+                        parsed_std = format_obj.format_ansible_output(returned)
                         play_host_list = db_writer.write_records(db_writer.parse_yaml_output(
                             parsed_std["complete"], self.sequence_id))
                         for host in play_host_list:
