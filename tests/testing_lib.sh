@@ -88,3 +88,19 @@ check_file_startingwith_in_dir() {
 		exit 1
 	fi
 }
+
+check_message_with_newline_in_output() {
+        CMD=$1
+        EXPTEXT=$2
+        echo "Check: $CMD"
+        eval "$CMD |& grep -zP '$EXPTEXT'"
+        if [ $? -eq 0 ]
+        then
+                echo "OK: '${CMD}' returned '${EXPTEXT}'"
+        else
+                echo "FAILED: '${CMD}' didn't return '${EXPTEXT}'"
+		echo $CMD
+		eval $CMD
+                exit 1
+        fi
+}
