@@ -47,9 +47,22 @@ class DbSetup:
         try:
             connection = sqlite3.connect(self.db_path)
             self.logger.debug("Connection opened to database: %s .", self.db_path)
+            db_perm_string = f"0o{''.join(str(oct(os.stat(self.db_path).st_mode))[-4:])}"
+            if db_perm_string != self.conf["permissions"]["parent_workdir"]:
+                self.change_db_permissions()
         except Exception as exc:
             self.logger.critical("Failed to connect to database: %s error was: %s.", self.db_path,
                                  exc)
             sys.exit(101)
 
         return connection, self.db_path
+
+    def change_db_permissions(self):
+        """Ensure correct permissions are set when database file is created"""
+        try:
+            os.chmod(self.db_path, int(self.conf["permissions"]["parent_workdir"], 8))
+            self.logger.debug("Database %s permissions changed.", self.db_path)
+        except Exception as exc:
+            self.logger.critical("Failed to change permissions of database: %s error was: %s",
+                                 self.db_path, exc)
+            sys.exit(101)
