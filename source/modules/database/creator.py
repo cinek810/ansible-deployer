@@ -27,7 +27,13 @@ class DbSetup:
         db_dir = os.path.dirname(self.db_path)
         try:
             os.mkdir(db_dir)
-            self.logger.debug("Successfully created database directory: %s .", db_dir)
+            try:
+                os.chmod(db_dir, int(self.conf["permissions"]["parent_workdir"], 8))
+                self.logger.debug("Successfully created database directory: %s .", db_dir)
+            except Exception as exc:
+                self.logger.critical("Failed to change permissions of database directory: %s error"
+                                     " was: %s", db_dir, exc)
+                sys.exit(100)
         except FileExistsError:
             self.logger.debug("Database directory already exists: %s .", db_dir)
         except Exception as exc:
