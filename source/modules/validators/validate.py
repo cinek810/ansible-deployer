@@ -198,8 +198,7 @@ class Validators:
                 elif option == "limit":
                     for item in config["tasks"]["tasks"]:
                         if item["name"] == options["task"]:
-                            allow_limit = item.get("allow_limit", False)
-                            if allow_limit:
+                            if self.get_limit_flag(options, item):
                                 selected_items["limit"] = options["limit"]
                                 break
                     else:
@@ -255,3 +254,10 @@ class Validators:
 
         formatted_option = "--" + option.replace("_", "-")
         return formatted_option
+
+    @staticmethod
+    def get_limit_flag(options: dict, task: dict):
+        """Evaluate if runner option --limit should be allowed for this task based on cli options"""
+        if options["check_mode"]:
+            return True
+        return task.get("allow_limit", False)
