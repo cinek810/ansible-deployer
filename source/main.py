@@ -123,7 +123,7 @@ def main():
 
     if options["subcommand"] in ("run", "verify"):
         workdir = misc.create_workdir(start_ts, configuration.conf, logger.logger)
-        Loggers.set_logging_to_file(logger, workdir, start_ts, configuration.conf)
+        log_path = Loggers.set_logging_to_file(logger, workdir, start_ts, configuration.conf)
         logger.flush_memory_handler(True, options["syslog"])
     else:
         logger.flush_memory_handler(False, options["syslog"])
@@ -155,7 +155,7 @@ def main():
                 logger.logger.critical("Task forbidden")
                 sys.exit(errno.EPERM)
             runner = Runners(logger.logger, lock, workdir, start_ts_raw,
-                             config["tasks"]["setup_hooks"])
+                             config["tasks"]["setup_hooks"], log_path)
             if not options["self_setup"]:
                 runner.setup_ansible(selected_items["commit"], configuration.conf_dir)
             lock.lock_inventory(lockpath)

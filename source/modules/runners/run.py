@@ -3,18 +3,20 @@
 import os
 import sys
 import subprocess
+from ansible_deployer.modules.globalvars import ANSIBLE_DEFAULT_CALLBACK_PLUGIN_PATH
 from ansible_deployer.modules.outputs.formatting import Formatters
 
 class Runners:
     """Class handling ansible hooks and ansible plays execution"""
 
-    def __init__(self, logger, lock_obj, workdir, start_ts_raw, setup_hooks):
+    def __init__(self, logger, lock_obj, workdir, start_ts_raw, setup_hooks, log_path):
         self.logger = logger
         self.lock_obj = lock_obj
         self.workdir = workdir
         self.start_ts_raw = start_ts_raw
         self.setup_hooks = setup_hooks
         self.sequence_id = os.path.basename(self.workdir)
+        self.log_path = log_path
 
     @staticmethod
     def reassign_commit_and_workdir(commit: str, workdir: str):
@@ -188,8 +190,7 @@ class Runners:
 
         return tags, skip_tags
 
-    @staticmethod
-    def construct_command(playitem: str, inventory: str, config: dict, options: dict):
+    def construct_command(self, playitem: str, inventory: str, config: dict, options: dict):
         """Create final ansible command from available variables"""
         tags, skip_tags = Runners.get_tags_for_task(config, options)
 
@@ -216,6 +217,14 @@ class Runners:
             if options["check_mode"]:
                 command.append("-C")
             command_env=dict(os.environ, ANSIBLE_STDOUT_CALLBACK="yaml", ANSIBLE_NOCOWS="1",
-                             ANSIBLE_LOAD_CALLBACK_PLUGINS="1")
+                             ANSIBLE_LOAD_CALLBACK_PLUGINS="1", LOG_PLAYS_PATH=self.log_path,
+                             ANSIBLE_CALLBACKS_ENABLED="log_plays_adjusted",
+                             ANSIBLE_CALLBACK_PLUGINS=self.append_to_ansible_callbacks_path())
 
         return command, command_env
+
+    @staticmethod
+    def append_to_ansible_callbacks_path():
+        """Create final searchable path for ansible callback plugins"""
+        plugin_path = os.path.join(os.path.realpath(__file__).rsplit(os.sep, 3)[0], "plugins")
+        return f'{ANSIBLE_DEFAULT_CALLBACK_PLUGIN_PATH}:{plugin_path}'
