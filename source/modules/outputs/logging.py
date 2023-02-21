@@ -48,6 +48,8 @@ class Loggers:
         file_handler.setLevel(logging.DEBUG)
         self.logger.addHandler(file_handler)
 
+        return log_path
+
     def flush_memory_handler(self, subcommand_flag: bool, syslog: bool):
         """Flush initial log messages from memory handler to logfile"""
         if syslog:

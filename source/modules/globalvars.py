@@ -10,3 +10,5 @@ OPTION_EXPANSION = {
     "raw_output": "raw_runner_output",
     "conf_val": "conf_validation"
 }
+ANSIBLE_DEFAULT_CALLBACK_PLUGIN_PATH = '~/.ansible/plugins/callback:/usr/share/ansible/plugins/' \
+                                       'callback'
