@@ -5,7 +5,6 @@ import sys
 import os
 import datetime
 import sqlite3
-import yaml
 from ansible_deployer.modules.database.schema import SCHEMAS
 
 
@@ -38,25 +37,15 @@ class DbWriter:
                                  table_name, self.db_path, exc)
             sys.exit(104)
 
-    def parse_yaml_output(self, stream: list, sequence_id: str):
-        """Parse ansible output in yaml format"""
-        record_dict = {}
+    def parse_yaml_output_for_hosts(self, stream: list, sequence_id: str):
+        """Get all hosts used in runner from runner output"""
+        # TODO should be taken from better source
+        record_hosts = []
         try:
-            for no, line in enumerate(stream):
-                if "TASK" in line or "RUNNING HANDLER" in line:
-                    task_name = line.split("]")[-2].split("[")[-1]
-                    record_dict[task_name] = {}
+            for line in stream:
                 if "changed=true" in line or "changed=false" in line:
-                    host_name = line.split("[")[1].split("]")[0]
-                    yaml_string = "\n".join(stream[no+1:self.find_end_of_task(
-                                                                    stream[no+1:], no + 1)])
-                    record_dict[task_name][host_name] = dict(SCHEMAS["play_item_tasks"])
-                    record_dict[task_name][host_name]["task_name"] = task_name
-                    record_dict[task_name][host_name]["sequence_id"] = sequence_id
-                    record_dict[task_name][host_name]["hostname"] = host_name
-                    record_dict[task_name][host_name]["task_details"] = \
-                        yaml.safe_load(yaml_string)
-            return record_dict
+                    record_hosts.append(line.split("[")[1].split("]")[0])
+            return list(set(record_hosts))
         except Exception as exc:
             self.logger.critical("Failed parsing output stream to yaml, error was %s", exc)
             sys.exit(102)

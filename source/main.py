@@ -154,14 +154,14 @@ def main():
             if not validators.verify_task_permissions(selected_items, user_groups, config):
                 logger.logger.critical("Task forbidden")
                 sys.exit(errno.EPERM)
-            runner = Runners(logger.logger, lock, workdir, start_ts_raw,
-                             config["tasks"]["setup_hooks"], log_path)
-            if not options["self_setup"]:
-                runner.setup_ansible(selected_items["commit"], configuration.conf_dir)
-            lock.lock_inventory(lockpath)
             db_connector, db_path = DbSetup.connect_to_db(DbSetup(logger.logger, start_ts,
                                                           configuration.conf, options))
             db_writer = DbWriter(logger.logger, db_connector, db_path)
+            runner = Runners(logger.logger, lock, workdir, start_ts_raw,
+                             config["tasks"]["setup_hooks"], log_path, db_path)
+            if not options["self_setup"]:
+                runner.setup_ansible(selected_items["commit"], configuration.conf_dir)
+            lock.lock_inventory(lockpath)
             sequence_record_dict = runner.run_playitem(config, options, inv_file, lockpath,
                                                        db_writer)
             lock.unlock_inventory(lockpath)
