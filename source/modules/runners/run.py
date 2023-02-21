@@ -9,7 +9,7 @@ from ansible_deployer.modules.outputs.formatting import Formatters
 class Runners:
     """Class handling ansible hooks and ansible plays execution"""
 
-    def __init__(self, logger, lock_obj, workdir, start_ts_raw, setup_hooks, log_path):
+    def __init__(self, logger, lock_obj, workdir, start_ts_raw, setup_hooks, log_path, db_path):
         self.logger = logger
         self.lock_obj = lock_obj
         self.workdir = workdir
@@ -17,6 +17,7 @@ class Runners:
         self.setup_hooks = setup_hooks
         self.sequence_id = os.path.basename(self.workdir)
         self.log_path = log_path
+        self.db_path = db_path
 
     @staticmethod
     def reassign_commit_and_workdir(commit: str, workdir: str):
@@ -143,10 +144,8 @@ class Runners:
                         proc.communicate()
                         format_obj = Formatters(self.logger)
                         parsed_std = format_obj.format_ansible_output(returned)
-                        play_host_list = db_writer.write_records(db_writer.parse_yaml_output(
-                            parsed_std["complete"], self.sequence_id))
-                        for host in play_host_list:
-                            host_list.append(host)
+                        host_list = db_writer.parse_yaml_output_for_hosts(parsed_std["complete"],
+                                                                self.sequence_id)
                         sequence_records = db_writer.start_sequence_dict(host_list,
                                                                          self.setup_hooks, options,
                                                                          self.start_ts_raw,
@@ -218,8 +217,9 @@ class Runners:
                 command.append("-C")
             command_env=dict(os.environ, ANSIBLE_STDOUT_CALLBACK="yaml", ANSIBLE_NOCOWS="1",
                              ANSIBLE_LOAD_CALLBACK_PLUGINS="1", LOG_PLAYS_PATH=self.log_path,
-                             ANSIBLE_CALLBACKS_ENABLED="log_plays_adjusted",
-                             ANSIBLE_CALLBACK_PLUGINS=self.append_to_ansible_callbacks_path())
+                             ANSIBLE_CALLBACKS_ENABLED="log_plays_adjusted,sqlite_deployer",
+                             ANSIBLE_CALLBACK_PLUGINS=self.append_to_ansible_callbacks_path(),
+                             SQLITE_PATH=self.db_path, SEQUENCE_ID=self.sequence_id)
 
         return command, command_env
 
