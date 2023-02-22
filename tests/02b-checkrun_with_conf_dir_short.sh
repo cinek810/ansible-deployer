@@ -58,6 +58,8 @@ check_message_in_output "ansible-deployer run -t task_without_limit -s testing -
 check_message_in_output "ansible-deployer run -t task_exec_bin_true -s prod -i testInfra -l testHost1 --conf-dir=/etc/alternate-deployer-dir" "\[CRITICAL\]: Limit testHost1 is not available for task task_exec_bin_true."
 ## Multiple hosts in limit
 check_run_ok "ansible-deployer run -t task_with_limit -s testing -i testInfra2 -l xyzHosts --conf-dir=/etc/alternate-deployer-dir"
+## --check-mode overriding --limit disabling
+check_run_ok "ansible-deployer run -t task_without_limit -s testing -i testInfra -l testHost1 -C --conf-dir=/etc/alternate-deployer-dir"
 
 # Check if deployer exits on 1st play item fail
 check_message_in_output "ansible-deployer run -t task_with_ansible_fail -s testing -i testInfra --conf-dir=/etc/alternate-deployer-dir" "\[ERROR\]: \"ansible-playbook -v -i ./test_infra1_inv.yaml runll.yaml\" failed due to"
