@@ -21,7 +21,7 @@ check_message_in_output "ansible-deployer verify -t task_exec_bin_true -i testIn
 
 check_message_in_output "ansible-deployer -t task_exec_bin_true -i testInfra" "\[CRITICAL\]: First positional argument (subcommand) is required! Available commands are: run, lock, unlock, verify, show."
 
-check_message_in_output "ansible-deployer verify -t task_exec_bin_true -i testInfra -s prod -c testCommit" "commit is not supported by verify"
+check_message_in_output "ansible-deployer verify -t task_exec_bin_true -i testInfra -s prod -c testCommit" "Option --commit is not supported by verify"
 check_message_in_output "ansible-deployer verify -t task_exec_bin_true -i testInfra -s prod -C" "Option --check-mode is not supported by verify"
 check_message_in_output "ansible-deployer verify -t task_exec_bin_true -i testInfra -s prod -D" "Option --dry-mode is not supported by verify"
 check_message_in_output "ansible-deployer lock -t task_exec_bin_true -i testInfra" "\[ERROR\]: Option --task is not supported by lock"
