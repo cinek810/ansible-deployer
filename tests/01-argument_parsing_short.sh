@@ -22,6 +22,8 @@ check_message_in_output "ansible-deployer verify -t task_exec_bin_true -i testIn
 check_message_in_output "ansible-deployer -t task_exec_bin_true -i testInfra" "\[CRITICAL\]: First positional argument (subcommand) is required! Available commands are: run, lock, unlock, verify, show."
 
 check_message_in_output "ansible-deployer verify -t task_exec_bin_true -i testInfra -s prod -c testCommit" "commit is not supported by verify"
+check_message_in_output "ansible-deployer verify -t task_exec_bin_true -i testInfra -s prod -C" "Option --check-mode is not supported by verify"
+check_message_in_output "ansible-deployer verify -t task_exec_bin_true -i testInfra -s prod -D" "Option --dry-mode is not supported by verify"
 check_message_in_output "ansible-deployer lock -t task_exec_bin_true -i testInfra" "\[ERROR\]: Option --task is not supported by lock"
 check_message_in_output "ansible-deployer lock -t task_exec_bin_true -i testInfra -s prod" "\[ERROR\]: Option --task is not supported by lock"
 check_message_in_output "ansible-deployer lock -t task_exec_bin_true -s prod" "\[ERROR\]: Option --infrastructure is required for lock"
@@ -70,9 +72,7 @@ check_run_ok "ansible-deployer run --conf-validation -t task_with_limit -s testi
 check_run_ok "ansible-deployer verify --conf-validation -t task_with_limit -s testing -i testInfra -l testHost1"
 check_run_ok "ansible-deployer run --conf-validation -t task_exec_bin_true -s prod -i testInfra -c test_version"
 check_run_ok "ansible-deployer run -C -t task_exec_bin_true -s prod -i testInfra"
-check_run_ok "ansible-deployer verify -C -t task_exec_bin_true -s prod -i testInfra"
 check_run_ok "ansible-deployer run -D -t task_exec_bin_true -s prod -i testInfra"
-check_run_ok "ansible-deployer verify -D -t task_exec_bin_true -s prod -i testInfra"
 check_run_ok "ansible-deployer lock --conf-validation -s prod -i testInfra"
 check_run_ok "ansible-deployer unlock --conf-validation -s prod -i testInfra"
 check_run_ok "ansible-deployer show"
