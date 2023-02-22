@@ -22,6 +22,8 @@ check_message_in_output "ansible-deployer verify --task task_exec_bin_true --inf
 check_message_in_output "ansible-deployer --task task_exec_bin_true --infrastructure testInfra" "\[CRITICAL\]: First positional argument (subcommand) is required! Available commands are: run, lock, unlock, verify, show."
 
 check_message_in_output "ansible-deployer verify --task task_exec_bin_true --infrastructure testInfra --stage prod --commit testCommit" "Option --commit is not supported by verify"
+check_message_in_output "ansible-deployer verify --task task_exec_bin_true --infrastructure testInfra --stage prod --check-mode" "Option --check-mode is not supported by verify"
+check_message_in_output "ansible-deployer verify --task task_exec_bin_true --infrastructure testInfra --stage prod --dry-mode" "Option --dry-mode is not supported by verify"
 check_message_in_output "ansible-deployer lock --task task_exec_bin_true --infrastructure testInfra" "\[ERROR\]: Option --task is not supported by lock"
 check_message_in_output "ansible-deployer lock --task task_exec_bin_true --infrastructure testInfra --stage prod" "\[ERROR\]: Option --task is not supported by lock"
 check_message_in_output "ansible-deployer lock --task task_exec_bin_true --stage prod" "\[ERROR\]: Option --infrastructure is required for lock"
@@ -70,9 +72,7 @@ check_run_ok "ansible-deployer run --conf-validation --task task_with_limit --st
 check_run_ok "ansible-deployer verify --conf-validation --task task_with_limit --stage testing --infrastructure testInfra --limit testHost1"
 check_run_ok "ansible-deployer run --conf-validation --task task_exec_bin_true --stage prod --infrastructure testInfra --commit test_version"
 check_run_ok "ansible-deployer run --check-mode --task task_exec_bin_true --stage prod --infrastructure testInfra"
-check_run_ok "ansible-deployer verify --check-mode --task task_exec_bin_true --stage prod --infrastructure testInfra"
 check_run_ok "ansible-deployer run --dry-mode --task task_exec_bin_true --stage prod --infrastructure testInfra"
-check_run_ok "ansible-deployer verify --dry-mode --task task_exec_bin_true --stage prod --infrastructure testInfra"
 check_run_ok "ansible-deployer lock --conf-validation --stage prod --infrastructure testInfra"
 check_run_ok "ansible-deployer unlock --conf-validation --stage prod --infrastructure testInfra"
 check_run_ok "ansible-deployer show"
