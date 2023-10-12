@@ -7,7 +7,7 @@ version: 2.1
 jobs:
   prepare_env:
     docker:
-      - image: almalinux
+      - image: almalinux:8
     resource_class: small
     steps:
 #      - run:
