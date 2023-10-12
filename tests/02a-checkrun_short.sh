@@ -68,7 +68,7 @@ check_message_with_newline_in_output "ansible-deployer run -t task_with_ansible_
 
 echo -e "   ___ ____                      _               _                           _                _\n  / _ \___ \ __ _            ___| |__   ___  ___| | ___ __ _   _ _ __    ___| |__   ___  _ __| |_\n | | | |__) / _\` |  _____   / __| '_ \ / _ \/ __| |/ / '__| | | | '_ \  / __| '_ \ / _ \| '__| __|\n | |_| / __/ (_| | |_____| | (__| | | |  __/ (__|   <| |  | |_| | | | | \__ \ | | | (_) | |  | |_\n  \___/_____\__,_|          \___|_| |_|\___|\___|_|\_\_|   \__,_|_| |_| |___/_| |_|\___/|_|   \__|\n \n  _ _           _ _                 _   _\n | (_)_ __ ___ (_) |_    ___  _ __ | |_(_) ___  _ __\n | | | '_ \` _ \| | __|  / _ \| '_ \| __| |/ _ \| '_ \ \n | | | | | | | | | |_  | (_) | |_) | |_| | (_) | | | |\n |_|_|_| |_| |_|_|\__|  \___/| .__/ \__|_|\___/|_| |_|\n                             |_|\n"
 # Check --limit option
-check_message_in_output "ansible-deployer run -t task_with_limit -s testing -i testInfra2 -l xyzHost4" "ERROR\! Specified hosts and/or --limit does not match any hosts"
+check_message_in_output "ansible-deployer run -t task_with_limit -s testing -i testInfra2 -l xyzHost4" "ERROR\! Specified inventory, host pattern and/or --limit leaves us with no hosts to target."
 check_message_in_output "ansible-deployer run -t task_without_limit -s testing -i testInfra -l testHost1" "\[CRITICAL\]: Limit testHost1 is not available for task task_without_limit."
 check_message_in_output "ansible-deployer run -t task_exec_bin_true -s prod -i testInfra -l testHost1" "\[CRITICAL\]: Limit testHost1 is not available for task task_exec_bin_true."
 ## Multiple hosts in limit
