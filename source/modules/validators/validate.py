@@ -161,8 +161,9 @@ class Validators:
                     for elem in item["allowed_for"]:
                         available_commits = elem.get("commit", [])
                         for commit in available_commits:
-                            if re.fullmatch(commit, options["commit"]):
-                                commit_id = commit
+                            commit_id = re.fullmatch(commit, options["commit"])
+                            if commit_id:
+                                commit_id = commit_id.group()
                                 self.logger.debug("Using commit: %s .", commit_id)
                                 break
                         else:
