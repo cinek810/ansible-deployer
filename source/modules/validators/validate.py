@@ -142,13 +142,12 @@ class Validators:
                                                      infra["name"])
                                 sys.exit(59)
                             else:
-                                ret = options["self_setup"]
+                                return options["self_setup"]
         else:
             self.logger.critical("Provided --self-setup path %s does not exist!",
                                  options["self_setup"])
             sys.exit(59)
-
-        return ret
+        return None
 
     def validate_commit(self, options: dict, config: dict):
         """Function to validate commit value against config and assign final value"""
