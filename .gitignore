@@ -130,3 +130,6 @@ dmypy.json
 
 # Ignore files from ansible-deploy execution:
 ansible-deploy_execution*log
+
+.idea
+worktrees/
