@@ -27,7 +27,7 @@ class CallbackModule(CallbackBase):
     CALLBACK_NEEDS_WHITELIST = True
 
     TIME_FORMAT = "%b %d %Y %H:%M:%S"
-    MSG_FORMAT = "%(now)s - %(playbook)s - %(task_name)s - %(category)s\n%(data)s\n\n"
+    MSG_FORMAT = "%(now)s - %(host)s - %(playbook)s - %(task_name)s - %(category)s\n\n"
 
     def __init__(self):
 
@@ -62,6 +62,7 @@ class CallbackModule(CallbackBase):
             self.MSG_FORMAT
             % {
                 "now": now,
+                "host": result._host.name,
                 "playbook": self.playbook,
                 "task_name": result._task.name,
                 "category": category,
