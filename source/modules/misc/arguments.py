@@ -68,6 +68,8 @@ class CliInput:
                             'Provide name of runner stdout callback plugin you would like to use.')
         parser.add_argument("--runner-plugins", nargs=1, default=[None], metavar='TASK_NAME',
                             help='Provide comma-separated list of plugins to enable.')
+        parser.add_argument("--runner-verbosity", nargs=1, default=[1], metavar='N',
+                            help='Set runner verbosity to N*v.')
 
         return parser
 
@@ -128,6 +130,8 @@ class CliInput:
                                                                          print_fail, print_end)
         options["runner_plugins"] = self.validate_ansible_callback(
             arguments.runner_plugins[0], print_fail, print_end)
+        options["runner_verb"] = self.validate_integer(arguments.runner_verbosity[0], print_fail,
+                                                       print_end)
 
         return options
 
@@ -163,3 +167,11 @@ class CliInput:
                 sys.exit(57)
         else:
             return None
+
+    @staticmethod
+    def validate_integer(number: int, print_fail: str, print_end: str) -> Optional[int]:
+        try:
+            return number + 0
+        except TypeError:
+            print(f"{print_fail}[CRITICAL]: Not an integer!.{print_end}")
+            sys.exit(57)

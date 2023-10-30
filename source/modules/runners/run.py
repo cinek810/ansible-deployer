@@ -211,7 +211,7 @@ class Runners:
             command.append("./"+playitem["file"])
             command_env = os.environ
         else:
-            command = ["ansible-playbook", "-v", "-i", inventory, playitem["file"]]
+            command = ["ansible-playbook", "-i", inventory, playitem["file"]]
             if options["limit"]:
                 command.append("-l")
                 command.append(options["limit"])
@@ -223,6 +223,9 @@ class Runners:
                 command.append(",".join(skip_tags))
             if options["check_mode"]:
                 command.append("-C")
+
+        if options["runner_verb"]:
+            command.append(f'-{"v"*options["runner_verb"]}')
 
         return command
 
