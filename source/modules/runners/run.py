@@ -227,6 +227,9 @@ class Runners:
         if options["runner_verb"]:
             command.append(f'-{"v"*options["runner_verb"]}')
 
+        if options["runner_opts"]:
+            command.append(options["runner_opts"])
+
         return command
 
     def construct_env(self, options: dict, callback_settings: dict) -> dict:

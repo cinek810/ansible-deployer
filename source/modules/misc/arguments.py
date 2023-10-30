@@ -1,4 +1,5 @@
 from argparse import ArgumentParser, Namespace
+from re import fullmatch
 from typing import Optional, Tuple
 import os
 import sys
@@ -70,6 +71,8 @@ class CliInput:
                             help='Provide comma-separated list of plugins to enable.')
         parser.add_argument("--runner-verbosity", nargs=1, default=[1], metavar='N',
                             help='Set runner verbosity to N*v.')
+        parser.add_argument("--runner-options", nargs=1, default=[None], metavar='OPT_STRING',
+                            help='Quote-enclosed raw string of flags to be passed.')
 
         return parser
 
@@ -132,6 +135,8 @@ class CliInput:
             arguments.runner_plugins[0], print_fail, print_end)
         options["runner_verb"] = self.validate_integer(arguments.runner_verbosity[0], print_fail,
                                                        print_end)
+        options["runner_opts"] = self.validate_option_string(arguments.runner_options[0],
+                                                             print_fail, print_end)
 
         return options
 
@@ -175,3 +180,14 @@ class CliInput:
         except TypeError:
             print(f"{print_fail}[CRITICAL]: Not an integer!.{print_end}")
             sys.exit(57)
+
+    @staticmethod
+    def validate_option_string(options: str, print_fail: str, print_end: str) -> Optional[str]:
+        if options:
+            if isinstance(options, str) and fullmatch(r"[ -A-za-z0-9]+", options):
+                return options
+
+            print(f"{print_fail}[CRITICAL]: Invalid fromat!.{print_end}")
+            sys.exit(57)
+        else:
+            return None
