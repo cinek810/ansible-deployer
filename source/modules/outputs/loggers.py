@@ -9,3 +9,8 @@ class AppLogger(AnsibleDeployerLogger):
         self.add_syslog_handler()
         self.add_memory_handler()
         self.add_console_handler()
+
+
+class RunLogger(AnsibleDeployerLogger):
+    def __init__(self, name: str, options: dict):
+        super().__init__(name, options)
