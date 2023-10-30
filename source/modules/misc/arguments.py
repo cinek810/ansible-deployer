@@ -46,8 +46,6 @@ class CliInput:
                                  ' non-binarized exec')
         parser.add_argument("--version", "-v", default=False, action="store_true",
                             help='Display app version and exit.')
-        parser.add_argument("--raw-runner-output", default=False, action="store_true",
-                            help='Print original messages in real time during runner execution.')
         parser.add_argument("--self-setup", nargs=1, default=[None], metavar="LOCAL_SETUP_PATH",
                             help='Setup repo outside of workdir in requested path. This option'
                                  ' applies only to infrastructures with allow_user_checkout enabled'
@@ -61,6 +59,8 @@ class CliInput:
                             help='Execute default runner (ansible-playbook) with'
                                  ' "ansible_deployer_dry_mode" tag, triggering only required'
                                  ' variable validation in pre_tasks. This tag is not predefined!')
+        parser.add_argument("--runner-raw-output", default=False, action="store_true",
+                            help='Print original messages in real time during runner execution.')
 
         return parser
 
@@ -108,7 +108,7 @@ class CliInput:
         options["debug"] = arguments.debug
         options["syslog"] = arguments.syslog
         options["limit"] = arguments.limit[0]
-        options["raw_output"] = arguments.raw_runner_output
+        options["raw_output"] = arguments.runner_raw_output
         options["self_setup"] = os.path.abspath(arguments.self_setup[0]) if arguments.self_setup[0]\
             else None
         options["conf_dir"] = os.path.abspath(arguments.conf_dir[0]) if arguments.conf_dir[0]\
