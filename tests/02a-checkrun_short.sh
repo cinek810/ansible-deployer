@@ -35,7 +35,7 @@ check_run_ok "ansible-deployer run -t task_with_commit -s testing -i testInfra -
 check_message_in_output "ansible-deployer run -t task_with_commit -s testing -i testInfra -c tags/v1.0.1" "\[ERROR\]: Requested commit tags/v1.0.1 is not valid for task task_with_commit."
 check_message_in_output "ansible-deployer run -t task_with_commit -s testing -i testInfra -c tags/v2.1" "\[ERROR\]: Requested commit tags/v2.1 is not valid for task task_with_commit."
 check_message_in_output "ansible-deployer run -t task_with_commit -s testing -i testInfra -c tags/v3.6.6" "\[ERROR\]: Requested commit tags/v3.6.6 is not valid for task task_with_commit."
-check_message_in_output "ansible-deployer verify -t task_exec_bin_true -s prod -i testInfra" "1 passed"
+check_message_in_output "ansible-deployer verify -t task_exec_bin_true -s prod -i testInfra --raw-runner-output" "1 passed"
 
 echo -e "   ___ ____                      _               _                           _                _\n  / _ \___ \ __ _            ___| |__   ___  ___| | ___ __ _   _ _ __    ___| |__   ___  _ __| |_\n | | | |__) / _\` |  _____   / __| '_ \ / _ \/ __| |/ / '__| | | | '_ \  / __| '_ \ / _ \| '__| __|\n | |_| / __/ (_| | |_____| | (__| | | |  __/ (__|   <| |  | |_| | | | | \__ \ | | | (_) | |  | |_\n  \___/_____\__,_|          \___|_| |_|\___|\___|_|\_\_|   \__,_|_| |_| |___/_| |_|\___/|_|   \__|\n \n        _   _\n   ___ | |_| |__   ___ _ __ ___\n  / _ \| __| '_ \ / _ \ '__/ __|\n | (_) | |_| | | |  __/ |  \__ \ \n  \___/ \__|_| |_|\___|_|  |___/\n"
 # Miscellaneous
@@ -47,11 +47,11 @@ check_message_in_output "ansible-deployer run --conf-validation -d -t task_exec_
 check_message_not_in_output "ansible-deployer run --conf-validation -d -t task_exec_bin_true -s prod -i testInfra" "\[DEBUG\]: Started lock_inventory for lockdir"
 
 # Check --check-mode option
-check_message_in_output "ansible-deployer run -C -d -t task_exec_bin_true -s prod -i testInfra" "msg: Command would have run if not in check mode"
+check_message_in_output "ansible-deployer run -C -d -t task_exec_bin_true -s prod -i testInfra --raw-runner-output" "msg: Command would have run if not in check mode"
 
 # Check --dry-mode option
-check_message_in_output "ansible-deployer run -D -d -t task_with_pretask -s testing -i testInfra" "TASK \[Run dummy pre_task\]"
-check_message_not_in_output "ansible-deployer run -D -d -t task_with_pretask -s testing -i testInfra" "TASK \[Run /bin/false\]"
+check_message_in_output "ansible-deployer run -D -d -t task_with_pretask -s testing -i testInfra --raw-runner-output" "TASK \[Run dummy pre_task\]"
+check_message_not_in_output "ansible-deployer run -D -d -t task_with_pretask -s testing -i testInfra --raw-runner-output" "TASK \[Run /bin/false\]"
 
 # Artificially generate lock
 check_run_ok "ansible-deployer lock -s locked -i testInfra"
