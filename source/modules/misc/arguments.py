@@ -1,5 +1,6 @@
 """Module designed to handle all arguments"""
 from argparse import ArgumentParser, Namespace
+from re import match
 from typing import Optional, Tuple
 import os
 import sys
@@ -52,6 +53,9 @@ class CliInput:
                             help='Do not lock the infrastructure')
         parser.add_argument("--raw-runner-output", default=False, action="store_true",
                             help='Print original messages in real time during runner execution.')
+        parser.add_argument("--runner-options", nargs=1, default=[None],
+                            metavar="'\"--a -b --opt2\"'",
+                            help='Quote-enclosed raw string of flags to be passed.')
         parser.add_argument("--runner-plugins", nargs=1, default=[None], metavar='TASK_NAME',
                             help='Provide comma-separated list of plugins to enable.')
         parser.add_argument("--runner-raw-file", default=False, action="store_true",
@@ -135,6 +139,8 @@ class CliInput:
         options["lock"] = not arguments.no_lock
         options["no_color"] = arguments.no_color
         options["raw_output"] = arguments.raw_runner_output
+        options["runner_opts"] = self.validate_option_string(arguments.runner_options[0],
+                                                             print_fail, print_end)
         options["runner_plugins"] = self.validate_ansible_callback(
             arguments.runner_plugins[0], print_fail, print_end)
         options["runner_raw_file"] = arguments.runner_raw_file
@@ -193,3 +199,15 @@ class CliInput:
         except ValueError:
             print(f"{print_fail}[CRITICAL]: Not an integer!{print_end}")
             sys.exit(57)
+
+    @staticmethod
+    def validate_option_string(options: str, print_fail: str, print_end: str) -> Optional[str]:
+        """Validate if provided --runner-options are strings matching certain pattern """
+        if options:
+            if isinstance(options, str) and match(r"[ -A-za-z0-9]+", options):
+                return options
+
+            print(f"{print_fail}[CRITICAL]: Invalid format of runner options!{print_end}")
+            sys.exit(57)
+        else:
+            return None
