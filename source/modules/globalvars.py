@@ -12,3 +12,4 @@ OPTION_EXPANSION = {
 }
 ANSIBLE_DEFAULT_CALLBACK_PLUGIN_PATH = '~/.ansible/plugins/callback:/usr/share/ansible/plugins/' \
                                        'callback'
+SUPPORTED_STDOUT_CALLBACK_PLUGINS = ["json", "null", "yaml"]

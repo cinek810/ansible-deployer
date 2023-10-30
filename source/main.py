@@ -77,7 +77,8 @@ def main(options: dict):
                 runner.setup_ansible(selected_items["commit"], configuration.conf_dir)
             if options["lock"]:
                 lock.lock_inventory(lockpath)
-            sequence_record_dict = runner.run_playitem(config, options, inv_file, lockpath,
+            sequence_record_dict = runner.run_playitem(configuration.conf["callback_settings"],
+                                                       config, options, inv_file, lockpath,
                                                        db_writer)
             if options["lock"]:
                 lock.unlock_inventory(lockpath)
