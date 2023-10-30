@@ -246,6 +246,8 @@ class Runners:
         log_path = os.path.join(os.path.split(self.log_path)[0], name)
         logger.add_file_handler(log_path)
 
+        if options["runner_raw_file"]:
+            logger.add_file_handler(self.log_path)
         if options["raw_output"]:
             logger.add_console_handler()
 
