@@ -5,7 +5,8 @@ import sys
 import subprocess
 from logging import Logger
 
-from ansible_deployer.modules.globalvars import ANSIBLE_DEFAULT_CALLBACK_PLUGIN_PATH
+from ansible_deployer.modules.globalvars import ANSIBLE_DEFAULT_CALLBACK_PLUGIN_PATH,\
+    REQUIRED_CALLBACK_PLUGINS
 from ansible_deployer.modules.outputs.formatting import Formatters
 from ansible_deployer.modules.outputs.loggers import RunLogger
 
@@ -229,10 +230,11 @@ class Runners:
 
     def construct_env(self, options: dict, callback_settings: dict) -> dict:
         """Create final ansible environment from available variables"""
+        ansible_callbacks = list(set(options["runner_plugins"] + REQUIRED_CALLBACK_PLUGINS))
         ansible_stdout_callback = options["runner_stdout"] if options["runner_stdout"]\
             else callback_settings["def_stdout_plugin"]
         return dict(
-            os.environ, ANSIBLE_CALLBACKS_ENABLED="log_plays_adjusted,sqlite_deployer",
+            os.environ, ANSIBLE_CALLBACKS_ENABLED=",".join(ansible_callbacks),
             ANSIBLE_CALLBACK_PLUGINS=self.append_to_ansible_callbacks_path(),
             ANSIBLE_LOAD_CALLBACK_PLUGINS="1", ANSIBLE_NOCOWS="1", LOG_PLAYS_PATH=self.log_path,
             ANSIBLE_STDOUT_CALLBACK=ansible_stdout_callback, SQLITE_PATH=self.db_path,
