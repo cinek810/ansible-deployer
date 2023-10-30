@@ -117,7 +117,8 @@ class Runners:
         # TODO add check if everything was skipped
         return playitems
 
-    def run_playitem(self, config: dict, options: dict, inventory: str, lockpath: str, db_writer):
+    def run_playitem(self, callback_settings: dict, config: dict, options: dict, inventory: str,
+                     lockpath: str, db_writer):
         """
         Function implementing actual execution of runner [ansible-playbook or py.test]
         """
@@ -135,7 +136,8 @@ class Runners:
         else:
             for playitem in playitems:
                 run_logger = self.set_runner_logging(options, playitem, inventory)
-                command, command_env = self.construct_command(playitem, inventory, config, options)
+                command = self.construct_command(playitem, inventory, config, options)
+                command_env = self.construct_env(options, callback_settings)
                 self.logger.debug("Running '%s'.", command)
                 try:
                     with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -220,13 +222,19 @@ class Runners:
                 command.append(",".join(skip_tags))
             if options["check_mode"]:
                 command.append("-C")
-            command_env=dict(os.environ, ANSIBLE_STDOUT_CALLBACK="yaml", ANSIBLE_NOCOWS="1",
-                             ANSIBLE_LOAD_CALLBACK_PLUGINS="1", LOG_PLAYS_PATH=self.log_path,
-                             ANSIBLE_CALLBACKS_ENABLED="log_plays_adjusted,sqlite_deployer",
-                             ANSIBLE_CALLBACK_PLUGINS=self.append_to_ansible_callbacks_path(),
-                             SQLITE_PATH=self.db_path, SEQUENCE_ID=self.sequence_id)
 
-        return command, command_env
+        return command
+
+    def construct_env(self, options: dict, callback_settings: dict) -> dict:
+        ansible_stdout_callback = options["runner_stdout"] if options["runner_stdout"]\
+            else callback_settings["def_stdout_plugin"]
+        return dict(
+            os.environ, ANSIBLE_CALLBACKS_ENABLED="log_plays_adjusted,sqlite_deployer",
+            ANSIBLE_CALLBACK_PLUGINS=self.append_to_ansible_callbacks_path(),
+            ANSIBLE_LOAD_CALLBACK_PLUGINS="1", ANSIBLE_NOCOWS="1", LOG_PLAYS_PATH=self.log_path,
+            ANSIBLE_STDOUT_CALLBACK=ansible_stdout_callback, SQLITE_PATH=self.db_path,
+            SEQUENCE_ID=self.sequence_id
+        )
 
     @staticmethod
     def append_to_ansible_callbacks_path():

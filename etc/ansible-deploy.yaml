@@ -1,3 +1,6 @@
+callback_settings:
+  def_stdout_plugin: "yaml"
+
 global_paths:
   work_dir: "/tmp"
   database_subdir: "databases"
