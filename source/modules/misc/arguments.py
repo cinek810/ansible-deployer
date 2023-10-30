@@ -66,6 +66,8 @@ class CliInput:
         parser.add_argument("--runner-stdout", nargs=1, default=[None], metavar='STDOUT_PLUGIN',
                             help=
                             'Provide name of runner stdout callback plugin you would like to use.')
+        parser.add_argument("--runner-plugins", nargs=1, default=[None], metavar='TASK_NAME',
+                            help='Provide comma-separated list of plugins to enable.')
 
         return parser
 
@@ -124,6 +126,8 @@ class CliInput:
         options["runner_raw_file"] = arguments.runner_raw_file
         options["runner_stdout"] = self.validate_ansible_stdout_callback(arguments.runner_stdout,
                                                                          print_fail, print_end)
+        options["runner_plugins"] = self.validate_ansible_callback(
+            arguments.runner_plugins[0], print_fail, print_end)
 
         return options
 
@@ -139,4 +143,23 @@ class CliInput:
                       f"{print_end}")
                 sys.exit(57)
         except AttributeError:
+            return None
+
+    @staticmethod
+    def validate_ansible_callback(stdout_plugin: str, print_fail: str, print_end: str
+                                  ) -> Optional[list]:
+        if stdout_plugin:
+            try:
+                plugins = stdout_plugin.split(",")
+                if all([plugin in globalvars.SUPPORTED_CALLBACK_PLUGINS for plugin in plugins]):
+                    return plugins
+                else:
+                    print(f"{print_fail}[CRITICAL]: Unsupported runner callback plugin!."
+                          f"{print_end}")
+                    sys.exit(57)
+            except Exception:
+                print(f"{print_fail}[CRITICAL]: invalid formt runner callback plugin!."
+                      f"{print_end}")
+                sys.exit(57)
+        else:
             return None
