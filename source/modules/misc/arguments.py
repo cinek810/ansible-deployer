@@ -1,5 +1,5 @@
 from argparse import ArgumentParser, Namespace
-from typing import Tuple
+from typing import Optional, Tuple
 import os
 import sys
 import pkg_resources
@@ -63,6 +63,9 @@ class CliInput:
                             help='Print original messages in real time during runner execution.')
         parser.add_argument("--runner-raw-file", default=False, action="store_true",
                             help='Print original messages to main log file.')
+        parser.add_argument("--runner-stdout", nargs=1, default=[None], metavar='STDOUT_PLUGIN',
+                            help=
+                            'Provide name of runner stdout callback plugin you would like to use.')
 
         return parser
 
@@ -119,5 +122,21 @@ class CliInput:
         options["check_mode"] = arguments.check_mode
         options["dry_mode"] = arguments.dry_mode
         options["runner_raw_file"] = arguments.runner_raw_file
+        options["runner_stdout"] = self.validate_ansible_stdout_callback(arguments.runner_stdout,
+                                                                         print_fail, print_end)
 
         return options
+
+    @staticmethod
+    def validate_ansible_stdout_callback(stdout_plugin: str, print_fail: str, print_end: str
+                                         ) -> Optional[str]:
+        try:
+            lplugin = stdout_plugin[0].lower()
+            if lplugin in globalvars.SUPPORTED_STDOUT_CALLBACK_PLUGINS:
+                return lplugin
+            else:
+                print(f"{print_fail}[CRITICAL]: Unsupported runner stdout callback plugin!."
+                      f"{print_end}")
+                sys.exit(57)
+        except AttributeError:
+            return None

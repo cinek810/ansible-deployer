@@ -74,8 +74,9 @@ def main(options: dict):
             if not options["self_setup"]:
                 runner.setup_ansible(selected_items["commit"], configuration.conf_dir)
             lock.lock_inventory(lockpath)
-            sequence_record_dict = runner.run_playitem(config, options, inv_file, lockpath,
-                                                       db_writer)
+            sequence_record_dict = runner.run_playitem(
+                configuration.conf["callback_settings"], config, options, inv_file,
+                lockpath, db_writer)
             lock.unlock_inventory(lockpath)
             db_writer.finalize_db_write(sequence_record_dict, False)
         elif options["subcommand"] == "lock":
