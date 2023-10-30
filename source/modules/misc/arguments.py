@@ -61,6 +61,8 @@ class CliInput:
                                  ' variable validation in pre_tasks. This tag is not predefined!')
         parser.add_argument("--runner-raw-output", default=False, action="store_true",
                             help='Print original messages in real time during runner execution.')
+        parser.add_argument("--runner-raw-file", default=False, action="store_true",
+                            help='Print original messages to main log file.')
 
         return parser
 
@@ -116,5 +118,6 @@ class CliInput:
         options["no_color"] = arguments.no_color
         options["check_mode"] = arguments.check_mode
         options["dry_mode"] = arguments.dry_mode
+        options["runner_raw_file"] = arguments.runner_raw_file
 
         return options
