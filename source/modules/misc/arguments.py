@@ -52,6 +52,8 @@ class CliInput:
                             help='Do not lock the infrastructure')
         parser.add_argument("--raw-runner-output", default=False, action="store_true",
                             help='Print original messages in real time during runner execution.')
+        parser.add_argument("--runner-plugins", nargs=1, default=[None], metavar='TASK_NAME',
+                            help='Provide comma-separated list of plugins to enable.')
         parser.add_argument("--runner-raw-file", default=False, action="store_true",
                             help='Print original messages to main log file.')
         parser.add_argument("--runner-stdout", nargs=1, default=[None], metavar='STDOUT_PLUGIN',
@@ -131,6 +133,8 @@ class CliInput:
         options["lock"] = not arguments.no_lock
         options["no_color"] = arguments.no_color
         options["raw_output"] = arguments.raw_runner_output
+        options["runner_plugins"] = self.validate_ansible_callback(
+            arguments.runner_plugins[0], print_fail, print_end)
         options["runner_raw_file"] = arguments.runner_raw_file
         options["runner_stdout"] = self.validate_ansible_stdout_callback(arguments.runner_stdout,
                                                                          print_fail, print_end)
@@ -156,3 +160,23 @@ class CliInput:
             sys.exit(57)
         except AttributeError:
             return None
+
+    @staticmethod
+    def validate_ansible_callback(stdout_plugin: str, print_fail: str, print_end: str
+                                  ) -> Optional[list]:
+        """Validate whether plugin (specified via --runner-plugin option) is supported"""
+        if stdout_plugin:
+            try:
+                plugins = stdout_plugin.split(",")
+                if all(plugin in globalvars.SUPPORTED_CALLBACK_PLUGINS for plugin in plugins):
+                    return plugins
+
+                print(f"{print_fail}[CRITICAL]: Unsupported runner callback plugin!"
+                      f"{print_end}")
+                sys.exit(57)
+            except Exception:
+                print(f"{print_fail}[CRITICAL]: Invalid format of runner callback plugin!"
+                      f"{print_end}")
+                sys.exit(57)
+        else:
+            return []
