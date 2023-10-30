@@ -3,8 +3,10 @@
 import os
 import sys
 import subprocess
+
 from ansible_deployer.modules.globalvars import ANSIBLE_DEFAULT_CALLBACK_PLUGIN_PATH
 from ansible_deployer.modules.outputs.formatting import Formatters
+from ansible_deployer.modules.outputs.loggers import RunLogger
 
 class Runners:
     """Class handling ansible hooks and ansible plays execution"""
@@ -133,6 +135,8 @@ class Runners:
             sys.exit(70)
         else:
             for playitem in playitems:
+                run_logger = RunLogger(
+                    options, self.workdir, playitem["name"], os.path.basename(inventory)).logger
                 command, command_env = self.construct_command(playitem, inventory, config, options)
                 self.logger.debug("Running '%s'.", command)
                 try:
@@ -142,8 +146,7 @@ class Runners:
                         for msg in proc.stdout:
                             dec_msg = msg.split(b"\n")[0].decode("utf-8")
                             returned.append(dec_msg)
-                            if options["raw_output"]:
-                                print(dec_msg)
+                            run_logger.info(dec_msg)
 
                         proc.communicate()
                         format_obj = Formatters(self.logger)

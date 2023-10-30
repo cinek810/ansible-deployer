@@ -35,7 +35,9 @@ class AnsibleDeployerLogger:
     """Class handling creating logger and logging handlers"""
 
     formatter = logging.Formatter("%(asctime)s [%(levelname)s]: %(message)s")
+    basic_formatter = "%(asctime)s [%(levelname)s]: %(message)s"
     console_formatter = "\n%(asctime)s [%(levelname)s]: %(message)s\n"
+    raw_formatter = "%(message)s"
 
     def __init__(self, name: str, options: dict):
         self.name = name
@@ -64,19 +66,19 @@ class AnsibleDeployerLogger:
         memory_handler.setLevel(logging.DEBUG)
         self.logger.addHandler(memory_handler)
 
-    def add_console_handler(self):
+    def add_console_handler(self, console_formatter_type: str):
         """Add console handler influenced by operator arguments"""
         console_handler = logging.StreamHandler()
-        console_handler.setFormatter(logging.Formatter(self.console_formatter)
+        console_handler.setFormatter(logging.Formatter(console_formatter_type)
                                      if self.options["no_color"]
-                                     else CustomFormatter(self.console_formatter))
+                                     else CustomFormatter(console_formatter_type))
         console_handler.setLevel(logging.DEBUG if self.options["debug"] else logging.INFO)
         self.logger.addHandler(console_handler)
 
-    def add_file_handler(self, log_path: str):
+    def add_file_handler(self, log_path: str, file_formatter_type: str):
         """Function adding file handler to existing logger"""
         file_handler = logging.FileHandler(log_path)
-        file_handler.setFormatter(self.formatter)
+        file_handler.setFormatter(logging.Formatter(file_formatter_type))
         file_handler.setLevel(logging.DEBUG)
         self.logger.addHandler(file_handler)
 
