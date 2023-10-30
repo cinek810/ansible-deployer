@@ -36,7 +36,7 @@ def main(options: dict):
         workdir = mutils.create_workdir(start_ts, configuration.conf, logger.logger)
         log_path = os.path.join(
             workdir, configuration.conf["file_naming"]["log_file_name_frmt"].format(start_ts))
-        logger.add_file_handler(log_path)
+        logger.add_file_handler(log_path, logger.basic_formatter)
         logger.flush_memory_handler(True, options["syslog"])
     else:
         logger.flush_memory_handler(False, options["syslog"])
