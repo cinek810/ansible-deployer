@@ -9,7 +9,7 @@ from ansible_deployer.modules.locking.locking import Locking
 from ansible_deployer.modules.misc import utils as mutils
 from ansible_deployer.modules.misc.arguments import CliInput
 from ansible_deployer.modules.outputs import blocks
-from ansible_deployer.modules.outputs.logging import Loggers
+from ansible_deployer.modules.outputs.loggers import AppLogger
 from ansible_deployer.modules.validators.validate import Validators
 from ansible_deployer.modules.runners.run import Runners
 from ansible_deployer.modules.database.creator import DbSetup
@@ -27,14 +27,16 @@ def main(options: dict):
               file=sys.stderr)
         sys.exit(2)
 
-    logger = Loggers(options)
+    logger = AppLogger(options)
 
     configuration = Config(logger.logger, options["conf_dir"])
     config = configuration.load_configuration()
 
     if options["subcommand"] in ("run", "verify"):
         workdir = mutils.create_workdir(start_ts, configuration.conf, logger.logger)
-        log_path = Loggers.set_logging_to_file(logger, workdir, start_ts, configuration.conf)
+        log_path = os.path.join(
+            workdir, configuration.conf["file_naming"]["log_file_name_frmt"].format(start_ts))
+        logger.add_file_handler(log_path)
         logger.flush_memory_handler(True, options["syslog"])
     else:
         logger.flush_memory_handler(False, options["syslog"])
