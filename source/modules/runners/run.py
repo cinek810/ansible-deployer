@@ -3,6 +3,7 @@
 import os
 import sys
 import subprocess
+from logging import Logger
 
 from ansible_deployer.modules.globalvars import ANSIBLE_DEFAULT_CALLBACK_PLUGIN_PATH
 from ansible_deployer.modules.outputs.formatting import Formatters
@@ -135,8 +136,8 @@ class Runners:
             sys.exit(70)
         else:
             for playitem in playitems:
-                run_logger = RunLogger(
-                    options, self.workdir, playitem["name"], os.path.basename(inventory)).logger
+                run_logger = self.set_runner_logging(
+                    options, playitem["name"], os.path.basename(inventory))
                 command, command_env = self.construct_command(playitem, inventory, config, options)
                 self.logger.debug("Running '%s'.", command)
                 try:
@@ -235,3 +236,10 @@ class Runners:
         """Create final searchable path for ansible callback plugins"""
         plugin_path = os.path.join(os.path.realpath(__file__).rsplit(os.sep, 3)[0], "plugins")
         return f'{ANSIBLE_DEFAULT_CALLBACK_PLUGIN_PATH}:{plugin_path}'
+
+    def set_runner_logging(self, options: dict, playitem: str, inventory: str) -> Logger:
+        """Return logger with handlers instantiated from RunLoggers"""
+        logger = RunLogger(options, self.workdir, playitem, inventory)
+        logger.add_raw_handlers(self.log_path)
+
+        return logger.logger

@@ -28,11 +28,8 @@ class RunLogger(AnsibleDeployerLogger):
     def __init__(self, options: dict, workdir: str, playitem_name: str, inventory_name: str):
         name, log_path = self.set_runner_vars(workdir, playitem_name, inventory_name)
         super().__init__(name, options)
+        self.log_path = log_path
         self.add_syslog_handler()
-        self.add_file_handler(log_path, self.raw_formatter)
-
-        if options["raw_output"]:
-            self.add_console_handler(self.raw_formatter)
 
     def set_runner_vars(self, workdir: str, playitem: str, inventory: str) -> Tuple[str, str]:
         """Set logger_name and log_path for current playitem in sequence"""
@@ -41,3 +38,13 @@ class RunLogger(AnsibleDeployerLogger):
         log_path = ospjoin(workdir, f"rawlog_{playitem_fmt}_{inventory}.log")
 
         return logger_name, log_path
+
+    def add_raw_handlers(self, main_log_path: str) -> None:
+        """Add handlers to runner logger triggered by --runner-raw-* options"""
+        if self.options["raw_output"]:
+            self.add_console_handler(self.raw_formatter)
+
+        if self.options["runner_raw_file"]:
+            self.add_file_handler(main_log_path, self.raw_formatter)
+        else:
+            self.add_file_handler(self.log_path, self.raw_formatter)

@@ -52,6 +52,8 @@ class CliInput:
                             help='Do not lock the infrastructure')
         parser.add_argument("--raw-runner-output", default=False, action="store_true",
                             help='Print original messages in real time during runner execution.')
+        parser.add_argument("--runner-raw-file", default=False, action="store_true",
+                            help='Print original messages to main log file.')
         parser.add_argument("--self-setup", nargs=1, default=[None], metavar="LOCAL_SETUP_PATH",
                             help='Setup repo outside of workdir in requested path. This option'
                                  ' applies only to infrastructures with allow_user_checkout enabled'
@@ -126,6 +128,7 @@ class CliInput:
         options["lock"] = not arguments.no_lock
         options["no_color"] = arguments.no_color
         options["raw_output"] = arguments.raw_runner_output
+        options["runner_raw_file"] = arguments.runner_raw_file
         options["self_setup"] = os.path.abspath(arguments.self_setup[0]) if arguments.self_setup[0]\
             else None
         options["stage"] = arguments.stage[0]
