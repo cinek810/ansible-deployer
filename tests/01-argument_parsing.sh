@@ -5,7 +5,7 @@ source ./tests/testing_lib.sh
 
 echo -e "   ___  _                                                      _                          _\n  / _ \/ |           __ _ _ __ __ _ _   _ _ __ ___   ___ _ __ | |_   _ __   __ _ _ __ ___(_)_ __   __ _\n | | | | |  _____   / _\` | '__/ _\` | | | | '_ \` _ \ / _ \ '_ \| __| | '_ \ / _\` | '__/ __| | '_ \ / _\` |\n | |_| | | |_____| | (_| | | | (_| | |_| | | | | | |  __/ | | | |_  | |_) | (_| | |  \__ \ | | | | (_| |\n  \___/|_|          \__,_|_|  \__, |\__,_|_| |_| |_|\___|_| |_|\__| | .__/ \__,_|_|  |___/_|_| |_|\__, |\n                              |___/                                 |_|                           |___/\n                                                       _     _             _   _\n __      ___ __ ___  _ __   __ _    ___ ___  _ __ ___ | |__ (_)_ __   __ _| |_(_) ___  _ __  ___\n \ \ /\ / / '__/ _ \| '_ \ / _\` |  / __/ _ \| '_ \` _ \| '_ \| | '_ \ / _\` | __| |/ _ \| '_ \/ __|\n  \ V  V /| | | (_) | | | | (_| | | (_| (_) | | | | | | |_) | | | | | (_| | |_| | (_) | | | \__ \ \n   \_/\_/ |_|  \___/|_| |_|\__, |  \___\___/|_| |_| |_|_.__/|_|_| |_|\__,_|\__|_|\___/|_| |_|___/\n                           |___/\n"
 # Check wrong combinations
-check_message_in_output "ansible-deployer" "\[CRITICAL\]: Too few arguments"
+check_message_in_output "ansible-deployer" "\[CRITICAL\]: First positional argument (subcommand) is required! Available commands are: run, lock, unlock, verify, show."
 check_message_in_output "ansible-deployer run" "\[ERROR\]: Option --task is required for run"
 check_message_in_output "ansible-deployer verify" "\[ERROR\]: Option --task is required for verify"
 check_message_in_output "ansible-deployer run" "\[ERROR\]: Option --infrastructure is required for run"
