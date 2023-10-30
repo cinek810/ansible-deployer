@@ -80,8 +80,8 @@ check_run_ok "ansible-deployer run --task task_with_limit --stage testing --infr
 check_run_ok "ansible-deployer run --task task_without_limit --stage testing --infrastructure testInfra --limit testHost1 --check-mode"
 
 # Check if deployer exits on 1st play item fail
-check_message_in_output "ansible-deployer run --task task_with_ansible_fail --stage testing --infrastructure testInfra" "\[ERROR\]: \"ansible-playbook -v -i ./test_infra1_inv.yaml runll.yaml\" failed due to"
-check_message_not_in_output "ansible-deployer run --task task_with_ansible_fail --stage testing --infrastructure testInfra" "\[INFO\]: \"ansible-playbook -v -i ./test_infra1_inv.yaml runBinTrue.yaml\" ran succesfully"
+check_message_in_output "ansible-deployer run --task task_with_ansible_fail --stage testing --infrastructure testInfra" "\[ERROR\]: \"ansible-playbook -i ./test_infra1_inv.yaml runll.yaml -v\" failed due to"
+check_message_not_in_output "ansible-deployer run --task task_with_ansible_fail --stage testing --infrastructure testInfra" "\[INFO\]: \"ansible-playbook -i ./test_infra1_inv.yaml runBinTrue.yaml -v\" ran succesfully"
 
 # Check --keep-locked option
 check_message_in_output "ansible-deployer run --task task_exec_bin_true --stage testing --infrastructure testInfra --keep-locked --debug" "\[DEBUG\]: Keep locked infra testInfra:testing ."

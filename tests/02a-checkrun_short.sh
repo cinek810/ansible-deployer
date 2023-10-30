@@ -77,8 +77,8 @@ check_run_ok "ansible-deployer run -t task_with_limit -s testing -i testInfra2 -
 check_run_ok "ansible-deployer run -t task_without_limit -s testing -i testInfra -l testHost1 -C"
 
 # Check if deployer exits on 1st play item fail
-check_message_in_output "ansible-deployer run -t task_with_ansible_fail -s testing -i testInfra" "\[ERROR\]: \"ansible-playbook -v -i ./test_infra1_inv.yaml runll.yaml\" failed due to"
-check_message_not_in_output "ansible-deployer run -t task_with_ansible_fail -s testing -i testInfra" "\[INFO\]: \"ansible-playbook -v -i ./test_infra1_inv.yaml runBinTrue.yaml\" ran succesfully"
+check_message_in_output "ansible-deployer run -t task_with_ansible_fail -s testing -i testInfra" "\[ERROR\]: \"ansible-playbook -i ./test_infra1_inv.yaml runll.yaml -v\" failed due to"
+check_message_not_in_output "ansible-deployer run -t task_with_ansible_fail -s testing -i testInfra" "\[INFO\]: \"ansible-playbook -i ./test_infra1_inv.yaml runBinTrue.yaml -v\" ran succesfully"
 
 # Check --keep-locked option
 check_message_in_output "ansible-deployer run -t task_exec_bin_true -s testing -i testInfra -k -d" "\[DEBUG\]: Keep locked infra testInfra:testing ."
