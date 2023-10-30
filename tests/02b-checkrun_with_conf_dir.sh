@@ -35,7 +35,7 @@ check_run_ok "ansible-deployer run --task task_with_commit --stage testing --inf
 check_message_in_output "ansible-deployer run --task task_with_commit --stage testing --infrastructure testInfra --commit tags/v1.0.1 --conf-dir=/etc/alternate-deployer-dir" '\[ERROR\]: Requested commit tags/v1.0.1 is not valid for task task_with_commit.'
 check_message_in_output "ansible-deployer run --task task_with_commit --stage testing --infrastructure testInfra --commit tags/v2.1 --conf-dir=/etc/alternate-deployer-dir" '\[ERROR\]: Requested commit tags/v2.1 is not valid for task task_with_commit.'
 check_message_in_output "ansible-deployer run --task task_with_commit --stage testing --infrastructure testInfra --commit tags/v3.6.6 --conf-dir=/etc/alternate-deployer-dir" '\[ERROR\]: Requested commit tags/v3.6.6 is not valid for task task_with_commit.'
-check_message_in_output "ansible-deployer verify --task task_exec_bin_true --stage prod --infrastructure testInfra --conf-dir=/etc/alternate-deployer-dir" "1 passed"
+check_message_in_output "ansible-deployer verify --task task_exec_bin_true --stage prod --infrastructure testInfra --conf-dir=/etc/alternate-deployer-dir --raw-runner-output" "1 passed"
 
 echo -e "   ___ ____  _                    _               _                                _ _   _                        __       _ _\n  / _ \___ \| |__             ___| |__   ___  ___| | ___ __ _   _ _ __   __      _(_) |_| |__     ___ ___  _ __  / _|   __| (_)_ __\n | | | |__) | '_ \   _____   / __| '_ \ / _ \/ __| |/ / '__| | | | '_ \  \ \ /\ / / | __| '_ \   / __/ _ \| '_ \| |_   / _\` | | '__|\n | |_| / __/| |_) | |_____| | (__| | | |  __/ (__|   <| |  | |_| | | | |  \ V  V /| | |_| | | | | (_| (_) | | | |  _| | (_| | | |\n  \___/_____|_.__/           \___|_| |_|\___|\___|_|\_\_|   \__,_|_| |_|   \_/\_/ |_|\__|_| |_|  \___\___/|_| |_|_|    \__,_|_|_|\n \n        _   _\n   ___ | |_| |__   ___ _ __ ___\n  / _ \| __| '_ \ / _ \ '__/ __|\n | (_) | |_| | | |  __/ |  \__ \ \n  \___/ \__|_| |_|\___|_|  |___/\n"
 # Miscellaneous
@@ -43,8 +43,8 @@ check_message_in_output "ansible-deployer run --task task_empty --stage testing 
 check_message_in_output "ansible-deployer run --task task_exec_bin_true --stage prod --infrastructure testInfra --conf-dir=/etc/alternate-deployer-dir" "\[INFO\]: setup_work_dir finished succesfully"
 
 # Check --dry-mode option
-check_message_in_output "ansible-deployer run --dry-mode --debug --task task_with_pretask --stage testing --infrastructure testInfra --conf-dir=/etc/alternate-deployer-dir" "TASK \[Run dummy pre_task\]"
-check_message_not_in_output "ansible-deployer run --dry-mode --debug --task task_with_pretask --stage testing --infrastructure testInfra --conf-dir=/etc/alternate-deployer-dir" "TASK \[Run /bin/false\]"
+check_message_in_output "ansible-deployer run --dry-mode --debug --task task_with_pretask --stage testing --infrastructure testInfra --conf-dir=/etc/alternate-deployer-dir --raw-runner-output" "TASK \[Run dummy pre_task\]"
+check_message_not_in_output "ansible-deployer run --dry-mode --debug --task task_with_pretask --stage testing --infrastructure testInfra --conf-dir=/etc/alternate-deployer-dir --raw-runner-output" "TASK \[Run /bin/false\]"
 
 # Artificially generate lock
 check_run_ok "ansible-deployer unlock --stage locked --infrastructure testInfra --conf-dir=/etc/alternate-deployer-dir"
