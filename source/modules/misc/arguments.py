@@ -1,5 +1,6 @@
 """Module designed to handle all arguments"""
 from argparse import ArgumentParser, Namespace
+from typing import Tuple
 import os
 import sys
 import pkg_resources
@@ -73,9 +74,16 @@ class CliInput:
         """
         return self.validate_arguments(self.create_parser().parse_args())
 
+    def validate_arguments(self, arguments: Namespace) -> dict:
+        """
+        Generic function that returns options dict after triggering command line arguments
+        validation
+        """
+        return self.validate_rest_arguments(arguments, *self.validate_init_arguments(arguments))
+
     @staticmethod
-    def validate_arguments(arguments: Namespace) -> dict:
-        """Validate parsed options and collect them into dictionary"""
+    def validate_init_arguments(arguments: Namespace) -> Tuple[str, str]:
+        """Validate selected parsed arguments for specific handling"""
         if arguments.version:
             version = pkg_resources.require("ansible_deployer")[0].version
             print(f"ansible-deployer version: {version}")
@@ -93,6 +101,11 @@ class CliInput:
                   f" Available commands are: {sub_string}.{PRINT_END}")
             sys.exit(57)
 
+        return PRINT_END, PRINT_FAIL
+
+    def validate_rest_arguments(self, arguments: Namespace, print_end: str, print_fail: str
+                                ) -> dict:
+        """Validate remaining parsed arguments and collect them into dictionary"""
         options = {}
         options["subcommand"] = arguments.subcommand[0].lower()
         Validators.verify_subcommand(options["subcommand"], arguments.no_color)
