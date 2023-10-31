@@ -1,10 +1,17 @@
 """Module for running system processes"""
 
+import json
+import logging
 import os
 import sys
 import subprocess
-from ansible_deployer.modules.globalvars import ANSIBLE_DEFAULT_CALLBACK_PLUGIN_PATH
+
+from typing import Optional
+
+from ansible_deployer.modules.globalvars import ANSIBLE_DEFAULT_CALLBACK_PLUGIN_PATH,\
+    REQUIRED_CALLBACK_PLUGINS
 from ansible_deployer.modules.outputs.formatting import Formatters
+from ansible_deployer.modules.outputs.loggers import RunLogger
 
 class Runners:
     """Class handling ansible hooks and ansible plays execution"""
@@ -112,7 +119,8 @@ class Runners:
         # TODO add check if everything was skipped
         return playitems
 
-    def run_playitem(self, config: dict, options: dict, inventory: str, lockpath: str, db_writer):
+    def run_playitem(self, callback_settings: dict, config: dict, options: dict, inventory: str,
+                     lockpath: str, db_writer):
         """
         Function implementing actual execution of runner [ansible-playbook or py.test]
         """
@@ -129,8 +137,15 @@ class Runners:
             sys.exit(70)
         else:
             for playitem in playitems:
-                command, command_env = self.construct_command(playitem, inventory, config, options)
+                run_logger = self.set_runner_logging(options, playitem, inventory)
+                command = self.construct_command(playitem, inventory, config, options)
+                command_env = self.construct_env(options, callback_settings)
                 self.logger.debug("Running '%s'.", command)
+                host_list = self.parse_ansible_inventory(inventory, lockpath)
+                sequence_records = db_writer.start_sequence_dict(host_list,
+                                                                 self.setup_hooks, options,
+                                                                 self.start_ts_raw,
+                                                                 self.sequence_id)
                 try:
                     with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                           env=command_env) as proc:
@@ -138,18 +153,11 @@ class Runners:
                         for msg in proc.stdout:
                             dec_msg = msg.split(b"\n")[0].decode("utf-8")
                             returned.append(dec_msg)
-                            if options["raw_output"]:
-                                print(dec_msg)
+                            run_logger.info(dec_msg)
 
                         proc.communicate()
                         format_obj = Formatters(self.logger)
                         parsed_std = format_obj.format_ansible_output(returned)
-                        host_list = db_writer.parse_yaml_output_for_hosts(parsed_std["complete"],
-                                                                self.sequence_id)
-                        sequence_records = db_writer.start_sequence_dict(host_list,
-                                                                         self.setup_hooks, options,
-                                                                         self.start_ts_raw,
-                                                                         self.sequence_id)
 
                         if proc.returncode == 0:
                             format_obj.positive_ansible_output(parsed_std["warning"],
@@ -164,11 +172,9 @@ class Runners:
                 except Exception as exc:
                     self.logger.critical("\"%s\" failed due to:")
                     self.logger.critical(exc)
-                    sequence_records = db_writer.start_sequence_dict(host_list, self.setup_hooks,
-                                                                     options, self.start_ts_raw,
-                                                                     self.sequence_id)
                     db_writer.finalize_db_write(sequence_records, True)
                     sys.exit(72)
+
             return sequence_records
 
     @staticmethod
@@ -203,7 +209,7 @@ class Runners:
             command.append("./"+playitem["file"])
             command_env = os.environ
         else:
-            command = ["ansible-playbook", "-v", "-i", inventory, playitem["file"]]
+            command = ["ansible-playbook", "-i", inventory, playitem["file"]]
             if options["limit"]:
                 command.append("-l")
                 command.append(options["limit"])
@@ -215,16 +221,93 @@ class Runners:
                 command.append(",".join(skip_tags))
             if options["check_mode"]:
                 command.append("-C")
-            command_env=dict(os.environ, ANSIBLE_STDOUT_CALLBACK="yaml", ANSIBLE_NOCOWS="1",
-                             ANSIBLE_LOAD_CALLBACK_PLUGINS="1", LOG_PLAYS_PATH=self.log_path,
-                             ANSIBLE_CALLBACKS_ENABLED="log_plays_adjusted,sqlite_deployer",
-                             ANSIBLE_CALLBACK_PLUGINS=self.append_to_ansible_callbacks_path(),
-                             SQLITE_PATH=self.db_path, SEQUENCE_ID=self.sequence_id)
 
-        return command, command_env
+        if options["runner_verb"]:
+            command.append(f'-{"v"*options["runner_verb"]}')
+
+        if options["runner_opts"]:
+            command.append(options["runner_opts"])
+
+        return command
+
+    def construct_env(self, options: dict, callback_settings: dict) -> dict:
+        if options["runner_plugins"]:
+            ansible_callbacks = list(set(options["runner_plugins"] + REQUIRED_CALLBACK_PLUGINS))
+        else:
+            ansible_callbacks = REQUIRED_CALLBACK_PLUGINS
+        ansible_callbacks_enabled = ",".join(ansible_callbacks)
+        ansible_stdout_callback = options["runner_stdout"] if options["runner_stdout"]\
+            else callback_settings["def_stdout_plugin"]
+        return dict(
+            os.environ, ANSIBLE_CALLBACKS_ENABLED=ansible_callbacks_enabled,
+            ANSIBLE_CALLBACK_PLUGINS=self.append_to_ansible_callbacks_path(),
+            ANSIBLE_LOAD_CALLBACK_PLUGINS="1", ANSIBLE_NOCOWS="1", LOG_PLAYS_PATH=self.log_path,
+            ANSIBLE_STDOUT_CALLBACK=ansible_stdout_callback, SQLITE_PATH=self.db_path,
+            SEQUENCE_ID=self.sequence_id
+        )
 
     @staticmethod
     def append_to_ansible_callbacks_path():
         """Create final searchable path for ansible callback plugins"""
         plugin_path = os.path.join(os.path.realpath(__file__).rsplit(os.sep, 3)[0], "plugins")
         return f'{ANSIBLE_DEFAULT_CALLBACK_PLUGIN_PATH}:{plugin_path}'
+
+    def set_runner_logging(self, options: dict, playitem: str, inventory: str
+                           ) -> Optional[logging.Logger]:
+        playitem_fmt = playitem["name"]
+        inventory_fmt = os.path.basename(inventory)
+        logger = RunLogger(f"ansible-deployer_runner_{playitem_fmt}_{inventory_fmt}_logger",
+                           options)
+        logger.add_syslog_handler()
+
+        name = f"rawlog_{playitem_fmt}_{inventory_fmt}.log"
+        log_path = os.path.join(os.path.split(self.log_path)[0], name)
+        logger.add_file_handler(log_path)
+
+        if options["runner_raw_file"]:
+            logger.add_file_handler(self.log_path)
+        if options["raw_output"]:
+            logger.add_console_handler()
+
+        return logger.logger
+
+    def parse_ansible_inventory(self, inventory: str, lockpath: str) -> Optional[dict]:
+        command = ["ansible-inventory", "--export", "--list", "-i", inventory]
+        returned = []
+        host_list = []
+        try:
+            with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+                                  ) as proc:
+
+                for msg in proc.stdout:
+                    returned.append(msg.decode("utf-8").strip())
+
+                inv = json.loads(str("".join(returned)))
+                for group in inv["all"]["children"]:
+                    host_list += self.get_all_hosts(inv, group)
+
+                proc.communicate()
+                if proc.returncode == 0:
+                    return host_list
+                else:
+                    self.lock_obj.unlock_inventory(lockpath)
+                    self.logger.critical("Unabel to obtain inventory.")
+                    self.logger.critical("Program will exit now.")
+                    sys.exit(71)
+        except Exception as exc:
+            self.logger.critical("\"%s\" failed due to:")
+            self.logger.critical(exc)
+            sys.exit(72)
+
+    def get_all_hosts(self, inv: dict, group: str) -> list:
+        if inv.get(group, None):
+            if len(inv[group]) == 1 and "hosts" in inv[group]:
+                return inv[group].get("hosts", [])
+
+            new_list = []
+            for k, v in inv[group]:
+                new_list.append(self.get_all_hosts(v, k))
+
+            return new_list
+        else:
+            return []
