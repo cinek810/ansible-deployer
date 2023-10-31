@@ -1,5 +1,6 @@
 """Module for running system processes"""
 
+import json
 import logging
 import os
 import sys
@@ -140,6 +141,11 @@ class Runners:
                 command = self.construct_command(playitem, inventory, config, options)
                 command_env = self.construct_env(options, callback_settings)
                 self.logger.debug("Running '%s'.", command)
+                host_list = self.parse_ansible_inventory(inventory, lockpath)
+                sequence_records = db_writer.start_sequence_dict(host_list,
+                                                                 self.setup_hooks, options,
+                                                                 self.start_ts_raw,
+                                                                 self.sequence_id)
                 try:
                     with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                           env=command_env) as proc:
@@ -152,12 +158,6 @@ class Runners:
                         proc.communicate()
                         format_obj = Formatters(self.logger)
                         parsed_std = format_obj.format_ansible_output(returned)
-                        host_list = db_writer.parse_yaml_output_for_hosts(parsed_std["complete"],
-                                                                self.sequence_id)
-                        sequence_records = db_writer.start_sequence_dict(host_list,
-                                                                         self.setup_hooks, options,
-                                                                         self.start_ts_raw,
-                                                                         self.sequence_id)
 
                         if proc.returncode == 0:
                             format_obj.positive_ansible_output(parsed_std["warning"],
@@ -172,11 +172,9 @@ class Runners:
                 except Exception as exc:
                     self.logger.critical("\"%s\" failed due to:")
                     self.logger.critical(exc)
-                    sequence_records = db_writer.start_sequence_dict(host_list, self.setup_hooks,
-                                                                     options, self.start_ts_raw,
-                                                                     self.sequence_id)
                     db_writer.finalize_db_write(sequence_records, True)
                     sys.exit(72)
+
             return sequence_records
 
     @staticmethod
@@ -272,3 +270,44 @@ class Runners:
             logger.add_console_handler()
 
         return logger.logger
+
+    def parse_ansible_inventory(self, inventory: str, lockpath: str) -> Optional[dict]:
+        command = ["ansible-inventory", "--export", "--list", "-i", inventory]
+        returned = []
+        host_list = []
+        try:
+            with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+                                  ) as proc:
+
+                for msg in proc.stdout:
+                    returned.append(msg.decode("utf-8").strip())
+
+                inv = json.loads(str("".join(returned)))
+                for group in inv["all"]["children"]:
+                    host_list += self.get_all_hosts(inv, group)
+
+                proc.communicate()
+                if proc.returncode == 0:
+                    return host_list
+                else:
+                    self.lock_obj.unlock_inventory(lockpath)
+                    self.logger.critical("Unabel to obtain inventory.")
+                    self.logger.critical("Program will exit now.")
+                    sys.exit(71)
+        except Exception as exc:
+            self.logger.critical("\"%s\" failed due to:")
+            self.logger.critical(exc)
+            sys.exit(72)
+
+    def get_all_hosts(self, inv: dict, group: str) -> list:
+        if inv.get(group, None):
+            if len(inv[group]) == 1 and "hosts" in inv[group]:
+                return inv[group].get("hosts", [])
+
+            new_list = []
+            for k, v in inv[group]:
+                new_list.append(self.get_all_hosts(v, k))
+
+            return new_list
+        else:
+            return []
