@@ -26,6 +26,8 @@ def parse_options(argv):
                         str(globalvars.SUBCOMMANDS))
     parser.add_argument("--infrastructure", "-i", nargs=1, default=[None], metavar="INFRASTRUCTURE",
                         help='Specify infrastructure for deploy.')
+    parser.add_argument("--inventory", "-I", nargs=1, default=[None], metavar="INVENTORY",
+                        help='Specify inventory, only allowed if not set in configuration')
     parser.add_argument("--stage", "-s", nargs=1, default=[None], metavar="STAGE",
                         help='Specify stage type. Available types are: "testing" and "prod".')
     parser.add_argument("--commit", "-c", nargs=1, default=[None], metavar="COMMIT",
@@ -87,6 +89,7 @@ def parse_options(argv):
 
     options["switches"] = arguments.subcommand[1:]
     options["infra"] = arguments.infrastructure[0]
+    options['inventory'] = arguments.inventory[0]
     options["stage"] = arguments.stage[0]
     options["commit"] = arguments.commit[0]
     options["task"] = arguments.task[0]
@@ -146,6 +149,13 @@ def main():
         misc.show_deployer(config, options)
     else:
         inv_file = misc.get_inventory_file(config, options)
+        if not inv_file and options['inventory']:
+            inv_file = options['inventory']
+        elif options['inventory']:
+            logger.logger.info("Ignoring specified inventory file. Using the configured one")
+        else:
+            logger.logger.fatal("No inventory")
+
         lockpath = os.path.join(os.path.join(configuration.conf["global_paths"]["work_dir"],
                                 "locks") , inv_file.lstrip(f".{os.sep}").replace(os.sep, "_"))
         lock = Locking(logger.logger, options["keep_locked"], (options["infra"], options["stage"]),
