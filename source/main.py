@@ -57,6 +57,8 @@ def parse_options(argv):
                         ' config!')
     parser.add_argument("--no-color", default=False, action="store_true", help='Disable coloring'
                         'of console messages.')
+    parser.add_argument("--no-lock", default=False, action="store_true",
+                        help='Do not lock the infrastructure')
     parser.add_argument("--check-mode", "-C", action="store_true", help='Enable --check-mode/-C'
                         ' when using default runner (ansible-playbook).')
     parser.add_argument("--dry-mode", "-D", action="store_true", help='Execute default runner'
@@ -103,6 +105,7 @@ def parse_options(argv):
                             else None
     options["conf_dir"] = os.path.abspath(arguments.conf_dir[0]) if arguments.conf_dir[0] else None
     options["no_color"] = arguments.no_color
+    options["lock"] = not arguments.no_lock
     options["check_mode"] = arguments.check_mode
     options["dry_mode"] = arguments.dry_mode
 
@@ -171,10 +174,12 @@ def main():
                              config["tasks"]["setup_hooks"], log_path, db_path)
             if not options["self_setup"]:
                 runner.setup_ansible(selected_items["commit"], configuration.conf_dir)
-            lock.lock_inventory(lockpath)
+            if options["lock"]:
+                lock.lock_inventory(lockpath)
             sequence_record_dict = runner.run_playitem(config, options, inv_file, lockpath,
                                                        db_writer)
-            lock.unlock_inventory(lockpath)
+            if options["lock"]:
+                lock.unlock_inventory(lockpath)
             db_writer.finalize_db_write(sequence_record_dict, False)
         elif options["subcommand"] == "lock":
             lock.lock_inventory(lockpath)
