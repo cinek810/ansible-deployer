@@ -81,12 +81,17 @@ def get_inventory_file(config: dict, options: dict, logger):
                 if elem["name"] == options["stage"]:
                     inv_file = elem["inventory"]
 
-    if not inv_file and options["inventory"]:
-        inv_file = options["inventory"]
+    if not inv_file:
+        if options["inventory"]:
+            inv_file = options["inventory"]
+            logger.debug(f"Using specified inventory file: {inv_file} .")
+        else:
+            logger.critical("No inventory loaded.")
     elif options["inventory"]:
-        logger.info("Ignoring specified inventory file. Using the configured one")
+        logger.info('Ignoring specified inventory file: {options["inventory"]} . Using the'\
+                    ' configured one: {inv_file} .')
     else:
-        logger.fatal("No inventory")
+        logger.debug(f"Using configured inventory file: {inv_file} .")
 
     return inv_file
 
