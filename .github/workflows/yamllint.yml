@@ -1,0 +1,27 @@
+---
+name: Yamllint
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9.13"]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install yamllint
+      - name: Analyse files with yamllint
+        run: |
+          yamllint -s -c ./tests/configs/yamllint.yml $(git ls-files "*.yml" "*.yaml")
