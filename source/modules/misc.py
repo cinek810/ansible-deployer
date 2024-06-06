@@ -65,7 +65,7 @@ def create_workdir(timestamp: str, conf: dict, logger):
 
 # TODO: At least infra level should be returned from validate options since we do similar check
 # (existence) there.
-def get_inventory_file(config: dict, options: dict):
+def get_inventory_file(config: dict, options: dict, logger):
     """
     Function returning relativ path to inventory file.
     :param config:
@@ -80,6 +80,13 @@ def get_inventory_file(config: dict, options: dict):
             for elem in item["stages"]:
                 if elem["name"] == options["stage"]:
                     inv_file = elem["inventory"]
+
+    if not inv_file and options["inventory"]:
+        inv_file = options["inventory"]
+    elif options["inventory"]:
+        logger.info("Ignoring specified inventory file. Using the configured one")
+    else:
+        logger.fatal("No inventory")
 
     return inv_file
 
