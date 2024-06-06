@@ -87,6 +87,7 @@ def get_inventory_file(config: dict, options: dict, logger):
             logger.debug(f"Using specified inventory file: {inv_file} .")
         else:
             logger.critical("No inventory loaded.")
+            sys.exit(92)
     elif options["inventory"]:
         logger.info('Ignoring specified inventory file: {options["inventory"]} . Using the'\
                     ' configured one: {inv_file} .')
