@@ -154,13 +154,7 @@ def main():
     if options["subcommand"] == "show":
         misc.show_deployer(config, options)
     else:
-        inv_file = misc.get_inventory_file(config, options)
-        if not inv_file and options['inventory']:
-            inv_file = options['inventory']
-        elif options['inventory']:
-            logger.logger.info("Ignoring specified inventory file. Using the configured one")
-        else:
-            logger.logger.fatal("No inventory")
+        inv_file = misc.get_inventory_file(config, options, logger.logger)
 
         lockpath = os.path.join(os.path.join(configuration.conf["global_paths"]["work_dir"],
                                 "locks") , inv_file.lstrip(f".{os.sep}").replace(os.sep, "_"))
