@@ -1,0 +1,41 @@
+---
+yaml-files:
+  - '*.yaml'
+  - '*.yml'
+
+rules:
+  braces:
+    forbid: false
+    min-spaces-inside: 1
+    max-spaces-inside: 1
+  brackets: enable
+  colons: enable
+  commas: enable
+  comments:
+    level: warning
+  comments-indentation:
+    level: warning
+  document-end: disable
+  document-start:
+    level: warning
+  empty-lines: enable
+  empty-values: enable
+  hyphens: enable
+  indentation:
+    spaces: 2
+    indent-sequences: true
+  key-duplicates: enable
+  key-ordering: disable
+  line-length:
+    max: 140
+    allow-non-breakable-words: true
+    allow-non-breakable-inline-mappings: true
+  new-line-at-end-of-file: enable
+  new-lines: enable
+  octal-values:
+    forbid-explicit-octal: false
+  quoted-strings: disable
+  trailing-spaces: enable
+  truthy:
+    check-keys: false
+    level: warning
