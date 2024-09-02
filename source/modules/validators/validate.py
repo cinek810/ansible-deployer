@@ -193,6 +193,9 @@ class Validators:
                     for item in config["infra"]:
                         if item["name"] == options["infra"]:
                             index = config["infra"].index(item)
+                    # Infra existence in config file is validated 10 lines above by
+                    # validate_option_by_dict_with_name() therefore index will always be defined
+                    # pylint: disable=possibly-used-before-assignment
                     selected_items["stage"] = self.validate_option_by_dict_with_name(
                                               options["stage"], config["infra"][index]["stages"])
                 elif option == "limit":
