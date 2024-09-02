@@ -8,6 +8,7 @@ import errno
 import pkg_resources
 from ansible_deployer.modules.configs.config import Config
 from ansible_deployer.modules.locking.locking import Locking
+from ansible_deployer.modules.outputs import blocks
 from ansible_deployer.modules.outputs.logging import Loggers
 from ansible_deployer.modules.validators.validate import Validators
 from ansible_deployer.modules.runners.run import Runners
@@ -180,6 +181,7 @@ def main():
                                                        db_writer)
             if options["lock"]:
                 lock.unlock_inventory(lockpath)
+            blocks.log_exit_messages(logger.logger, log_path, db_path)
             db_writer.finalize_db_write(sequence_record_dict, False)
         elif options["subcommand"] == "lock":
             lock.lock_inventory(lockpath)
