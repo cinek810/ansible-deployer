@@ -18,8 +18,7 @@ from ansible_deployer.modules import misc
 from ansible_deployer.modules import globalvars
 
 def parse_options(argv):
-    """Generic function to parse options for all commands, we validate if the option was allowed for
-    specific subcommand outside"""
+    """Generic function to parse options for all commands"""
     parser = argparse.ArgumentParser(add_help=True)
 
     parser.add_argument("subcommand", nargs='*', default=None, metavar="SUBCOMMAND",
@@ -66,8 +65,11 @@ def parse_options(argv):
                         ' (ansible-playbook) with "ansible_deployer_dry_mode" tag, triggering only'
                         ' required variable validation in pre_tasks. This tag is not predefined!')
 
-    arguments = parser.parse_args(argv)
+    return parser.parse_args(argv)
 
+
+def check_options(arguments: argparse.Namespace) -> dict:
+    """Validate parsed options and collect them into dictionary"""
     if arguments.version:
         version = pkg_resources.require("ansible_deployer")[0].version
         print(f"ansible-deployer version: {version}")
@@ -121,7 +123,7 @@ def main():
         print(f"{globalvars.PRINT_FAIL}[CRITICAL]: Too few arguments{globalvars.PRINT_END}",
               file=sys.stderr)
         sys.exit(2)
-    options = parse_options(sys.argv[1:])
+    options = check_options(parse_options(sys.argv[1:]))
 
     logger = Loggers(options)
 
