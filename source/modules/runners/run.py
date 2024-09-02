@@ -93,6 +93,10 @@ class Runners:
                     self.logger.critical("Should have never happen. Uncleaned lock left")
                     sys.exit(130)
 
+
+        # Task existence in config file is validated earlier in
+        # Validators.validate_option_values_against_config() so play_names will always be defined
+        # pylint: disable=possibly-used-before-assignment
         for play in play_names:
             for item in config["tasks"]["play_items"]:
                 if item["name"] == play:
