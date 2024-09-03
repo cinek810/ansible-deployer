@@ -1,9 +1,10 @@
+---
 infrastructures:
   - name: testInfra
     stages:
       - name: testing
         inventory: ./test_infra1_inv.yaml
-        allow_user_checkout: True
+        allow_user_checkout: true
       - name: prod
         inventory: ./prod_infra1_inv.yaml
       - name: locked
@@ -13,7 +14,7 @@ infrastructures:
     stages:
       - name: testing
         inventory: ./test_infra2_inv.yaml
-        allow_user_checkout: True
+        allow_user_checkout: true
 
   - name: testInfra3
     stages:

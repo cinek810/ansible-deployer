@@ -1,3 +1,4 @@
+---
 setup_hooks:
   - name: setup_ansible
     module: script
@@ -39,27 +40,27 @@ tasks:
       - acl_group: root_on_all_in_testInfra
         commit:
           - test_version
-    allow_limit: False
+    allow_limit: false
 
   - name: task_empty
     play_items: []
     allowed_for:
       - acl_group: root_on_testing_in_testInfra
-    allow_limit: False
+    allow_limit: false
 
   - name: root_only_task
     play_items:
       - run_bin_true
     allowed_for:
       - acl_group: root_on_testing_in_testInfra
-    allow_limit: False
+    allow_limit: false
 
   - name: non_root_task
     play_items:
       - run_bin_true
     allowed_for:
       - acl_group: test_on_testing_in_testInfra
-    allow_limit: False
+    allow_limit: false
 
   - name: task_with_limit
     play_items:
@@ -68,7 +69,7 @@ tasks:
       - verify_passwd
     allowed_for:
       - acl_group: root_on_testing_in_testInfra_testInfra2
-    allow_limit: True
+    allow_limit: true
 
   - name: task_without_limit
     play_items:
@@ -81,7 +82,7 @@ tasks:
       - run_bin
     allowed_for:
       - acl_group: root_on_testing_in_testInfra_testInfra2
-    allow_limit: False
+    allow_limit: false
     tags:
       - tag_true
 
@@ -90,7 +91,7 @@ tasks:
       - run_bin
     allowed_for:
       - acl_group: root_on_testing_in_testInfra_testInfra2
-    allow_limit: False
+    allow_limit: false
     tags:
       - tag_false
 
@@ -99,7 +100,7 @@ tasks:
       - run_bin
     allowed_for:
       - acl_group: root_on_testing_in_testInfra_testInfra2
-    allow_limit: False
+    allow_limit: false
     skip_tags:
       - tag_false
 
@@ -108,7 +109,7 @@ tasks:
       - run_skippable
     allowed_for:
       - acl_group: root_mixed_0001
-    allow_limit: False
+    allow_limit: false
 
   - name: task_with_commit
     play_items:
@@ -121,7 +122,7 @@ tasks:
           - tags/v2.5.\d+
           - tags/v3.\d+.5
           - tags/v5.\d+
-    allow_limit: False
+    allow_limit: false
 
   - name: task_with_ansible_fail
     play_items:
@@ -137,7 +138,7 @@ tasks:
       - acl_group: groups_mixed_0001
         commit:
           - test_version
-    allow_limit: False
+    allow_limit: false
 
   - name: task_with_multi_groups_fail
     play_items:
@@ -146,11 +147,11 @@ tasks:
       - acl_group: groups_mixed_0002
         commit:
           - test_version
-    allow_limit: False
+    allow_limit: false
 
   - name: task_with_pretask
     play_items:
       - run_with_pretask
     allowed_for:
       - acl_group: root_on_all_in_testInfra
-    allow_limit: False
+    allow_limit: false
