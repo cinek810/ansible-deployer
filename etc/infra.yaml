@@ -19,4 +19,3 @@ infrastructures:
     stages:
       - name: prod
         inventory: ./prod_infra3_inv.yaml
-
