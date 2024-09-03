@@ -56,7 +56,7 @@ acl_lists:
         stages:
           - testing
 
-  - name: root_mixed_0001 
+  - name: root_mixed_0001
     groups:
       - root
     infra:
@@ -89,4 +89,3 @@ acl_lists:
       - name: testInfra
         stages:
           - testing
-

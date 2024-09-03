@@ -96,8 +96,8 @@ jobs:
             ./tests/03-invalid_configs_short.sh
 
   install_and_exec:
-    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
+    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's
+    # Developer Hub. See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
     docker:
       - image: almalinux
     # Add steps to the job
@@ -123,4 +123,3 @@ workflows:
         #      - install_and_exec:
         #          requires:
         #            - prepare_env
-
