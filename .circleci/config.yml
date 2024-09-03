@@ -1,3 +1,4 @@
+---
 # Use the latest 2.1 version of CircleCI pipeline process engine.
 # See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
@@ -10,8 +11,8 @@ jobs:
       - image: almalinux:8
     resource_class: small
     steps:
-#      - run:
-#          command: dnf update -y
+      # - run:
+      #     command: dnf update -y
       - run:
           command: dnf install -y epel-release
       - run:
@@ -120,6 +121,6 @@ workflows:
   tests-without-ansible-playbook:
     jobs:
       - prepare_env
-        #      - install_and_exec:
-        #          requires:
-        #            - prepare_env
+      # - install_and_exec:
+      #     requires:
+      #       - prepare_env

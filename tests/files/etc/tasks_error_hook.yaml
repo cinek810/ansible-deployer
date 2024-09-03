@@ -1,3 +1,4 @@
+---
 setup_hooks:
   - name: setup_ansible
     module: script
@@ -23,4 +24,4 @@ tasks:
       - acl_group: root_on_all_in_testInfra
         commit:
           - test_version
-    allow_limit: False
+    allow_limit: false
