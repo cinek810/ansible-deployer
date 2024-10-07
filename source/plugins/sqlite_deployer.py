@@ -39,7 +39,14 @@ class CallbackModule(CallbackBase):
     CALLBACK_NEEDS_WHITELIST = True
 
     TABLE_NAME = "play_item_tasks"
-    TABLE_COLUMNS = ["sequence_id", "task_name", "result", "hostname", "timestamp", "changed"]
+    TABLE_COLUMNS = [
+        "sequence_id",
+        "timestamp",
+        "hostname",
+        "result",
+        "changed",
+        "task_name"
+    ]
     TIME_FORMAT = "%b %d %Y %H:%M:%S"
 
     def __init__(self):
@@ -77,11 +84,11 @@ class CallbackModule(CallbackBase):
                 "INSERT INTO {} ({}, {}, {}, {}, {}, {}) VALUES(?,?,?,?,?,?);".format(
                 self.TABLE_NAME, *self.TABLE_COLUMNS), (
                     self.sequence,
-                    result._task.name,
-                    category,
-                    result._host.get_name(),
                     now,
-                    changed_status
+                    result._host.get_name(),
+                    category,
+                    changed_status,
+                    result._task.name
                 )
             )
             self.connector.commit()
