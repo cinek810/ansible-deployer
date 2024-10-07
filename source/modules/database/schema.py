@@ -16,10 +16,10 @@ SCHEMAS = {
     },
     "play_item_tasks": {
         "sequence_id": "text",
-        "task_name": "text",
-        "result": "text",
-        "hostname": "text",
         "timestamp": "text",
-        "changed": "text"
+        "hostname": "text",
+        "result": "text",
+        "changed": "text",
+        "task_name": "text"
     }
 }
