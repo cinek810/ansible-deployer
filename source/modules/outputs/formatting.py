@@ -13,8 +13,6 @@ class Formatters:
         """Log output for a positive case in ansible execution"""
         if warning:
             self.logger.warning("\n".join(warning))
-        if output:
-            self.logger.info("\n".join(output))
         self.logger.info("\"%s\" ran succesfully", " ".join(command))
 
     def negative_ansible_output(self, warning: list, error: list, command: str):

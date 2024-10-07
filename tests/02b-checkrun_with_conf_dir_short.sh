@@ -35,7 +35,7 @@ check_run_ok "ansible-deployer run -t task_with_commit -s testing -i testInfra -
 check_message_in_output "ansible-deployer run -t task_with_commit -s testing -i testInfra -c tags/v1.0.1 --conf-dir=/etc/alternate-deployer-dir" "\[ERROR\]: Requested commit tags/v1.0.1 is not valid for task task_with_commit."
 check_message_in_output "ansible-deployer run -t task_with_commit -s testing -i testInfra -c tags/v2.1 --conf-dir=/etc/alternate-deployer-dir" "\[ERROR\]: Requested commit tags/v2.1 is not valid for task task_with_commit."
 check_message_in_output "ansible-deployer run -t task_with_commit -s testing -i testInfra -c tags/v3.6.6 --conf-dir=/etc/alternate-deployer-dir" "\[ERROR\]: Requested commit tags/v3.6.6 is not valid for task task_with_commit."
-check_message_in_output "ansible-deployer verify -t task_exec_bin_true -s prod -i testInfra --conf-dir=/etc/alternate-deployer-dir" "1 passed"
+check_message_in_output "ansible-deployer verify -t task_exec_bin_true -s prod -i testInfra --conf-dir=/etc/alternate-deployer-dir --raw-runner-output" "1 passed"
 
 echo -e "   ___ ____  _                    _               _                                _ _   _                        __       _ _            _                _\n  / _ \___ \| |__             ___| |__   ___  ___| | ___ __ _   _ _ __   __      _(_) |_| |__     ___ ___  _ __  / _|   __| (_)_ __   ___| |__   ___  _ __| |_\n | | | |__) | '_ \   _____   / __| '_ \ / _ \/ __| |/ / '__| | | | '_ \  \ \ /\ / / | __| '_ \   / __/ _ \| '_ \| |_   / _\` | | '__| / __| '_ \ / _ \| '__| __|\n | |_| / __/| |_) | |_____| | (__| | | |  __/ (__|   <| |  | |_| | | | |  \ V  V /| | |_| | | | | (_| (_) | | | |  _| | (_| | | |    \__ \ | | | (_) | |  | |_\n  \___/_____|_.__/           \___|_| |_|\___|\___|_|\_\_|   \__,_|_| |_|   \_/\_/ |_|\__|_| |_|  \___\___/|_| |_|_|    \__,_|_|_|    |___/_| |_|\___/|_|   \__|\n \n        _   _\n   ___ | |_| |__   ___ _ __ ___\n  / _ \| __| '_ \ / _ \ '__/ __|\n | (_) | |_| | | |  __/ |  \__ \ \n  \___/ \__|_| |_|\___|_|  |___/\n"
 # Miscellaneous
@@ -43,8 +43,8 @@ check_message_in_output "ansible-deployer run -t task_empty -s testing -i testIn
 check_message_in_output "ansible-deployer run -t task_exec_bin_true -s prod -i testInfra --conf-dir=/etc/alternate-deployer-dir" "\[INFO\]: setup_work_dir finished succesfully"
 
 # Check --dry-mode option
-check_message_in_output "ansible-deployer run -D -d -t task_with_pretask -s testing -i testInfra --conf-dir=/etc/alternate-deployer-dir" "TASK \[Run dummy pre_task\]"
-check_message_not_in_output "ansible-deployer run -D -d -t task_with_pretask -s testing -i testInfra --conf-dir=/etc/alternate-deployer-dir" "TASK \[Run /bin/false\]"
+check_message_in_output "ansible-deployer run -D -d -t task_with_pretask -s testing -i testInfra --conf-dir=/etc/alternate-deployer-dir --raw-runner-output" "TASK \[Run dummy pre_task\]"
+check_message_not_in_output "ansible-deployer run -D -d -t task_with_pretask -s testing -i testInfra --conf-dir=/etc/alternate-deployer-dir --raw-runner-output" "TASK \[Run /bin/false\]"
 
 # Artificially generate lock
 check_run_ok "ansible-deployer unlock -s locked -i testInfra --conf-dir=/etc/alternate-deployer-dir"
@@ -62,8 +62,8 @@ check_run_ok "ansible-deployer run -t task_with_limit -s testing -i testInfra2 -
 check_run_ok "ansible-deployer run -t task_without_limit -s testing -i testInfra -l testHost1 -C --conf-dir=/etc/alternate-deployer-dir"
 
 # Check if deployer exits on 1st play item fail
-check_message_in_output "ansible-deployer run -t task_with_ansible_fail -s testing -i testInfra --conf-dir=/etc/alternate-deployer-dir" "\[ERROR\]: \"ansible-playbook -v -i ./test_infra1_inv.yaml runll.yaml\" failed due to"
-check_message_not_in_output "ansible-deployer run -t task_with_ansible_fail -s testing -i testInfra --conf-dir=/etc/alternate-deployer-dir" "\[INFO\]: \"ansible-playbook -v -i ./test_infra1_inv.yaml runBinTrue.yaml\" ran succesfully"
+check_message_in_output "ansible-deployer run -t task_with_ansible_fail -s testing -i testInfra --conf-dir=/etc/alternate-deployer-dir" "\[ERROR\]: \"ansible-playbook -i ./test_infra1_inv.yaml runll.yaml -v\" failed due to"
+check_message_not_in_output "ansible-deployer run -t task_with_ansible_fail -s testing -i testInfra --conf-dir=/etc/alternate-deployer-dir" "\[INFO\]: \"ansible-playbook -i ./test_infra1_inv.yaml runBinTrue.yaml -v\" ran succesfully"
 
 echo -e "   ___ ____  _                    _               _                                _ _   _                        __       _ _            _                _\n  / _ \___ \| |__             ___| |__   ___  ___| | ___ __ _   _ _ __   __      _(_) |_| |__     ___ ___  _ __  / _|   __| (_)_ __   ___| |__   ___  _ __| |_\n | | | |__) | '_ \   _____   / __| '_ \ / _ \/ __| |/ / '__| | | | '_ \  \ \ /\ / / | __| '_ \   / __/ _ \| '_ \| |_   / _\` | | '__| / __| '_ \ / _ \| '__| __|\n | |_| / __/| |_) | |_____| | (__| | | |  __/ (__|   <| |  | |_| | | | |  \ V  V /| | |_| | | | | (_| (_) | | | |  _| | (_| | | |    \__ \ | | | (_) | |  | |_\n  \___/_____|_.__/           \___|_| |_|\___|\___|_|\_\_|   \__,_|_| |_|   \_/\_/ |_|\__|_| |_|  \___\___/|_| |_|_|    \__,_|_|_|    |___/_| |_|\___/|_|   \__|\n \n                            _         _\n  _ __   ___ _ __ _ __ ___ (_)___ ___(_) ___  _ __  ___\n | '_ \ / _ \ '__| '_ \` _ \| / __/ __| |/ _ \| '_ \/ __|\n | |_) |  __/ |  | | | | | | \__ \__ \ | (_) | | | \__ \ \n | .__/ \___|_|  |_| |_| |_|_|___/___/_|\___/|_| |_|___/\n |_|\n"
 # Try execution of task without permissions

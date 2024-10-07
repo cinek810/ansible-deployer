@@ -14,13 +14,11 @@ Created and tailored for ansible-deployer project.
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-import json
 import os
 import sqlite3
 import time
 
 from ansible.module_utils.common._collections_compat import MutableMapping
-from ansible.parsing.ajson import AnsibleJSONEncoder
 from ansible.plugins.callback import CallbackBase
 
 
@@ -41,8 +39,14 @@ class CallbackModule(CallbackBase):
     CALLBACK_NEEDS_WHITELIST = True
 
     TABLE_NAME = "play_item_tasks"
-    TABLE_COLUMNS = ["task_id", "sequence_id", "task_name", "result", "hostname", "timestamp",
-                     "task_details"]
+    TABLE_COLUMNS = [
+        "sequence_id",
+        "timestamp",
+        "hostname",
+        "result",
+        "changed",
+        "task_name"
+    ]
     TIME_FORMAT = "%b %d %Y %H:%M:%S"
 
     def __init__(self):
@@ -67,12 +71,11 @@ class CallbackModule(CallbackBase):
             if '_ansible_verbose_override' in data:
                 # avoid logging extraneous data
                 data = 'omitted'
-            else:
-                data = data.copy()
-                invocation = data.pop('invocation', None)
-                data = json.dumps(data, cls=AnsibleJSONEncoder)
-                if invocation is not None:
-                    data = json.dumps(invocation, cls=AnsibleJSONEncoder)
+
+        try:
+            changed_status = str(data.get("changed", "Unknown"))
+        except AttributeError:
+            changed_status = "Unknown"
 
         now = time.strftime(self.TIME_FORMAT, time.localtime())
 
@@ -81,11 +84,11 @@ class CallbackModule(CallbackBase):
                 "INSERT INTO {} ({}, {}, {}, {}, {}, {}) VALUES(?,?,?,?,?,?);".format(
                 self.TABLE_NAME, *self.TABLE_COLUMNS), (
                     self.sequence,
-                    result._task.name,
-                    category,
-                    result._host.get_name(),
                     now,
-                    data
+                    result._host.get_name(),
+                    category,
+                    changed_status,
+                    result._task.name
                 )
             )
             self.connector.commit()
