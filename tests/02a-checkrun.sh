@@ -37,7 +37,7 @@ check_run_ok "ansible-deployer run --task task_with_commit --stage testing --inf
 check_message_in_output "ansible-deployer run --task task_with_commit --stage testing --infrastructure testInfra --commit tags/v1.0.1" "\[ERROR\]: Requested commit tags/v1.0.1 is not valid for task task_with_commit."
 check_message_in_output "ansible-deployer run --task task_with_commit --stage testing --infrastructure testInfra --commit tags/v2.1" "\[ERROR\]: Requested commit tags/v2.1 is not valid for task task_with_commit."
 check_message_in_output "ansible-deployer run --task task_with_commit --stage testing --infrastructure testInfra --commit tags/v3.6.6" "\[ERROR\]: Requested commit tags/v3.6.6 is not valid for task task_with_commit."
-check_message_in_output "ansible-deployer verify --task task_exec_bin_true --stage prod --infrastructure testInfra" "1 passed"
+check_message_in_output "ansible-deployer verify --task task_exec_bin_true --stage prod --infrastructure testInfra --raw-runner-output" "1 passed"
 
 echo -e "   ___ ____                      _               _\n  / _ \___ \ __ _            ___| |__   ___  ___| | ___ __ _   _ _ __\n | | | |__) / _\` |  _____   / __| '_ \ / _ \/ __| |/ / '__| | | | '_ \ \n | |_| / __/ (_| | |_____| | (__| | | |  __/ (__|   <| |  | |_| | | | |\n  \___/_____\__,_|          \___|_| |_|\___|\___|_|\_\_|   \__,_|_| |_|\n \n        _   _\n   ___ | |_| |__   ___ _ __ ___\n  / _ \| __| '_ \ / _ \ '__/ __|\n | (_) | |_| | | |  __/ |  \__ \ \n  \___/ \__|_| |_|\___|_|  |___/\n"
 # Miscellaneous
@@ -49,11 +49,11 @@ check_message_in_output "ansible-deployer run --conf-validation --debug --task t
 check_message_not_in_output "ansible-deployer run --conf-validation --debug --task task_exec_bin_true --stage prod --infrastructure testInfra" "\[DEBUG\]: Started lock_inventory for lockdir"
 
 # Check --check-mode option
-check_message_in_output "ansible-deployer run --check-mode --debug --task task_exec_bin_true --stage prod --infrastructure testInfra" "msg: Command would have run if not in check mode"
+check_message_in_output "ansible-deployer run --check-mode --debug --task task_exec_bin_true --stage prod --infrastructure testInfra --raw-runner-output" "msg: Command would have run if not in check mode"
 
 # Check --dry-mode option
-check_message_in_output "ansible-deployer run --dry-mode --debug --task task_with_pretask --stage testing --infrastructure testInfra" "TASK \[Run dummy pre_task\]"
-check_message_not_in_output "ansible-deployer run --dry-mode --debug --task task_with_pretask --stage testing --infrastructure testInfra" "TASK \[Run /bin/false\]"
+check_message_in_output "ansible-deployer run --dry-mode --debug --task task_with_pretask --stage testing --infrastructure testInfra --raw-runner-output" "TASK \[Run dummy pre_task\]"
+check_message_not_in_output "ansible-deployer run --dry-mode --debug --task task_with_pretask --stage testing --infrastructure testInfra --raw-runner-output" "TASK \[Run /bin/false\]"
 
 # Artificially generate lock
 check_run_ok "ansible-deployer lock --stage locked --infrastructure testInfra"
@@ -80,8 +80,8 @@ check_run_ok "ansible-deployer run --task task_with_limit --stage testing --infr
 check_run_ok "ansible-deployer run --task task_without_limit --stage testing --infrastructure testInfra --limit testHost1 --check-mode"
 
 # Check if deployer exits on 1st play item fail
-check_message_in_output "ansible-deployer run --task task_with_ansible_fail --stage testing --infrastructure testInfra" "\[ERROR\]: \"ansible-playbook -v -i ./test_infra1_inv.yaml runll.yaml\" failed due to"
-check_message_not_in_output "ansible-deployer run --task task_with_ansible_fail --stage testing --infrastructure testInfra" "\[INFO\]: \"ansible-playbook -v -i ./test_infra1_inv.yaml runBinTrue.yaml\" ran succesfully"
+check_message_in_output "ansible-deployer run --task task_with_ansible_fail --stage testing --infrastructure testInfra" "\[ERROR\]: \"ansible-playbook -i ./test_infra1_inv.yaml runll.yaml -v\" failed due to"
+check_message_not_in_output "ansible-deployer run --task task_with_ansible_fail --stage testing --infrastructure testInfra" "\[INFO\]: \"ansible-playbook -i ./test_infra1_inv.yaml runBinTrue.yaml -v\" ran succesfully"
 
 # Check --keep-locked option
 check_message_in_output "ansible-deployer run --task task_exec_bin_true --stage testing --infrastructure testInfra --keep-locked --debug" "\[DEBUG\]: Keep locked infra testInfra:testing ."
