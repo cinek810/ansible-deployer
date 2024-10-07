@@ -67,11 +67,7 @@ class CallbackModule(CallbackBase):
                 # avoid logging extraneous data
                 data = 'omitted'
             else:
-                data = data.copy()
-                invocation = data.pop('invocation', None)
                 data = json.dumps(data, cls=AnsibleJSONEncoder)
-                if invocation is not None:
-                    data = json.dumps(invocation, cls=AnsibleJSONEncoder)
 
         now = time.strftime(self.TIME_FORMAT, time.localtime())
 
