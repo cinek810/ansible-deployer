@@ -41,8 +41,7 @@ class CallbackModule(CallbackBase):
     CALLBACK_NEEDS_WHITELIST = True
 
     TABLE_NAME = "play_item_tasks"
-    TABLE_COLUMNS = ["task_id", "sequence_id", "task_name", "result", "hostname", "timestamp",
-                     "task_details"]
+    TABLE_COLUMNS = ["sequence_id", "task_name", "result", "hostname", "timestamp", "task_details"]
     TIME_FORMAT = "%b %d %Y %H:%M:%S"
 
     def __init__(self):
