@@ -8,12 +8,10 @@ __metaclass__ = type
 
 import os
 import time
-import json
 
 from ansible.utils.path import makedirs_safe
 from ansible.module_utils.common.text.converters import to_bytes
 from ansible.module_utils.common._collections_compat import MutableMapping
-from ansible.parsing.ajson import AnsibleJSONEncoder
 from ansible.plugins.callback import CallbackBase
 
 
@@ -27,7 +25,8 @@ class CallbackModule(CallbackBase):
     CALLBACK_NEEDS_WHITELIST = True
 
     TIME_FORMAT = "%b %d %Y %H:%M:%S"
-    MSG_FORMAT = "%(now)s - %(playbook)s - %(task_name)s - %(category)s\n%(data)s\n\n"
+    MSG_FORMAT = "%(now)s - %(playbook)s - %(task_name)s - %(category)s - changed: \
+            %(changed_status)s\n\n"
 
     def __init__(self):
 
@@ -49,8 +48,11 @@ class CallbackModule(CallbackBase):
             if '_ansible_verbose_override' in data:
                 # avoid logging extraneous data
                 data = 'omitted'
-            else:
-                data = json.dumps(data, cls=AnsibleJSONEncoder)
+
+        try:
+            changed_status = str(data.get("changed", "Unknown"))
+        except AttributeError:
+            changed_status = "Unknown"
 
         now = time.strftime(self.TIME_FORMAT, time.localtime())
 
@@ -61,7 +63,7 @@ class CallbackModule(CallbackBase):
                 "playbook": self.playbook,
                 "task_name": result._task.name,
                 "category": category,
-                "data": data
+                "changed_status": changed_status
             }
         )
         with open(self.log_path, "ab") as fd:

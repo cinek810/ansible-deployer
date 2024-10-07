@@ -14,13 +14,11 @@ Created and tailored for ansible-deployer project.
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-import json
 import os
 import sqlite3
 import time
 
 from ansible.module_utils.common._collections_compat import MutableMapping
-from ansible.parsing.ajson import AnsibleJSONEncoder
 from ansible.plugins.callback import CallbackBase
 
 
@@ -41,7 +39,7 @@ class CallbackModule(CallbackBase):
     CALLBACK_NEEDS_WHITELIST = True
 
     TABLE_NAME = "play_item_tasks"
-    TABLE_COLUMNS = ["sequence_id", "task_name", "result", "hostname", "timestamp", "task_details"]
+    TABLE_COLUMNS = ["sequence_id", "task_name", "result", "hostname", "timestamp", "changed"]
     TIME_FORMAT = "%b %d %Y %H:%M:%S"
 
     def __init__(self):
@@ -66,8 +64,11 @@ class CallbackModule(CallbackBase):
             if '_ansible_verbose_override' in data:
                 # avoid logging extraneous data
                 data = 'omitted'
-            else:
-                data = json.dumps(data, cls=AnsibleJSONEncoder)
+
+        try:
+            changed_status = str(data.get("changed", "Unknown"))
+        except AttributeError:
+            changed_status = "Unknown"
 
         now = time.strftime(self.TIME_FORMAT, time.localtime())
 
@@ -80,7 +81,7 @@ class CallbackModule(CallbackBase):
                     category,
                     result._host.get_name(),
                     now,
-                    data
+                    changed_status
                 )
             )
             self.connector.commit()
