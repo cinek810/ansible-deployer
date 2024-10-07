@@ -20,6 +20,6 @@ SCHEMAS = {
         "result": "text",
         "hostname": "text",
         "timestamp": "text",
-        "task_details": "text"
+        "changed": "text"
     }
 }
