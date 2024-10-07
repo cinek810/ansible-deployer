@@ -12,3 +12,6 @@ OPTION_EXPANSION = {
 }
 ANSIBLE_DEFAULT_CALLBACK_PLUGIN_PATH = '~/.ansible/plugins/callback:/usr/share/ansible/plugins/' \
                                        'callback'
+SUPPORTED_STDOUT_CALLBACK_PLUGINS = ["json", "null", "yaml"]
+REQUIRED_CALLBACK_PLUGINS = ["log_plays_adjusted", "sqlite_deployer"]
+SUPPORTED_CALLBACK_PLUGINS = ["log_plays_adjusted", "sqlite_deployer"]
