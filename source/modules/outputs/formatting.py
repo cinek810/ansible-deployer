@@ -78,6 +78,7 @@ class Formatters:
     def find_end_of_task(stream_fragment: list, parent_index: int):
         """Parse list of output elements to find beginning of next task and end of current task."""
         for no, line in enumerate(stream_fragment):
-            if "changed=true" in line or "changed=false" in line or not line:
+            if "changed=true" in line or "changed=false" in line or \
+               "An exception occurred during task execution" in line or not line:
                 return parent_index + no
         return None
