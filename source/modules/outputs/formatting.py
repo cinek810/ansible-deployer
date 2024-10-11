@@ -55,8 +55,8 @@ class Formatters:
                 for pline in process_output[no-2:no]:
                     if any(tindicator in pline for tindicator in self.task_indicators) \
                        or pline == "":
-                        std_error.append(pline)
-                std_error.append(line)
+                        std_error.append(f"\n{pline}")
+                std_error.append(f"\n{line}")
                 for nline in process_output[no+1:self.find_end_of_task(process_output[no+1:],
                                                                        no+1)]:
                     std_error.append(nline)
