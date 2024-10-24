@@ -33,7 +33,7 @@ def main(options: dict):
     config = configuration.load_configuration()
 
     if options["subcommand"] in ("run", "verify"):
-        workdir = mutils.create_workdir(start_ts, configuration.conf, logger.logger)
+        workdir = mutils.create_workdirs(start_ts, configuration.conf, logger.logger)
         log_path = os.path.join(
             workdir, configuration.conf["file_naming"]["log_file_name_frmt"].format(start_ts))
         logger.add_file_handler(log_path, logger.basic_formatter)
