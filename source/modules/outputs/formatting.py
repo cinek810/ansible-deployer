@@ -3,8 +3,8 @@
 class Formatters:
     """Class handling formatting of ansible standard output and error streams"""
 
-    error_indicators = ["error", "fatal"]
-    task_indicators = ["task", "running handler"]
+    error_indicators = ["ERROR", "fatal"]
+    task_indicators = ["TASK", "RUNNING HANDLER"]
 
     def __init__(self, logger):
         self.logger = logger
@@ -51,10 +51,10 @@ class Formatters:
         std_complete = []
 
         for no, line in enumerate(process_output):
-            if any(eindicator in line.lower() for eindicator in self.error_indicators):
+            if any(eindicator in line for eindicator in self.error_indicators):
                 for pline in process_output[no-2:no]:
-                    if any(tindicator in pline.lower() for tindicator in self.task_indicators)\
-                            or pline == "":
+                    if any(tindicator in pline for tindicator in self.task_indicators) \
+                       or pline == "":
                         std_error.append(pline)
                 std_error.append(line)
                 for nline in process_output[no+1:self.find_end_of_task(process_output[no+1:],
@@ -78,6 +78,7 @@ class Formatters:
     def find_end_of_task(stream_fragment: list, parent_index: int):
         """Parse list of output elements to find beginning of next task and end of current task."""
         for no, line in enumerate(stream_fragment):
-            if "changed=true" in line or "changed=false" in line or not line:
+            if "changed=true" in line or "changed=false" in line or \
+               "An exception occurred during task execution" in line or not line:
                 return parent_index + no
         return None
