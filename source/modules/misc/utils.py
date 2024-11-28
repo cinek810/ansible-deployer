@@ -21,10 +21,10 @@ def create_parent_workdir(short_ts: str, date_dir: str, conf: dict, logger):
             logger.critical("Failed to create parent work dir: %s error was: %s", date_dir, exc)
             sys.exit(90)
 
-def create_workdir(timestamp: str, conf: dict, logger):
+def create_workdirs(timestamp: str, conf: dict, logger):
     """
-    Function to create working directory on file system, we expect it to change
-    the cwd to newly created workdir at the end.
+    Create and change mode for sequences subdirectory, trigger function handling each sequence
+    (actual, final) workdir creation.
     """
     short_ts = timestamp.split("_")[0]
     date_dir = os.path.join(conf["global_paths"]["work_dir"], short_ts)
@@ -34,7 +34,6 @@ def create_workdir(timestamp: str, conf: dict, logger):
     #
     #TODO: Add locking of the directory
     if conf["global_paths"]["sequences_subdir"] not in os.listdir(date_dir):
-        seq_path = os.path.join(base_dir, f"{conf['file_naming']['sequence_prefix']}0000")
         try:
             os.mkdir(base_dir)
             try:
@@ -47,21 +46,39 @@ def create_workdir(timestamp: str, conf: dict, logger):
         except Exception as exc:
             logger.critical("Failed to create parent work dir: %s error was: %s", base_dir, exc)
             sys.exit(90)
-    else:
+
+    return create_workdir(base_dir, conf, logger)
+
+def create_workdir(base_dir: str, conf: dict, logger):
+    """
+    Function to create working directory on file system, we expect it to change
+    the cwd to newly created workdir at the end.
+    """
+    for cnt in range(0, 5):
         sequence_list = os.listdir(base_dir)
         sequence_list.sort()
-        new_sequence = int(sequence_list[-1].split(conf['file_naming']['sequence_prefix'])[1]) + 1
-        seq_path = os.path.join(base_dir, f"{conf['file_naming']['sequence_prefix']}"
-                                          f"{new_sequence:04d}")
+        try:
+            new_seq = int(sequence_list[-1].split(conf['file_naming']['sequence_prefix'])[1]) + 1
+        except IndexError:
+            new_seq = 0
+        seq_path = os.path.join(base_dir, f"{conf['file_naming']['sequence_prefix']}{new_seq:04d}")
 
-    try:
-        os.mkdir(seq_path)
-        os.chmod(seq_path, int(conf["permissions"]["workdir"], 8))
-    except Exception as e:
-        logger.critical("Failed to create work dir: %s error was: %s", seq_path, e, file=sys.stderr)
-        sys.exit(91)
-    logger.debug("Successfully created workdir: %s", seq_path)
-    return seq_path
+        try:
+            os.mkdir(seq_path)
+            os.chmod(seq_path, int(conf["permissions"]["workdir"], 8))
+            logger.debug("Successfully created workdir: %s", seq_path)
+            return seq_path
+        except FileExistsError:
+            logger.debug("Retrying creation (current attempt: %d) of workdir: %s", cnt+1, seq_path)
+            continue
+        except Exception as e:
+            logger.critical("Failed to create work dir: %s error was: %s", seq_path, e,
+                            file=sys.stderr)
+            sys.exit(91)
+
+    logger.critical("Failed to create work dir: %s . All 5 retry attempts were utilized.",
+                    seq_path)
+    sys.exit(91)
 
 # TODO: At least infra level should be returned from validate options since we do similar check
 # (existence) there.

@@ -56,8 +56,9 @@ class CliInput:
         parser.add_argument("--runner-options", nargs=1, default=[None],
                             metavar="'\"--a -b --opt2\"'",
                             help='Quote-enclosed raw string of flags to be passed.')
-        parser.add_argument("--runner-plugins", nargs=1, default=[None], metavar='TASK_NAME',
-                            help='Provide comma-separated list of plugins to enable.')
+        parser.add_argument("--runner-plugins", nargs=1, default=[None],
+                            metavar='PLUGIN1,PLUGIN2,PLUGIN3...',
+                            help='Provide comma-separated list of callback plugins to enable.')
         parser.add_argument("--runner-raw-file", default=False, action="store_true",
                             help='Print original messages to main log file.')
         parser.add_argument("--runner-stdout", nargs=1, default=[None], metavar='STDOUT_PLUGIN',
