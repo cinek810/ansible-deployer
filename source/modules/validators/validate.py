@@ -137,12 +137,15 @@ class Validators:
                     for stage in infra["stages"]:
                         if stage["name"] == options["stage"]:
                             allow = stage.get("allow_user_checkout", None)
-                            if not allow:
-                                self.logger.critical("Self setup is not allowed for infra %s!",
-                                                     infra["name"])
-                                sys.exit(59)
-                            else:
+                            if allow in ("always", "true"):
                                 return options["self_setup"]
+
+                            if allow == "check_mode" and options["check_mode"]:
+                                return options["self_setup"]
+
+                            self.logger.critical("Self setup is not allowed for infra %s!",
+                                                 infra["name"])
+                            sys.exit(59)
         else:
             self.logger.critical("Provided --self-setup path %s does not exist!",
                                  options["self_setup"])

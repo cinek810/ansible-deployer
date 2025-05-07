@@ -65,7 +65,7 @@ SCHEMAS = {
                                         "required": True
                                     },
                                     "allow_user_checkout": {
-                                        "type": "boolean",
+                                        "type": ["boolean", "string"],
                                         "required": False
                                     }
                                 }
