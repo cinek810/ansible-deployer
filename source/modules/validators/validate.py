@@ -132,17 +132,22 @@ class Validators:
     def validate_self_setup(self, options: dict, config: dict):
         """Validate if --self-setup is allowed and if requested path exists"""
         if os.path.exists(options["self_setup"]):
+            if options["check_mode"]:
+                return options["self_setup"]
             for infra in config["infra"]:
                 if infra["name"] == options["infra"]:
                     for stage in infra["stages"]:
                         if stage["name"] == options["stage"]:
                             allow = stage.get("allow_user_checkout", None)
-                            if not allow:
-                                self.logger.critical("Self setup is not allowed for infra %s!",
-                                                     infra["name"])
-                                sys.exit(59)
-                            else:
+                            if allow in ("always", "true"):
                                 return options["self_setup"]
+
+                            if allow == "check_mode" and options["check_mode"]:
+                                return options["self_setup"]
+
+                            self.logger.critical("Self setup is not allowed for infra %s!",
+                                                 infra["name"])
+                            sys.exit(59)
         else:
             self.logger.critical("Provided --self-setup path %s does not exist!",
                                  options["self_setup"])
