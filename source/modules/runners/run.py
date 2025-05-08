@@ -21,6 +21,7 @@ class Runners:
         self.start_ts_raw = start_ts_raw
         self.setup_hooks = setup_hooks
         self.sequence_id = os.path.basename(self.workdir)
+        os.environ['ANSIBLE_DEPLOYER_SEQUENCE_ID'] = self.sequence_id
         self.log_path = log_path
         self.db_path = db_path
 
