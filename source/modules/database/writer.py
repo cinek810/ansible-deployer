@@ -15,6 +15,7 @@ class DbWriter:
         self.logger = logger
         self.connector = connector
         self.db_path = db_path
+        os.environ['ANSIBLE_DEPLOYER_DB_PATH'] = self.db_path
         self.cursor = self.connector.cursor()
         self.create_tables()
 
