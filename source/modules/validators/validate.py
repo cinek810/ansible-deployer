@@ -122,6 +122,9 @@ class Validators:
         if options["commit"] and options["self_setup"]:
             self.logger.critical("Options --commit and --self-setup are mutually exlcusive!")
             sys.exit(58)
+        elif options["self_setup"] and options["dry_mode"]:
+            self.logger.debug("--self-setup allowed for --dry-mode")
+            return options["self_setup"]
         elif options["self_setup"]:
             commit = self.validate_self_setup(options, config)
         else:
