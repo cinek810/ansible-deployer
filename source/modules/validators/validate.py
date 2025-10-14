@@ -140,7 +140,7 @@ class Validators:
                     for stage in infra["stages"]:
                         if stage["name"] == options["stage"]:
                             allow = stage.get("allow_user_checkout", None)
-                            if allow in ("always", "true"):
+                            if allow in ("always", True):
                                 return options["self_setup"]
 
                             if allow == "check_mode" and options["check_mode"]:
